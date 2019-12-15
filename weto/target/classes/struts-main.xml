@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+  <package name="weto-main" extends="weto-default">
+    <global-results>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </global-results>
+
+    <action name="createTask" class="fi.uta.cs.weto.actions.main.TaskActions$PrepareCreate">
+      <result type="tiles" name="input">createTask.page</result>
+    </action>
+    <action name="commitCreateTask" class="fi.uta.cs.weto.actions.main.TaskActions$Create">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="editTask" class="fi.uta.cs.weto.actions.main.TaskActions$PrepareUpdate">
+      <result type="tiles" name="input">editTask.page</result>
+    </action>
+    <action name="commitEditTask" class="fi.uta.cs.weto.actions.main.TaskActions$Update">
+      <result type="httpheader" name="success">
+        <param name="status">204</param>
+      </result>
+      <result type="httpheader" name="login">
+        <param name="status">403</param>
+      </result>
+      <result type="httpheader" name="error">
+        <param name="status">500</param>
+      </result>
+    </action>
+
+    <action name="revertTask" class="fi.uta.cs.weto.actions.main.TaskActions$PrepareRevert">
+      <result type="tiles" name="input">revertTask.page</result>
+    </action>
+    <action name="commitRevertTask" class="fi.uta.cs.weto.actions.main.TaskActions$Revert">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="deleteTaskSubmissions" class="fi.uta.cs.weto.actions.main.TaskActions$PrepareDeleteSubmissions">
+      <result type="tiles" name="input">deleteTaskSubmissions.page</result>
+    </action>
+    <action name="commitDeleteTaskSubmissions" class="fi.uta.cs.weto.actions.main.TaskActions$DeleteSubmissions">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="deleteTask" class="fi.uta.cs.weto.actions.main.TaskActions$PrepareDelete">
+      <result type="tiles" name="input">deleteTask.page</result>
+    </action>
+    <action name="commitDeleteTask" class="fi.uta.cs.weto.actions.main.TaskActions$Delete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="editQuiz" class="fi.uta.cs.weto.actions.main.QuizActions$Edit">
+      <result type="tiles" name="success">editQuiz.page</result>
+    </action>
+    <action name="saveQuestion" class="fi.uta.cs.weto.actions.main.QuizActions$SaveQuestion">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="downloadQuestionZip" class="fi.uta.cs.weto.actions.main.QuizActions$DownloadZip">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">application/zip</param>
+        <param name="contentDisposition">${contentDisposition}</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="deleteQuestion" class="fi.uta.cs.weto.actions.main.QuizActions$DeleteQuestion">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="saveQuestionOrder" class="fi.uta.cs.weto.actions.main.QuizActions$SaveQuestionOrder">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="saveQuizAnswer" class="fi.uta.cs.weto.actions.main.QuizActions$SaveAnswer">
+      <result name="success" type="stream">
+        <param name="contentType">text/html</param>
+        <param name="contentCharSet">utf-8</param>
+        <param name="inputName">messageStream</param>
+      </result>
+      <result type="httpheader" name="login">
+        <param name="status">403</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">500</param>
+      </result>
+    </action>
+    <action name="getQuizScoreJSON" class="fi.uta.cs.weto.actions.main.QuizActions$GetQuizScoreJSON">
+      <result type="stream" name="success">
+        <param name="contentType">text/html</param>
+        <param name="contentCharSet">utf-8</param>
+        <param name="inputName">messageStream</param>
+      </result>
+      <result type="httpheader" name="input">
+        <param name="status">202</param>
+        <param name="headers.queuepos">${queuePos}</param>
+      </result>
+      <result type="httpheader" name="error">
+        <param name="status">500</param>
+      </result>
+    </action>
+    <action name="viewQuestionAnswers" class="fi.uta.cs.weto.actions.main.QuizActions$ViewAnswers">
+      <result type="tiles" name="success">questionAnswers.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editQuiz</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="exportQuestionAnswers" class="fi.uta.cs.weto.actions.main.QuizActions$ExportAnswers">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</param>
+        <param name="contentDisposition">inline;filename=answers_${taskId}.xlsx</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewQuestionAnswers</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="questionId">${questionId}</param>
+      </result>
+    </action>
+    <action name="saveQuizGrades" class="fi.uta.cs.weto.actions.main.QuizActions$SaveGrades">
+      <result name="success" type="httpheader">
+        <param name="status">204</param>
+      </result>
+      <result name="login" type="httpheader">
+        <param name="status">403</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">500</param>
+      </result>
+    </action>
+
+    <action name="taskSettings" class="fi.uta.cs.weto.actions.main.TaskActions$ViewSettings">
+      <result type="tiles" name="input">taskSettings.page</result>
+    </action>
+    <action name="saveTaskSettings" class="fi.uta.cs.weto.actions.main.TaskActions$SaveSettings">
+      <result type="redirectAction" name="success">
+        <param name="actionName">taskSettings</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="saveCourseSettings" class="fi.uta.cs.weto.actions.main.TaskActions$SaveCourseSettings">
+      <result type="redirectAction" name="success">
+        <param name="actionName">taskSettings</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="addCourseTeacher" class="fi.uta.cs.weto.actions.main.TeachersActions$Add">
+      <result type="redirectAction" name="success">
+        <param name="actionName">taskSettings</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="deleteCourseTeacher" class="fi.uta.cs.weto.actions.main.TeachersActions$Delete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">taskSettings</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="editCourseCss" class="fi.uta.cs.weto.actions.main.TaskActions$EditCss">
+      <result type="tiles" name="success">editCss.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">taskSettings</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="saveCourseCss" class="fi.uta.cs.weto.actions.main.TaskActions$SaveCss">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editCourseCss</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editCourseCss</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="downloadTask" class="fi.uta.cs.weto.actions.main.DownloadTaskActions$View">
+      <result type="tiles" name="success">downloadTask.page</result>
+    </action>
+    <action name="commitdownloadTask" class="fi.uta.cs.weto.actions.main.DownloadTaskActions$Download">
+      <result name="download" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">application/zip</param>
+        <param name="contentDisposition">inline;filename=${fileName}</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">downloadTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="uploadTask" class="fi.uta.cs.weto.actions.main.UploadTask">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">downloadTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="organizeSubtasks" class="fi.uta.cs.weto.actions.main.OrganizeActions$OrganizeSubtasks">
+      <result type="tiles" name="success">organizeSubtasks.page</result>
+    </action>
+    <action name="updateOtherCourseTree" class="fi.uta.cs.weto.actions.main.OrganizeActions$OtherCourseTree">
+      <result type="stream" name="success">
+        <param name="contentType">text/html</param>
+        <param name="contentCharSet">utf-8</param>
+        <param name="inputName">treeStream</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">500</param>
+      </result>
+    </action>
+    <action name="confirmOrganizeSubtasks" class="fi.uta.cs.weto.actions.main.OrganizeActions$ConfirmSubtasks">
+      <result type="tiles" name="success">confirmOrganizeSubtasks.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">organizeSubtasks</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="commitOrganizeSubtasks" class="fi.uta.cs.weto.actions.main.OrganizeActions$CommitSubtasks">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+  </package>
+</struts>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+  "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+  "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+  <!-- Actions that use JSON-formatted data as responses -->
+  <package name="weto-json" extends="json-default">
+    <interceptors>
+      <interceptor-stack name="defaultStack">
+        <interceptor-ref name="json">
+          <param name="enableSMD">true</param>
+        </interceptor-ref>
+      </interceptor-stack>
+    </interceptors>
+
+    <global-results>
+      <result name="input" type="json">
+        <param name="ignoreHierarchy">false</param>
+        <param name="includeProperties">actionErrors\[\d+\], fieldErrors\..+$, actionMessages\[\d+\]</param>
+      </result>
+      <result name="error" type="json">
+        <param name="ignoreHierarchy">false</param>
+        <param name="includeProperties">actionErrors\[\d+\], fieldErrors\..+$, actionMessages\[\d+\]</param>
+      </result>
+      <result name="Exception" type="json">
+        <param name="ignoreHierarchy">false</param>
+        <param name="includeProperties">actionErrors\[\d+\], fieldErrors\..+$, actionMessages\[\d+\]</param>
+      </result>
+    </global-results>
+    <global-exception-mappings>
+      <exception-mapping exception="java.lang.Throwable" result="Exception"/>
+    </global-exception-mappings>
+
+    <action name="getJSONDocuments" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$GetJSONDocuments">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="getJSONAutoGrading" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$GetJSONAutoGrading">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="getJSONSubmissions" class="fi.uta.cs.weto.actions.submissions.ViewSubmissions$GetJSONSubmissions">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="getJSONSubmission" class="fi.uta.cs.weto.actions.submissions.ViewSubmissions$GetJSONSubmission">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="addSubmissionFile" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$AddSubmissionFile">
+      <result type="json" name="success">
+        <param name="encoding">UTF-8</param>
+        <param name="includeProperties">
+          ^newDocumentIds\[\d+\],
+          ^excludedFiles\[\d+\]
+        </param>
+      </result>
+    </action>
+
+    <action name="ajaxDeleteSubmissionConfirm"
+            class="fi.uta.cs.weto.actions.submissions.SubmissionActions$CommitDelete">
+      <result type="json" name="success">
+      </result>
+    </action>
+
+    <!-- Vue frontend actions -->
+    <action name="getJSONCourses" class="fi.uta.cs.weto.actions.ListCourses">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="viewJSONTask" class="fi.uta.cs.weto.actions.ViewTaskActions$SelectView">
+      <result name="COURSEMAIN" type="json">
+        <param name="encoding">UTF-8</param>
+        <param name="noCache">true</param>
+        <param name="excludeNullProperties">true</param>
+      </result>
+      <!--<result type="chain" name="COURSEMAIN">viewJSONCourseTask</result>
+      <result type="chain" name="PUBLICMAIN">viewJSONPublicTask</result>
+      <result type="redirectAction" name="STUDENTS">
+        <param name="actionName">viewStudents</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="PERMISSIONS">
+        <param name="actionName">viewPermissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="GRADING">
+        <param name="actionName">viewGrades</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="SUBMISSIONS">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="FORUM">
+        <param name="actionName">viewForum</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="GROUPS">
+        <param name="actionName">viewGroups</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="TASK_DOCUMENTS">
+        <param name="actionName">viewTaskDocuments</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="LOG">
+        <param name="actionName">viewCourseLog</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>-->
+    </action>
+
+    <action name="viewJSONCourseTask" class="fi.uta.cs.weto.actions.ViewTaskActions$CourseView">
+      <result name="MAIN" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+      <result name="MAINBODY" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="viewJSONPublicTask" class="fi.uta.cs.weto.actions.ViewTaskActions$PublicView">
+      <result name="MAIN" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+      <result name="MAINBODY" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
+    <action name="getUser" class="fi.uta.cs.weto.actions.front.GetUser">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+        <param name="noCache">true</param>
+        <param name="excludeNullProperties">true</param>
+        <param name="root">jsonString</param>
+      </result>
+    </action>
+
+    <action name="getRealUser" class="fi.uta.cs.weto.actions.front.GetRealUser">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+        <param name="noCache">true</param>
+        <param name="excludeNullProperties">true</param>
+        <param name="root">jsonString</param>
+      </result>
+    </action>
+  </package>
+</struts>

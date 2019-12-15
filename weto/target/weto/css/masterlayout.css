@@ -1,0 +1,206 @@
+/* This file contains layout spesific settings */
+/* --- Sidebar toggle elements --- */
+/* The sidebar and content must both be inside the wrapper */
+#wrapper {
+  height: 100%;
+  background-color: #fff;
+  padding-left: 260px;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease; }
+
+.chosen-drop {
+  margin-bottom: 2em; }
+
+/* Wraps the page content */
+#page-content-wrapper {
+  min-width: 100%;
+  min-height: 100%;
+  background-color: #fff;
+  position: relative;
+  /*    padding: $togglerBtnHeight $mobileContentPadding 7em $togglerWidth; */
+  margin-left: 0 !important;
+  /*If mobile let's use whole screen width*/ }
+  @media only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 2) {
+    #page-content-wrapper {
+      /*      padding: $togglerBtnHeight $mobileContentPadding 7em $togglerWidth !important;*/
+      position: absolute;
+      overflow-x: hidden; } }
+  @media only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 3) {
+    #page-content-wrapper {
+      /*      padding: $togglerBtnHeight $mobileContentPadding 7em $togglerWidth !important;*/
+      position: absolute;
+      overflow-x: hidden; } }
+
+.main-header.col-md-6 {
+  float: left !important; }
+
+.content-row.col-md-6 {
+  float: right !important; }
+
+.content-row.col-sm-12 .content-row.col-xs-12 {
+  float: none !important;
+  width: 100%; }
+
+.main-header.col-sm-12 .main-header.col-xs-12 {
+  float: none !important; }
+
+.container-fluid {
+  /* MAIN PAGE*/ }
+  .container-fluid .main-row-page {
+    flex: center;
+    height: 100%;
+    /*New mainpage styles*/ }
+    .container-fluid .main-row-page .main-header {
+      padding-top: 0.2em;
+      padding-right: 2em;
+      padding-bottom: 0.2em;
+      padding-left: 3em; }
+      .container-fluid .main-row-page .main-header h1, .container-fluid .main-row-page .main-header h4 {
+        padding: 0px;
+        margin: 0px; }
+    .container-fluid .main-row-page .content-row {
+      margin-bottom: 3em; }
+      .container-fluid .main-row-page .content-row #news-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding-bottom: 1em; }
+        .container-fluid .main-row-page .content-row #news-container .news {
+          padding: 1em;
+          margin-left: 1em;
+          margin-right: 1em;
+          border-bottom: 1px solid rgba(2, 0, 0, 0.25); }
+          .container-fluid .main-row-page .content-row #news-container .news .newsContent p {
+            display: inline-block; }
+          .container-fluid .main-row-page .content-row #news-container .news li {
+            width: 100%; }
+            .container-fluid .main-row-page .content-row #news-container .news li a {
+              width: 100%; }
+          .container-fluid .main-row-page .content-row #news-container .news .newsTimestamp {
+            color: #242825;
+            font-size: 0.7em; }
+    .container-fluid .main-row-page .content-tabs-actions-body {
+      background-color: #fff;
+      padding-bottom: 3em;
+      border-bottom: rgba(0, 0, 0, 0.1);
+      padding-right: 0px; }
+      .container-fluid .main-row-page .content-tabs-actions-body .course-content-wrapper {
+        padding-left: 2em;
+        padding-right: 2em;
+        /*Task content show in parent*/ }
+        .container-fluid .main-row-page .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
+          font-size: 2em;
+          font-weight: 200;
+          color: #005768; }
+        .container-fluid .main-row-page .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link:hover {
+          color: #00829b;
+          text-decoration: underline; }
+        .container-fluid .main-row-page .content-tabs-actions-body .course-content-wrapper h3 > .subtask-list {
+          color: #A52929 !important; }
+
+.content-tabs-actions-body .course-content-wrapper {
+  min-width: 100%;
+  display: inline-block;
+  /*Task content show in parent*/ }
+  .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
+    font-size: 1.2em;
+    font-weight: 200;
+    color: #19578A !important; }
+  .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link:hover {
+    color: #2172b5 !important;
+    text-decoration: underline; }
+  .content-tabs-actions-body .course-content-wrapper h3.subtask-list a:link {
+    color: #19578A; }
+  .content-tabs-actions-body .course-content-wrapper h3.subtask-list a:link:hover {
+    color: #2172b5;
+    text-decoration: underline; }
+  .content-tabs-actions-body .course-content-wrapper .subtask-list_hiddenFromStudents a:link:hover {
+    color: rgba(2, 0, 0, 0.25);
+    text-decoration: line-through; }
+
+#editPermission-Table {
+  overflow-x: scroll; }
+
+#editPermission-form {
+  margin-bottom: 4em; }
+
+/* What happens when the sidebar gets toggled */
+#wrapper.toggled {
+  padding-left: 0px; }
+  #wrapper.toggled #sidebar-wrapper {
+    width: 0px; }
+    #wrapper.toggled #sidebar-wrapper ul {
+      list-style-position: none;
+      list-style-type: none;
+      margin-top: 5px;
+      margin-bottom: 5px; }
+
+#tabnav ul {
+  list-style-position: none;
+  list-style-type: none; }
+
+/* Other main styles */
+h1, h2, h3 {
+  color: #19578A;
+  border-width: 0;
+  border: 0; }
+
+h2, h3 {
+  text-align: left; }
+
+h4 {
+  color: #19578A;
+  margin-right: 8px;
+  margin-bottom: 8px; }
+
+p {
+  margin-left: auto;
+  margin-right: auto; }
+
+#infobar {
+  margin-left: auto;
+  margin-right: auto; }
+
+.user-status {
+  background-color: #0f3b5c;
+  padding: 0em 0em 0.4em 0em;
+  /*Login field styles, look login.scss*/ }
+
+.courselist {
+  width: 100%;
+  color: #fff;
+  padding: 0.91em;
+  padding-top: 0em;
+  background-color: rgba(15, 59, 92, 0.9);
+  border: 2px solid #0f3b5c;
+  border-top: 0px; }
+  .courselist ul {
+    list-style-type: none; }
+  .courselist h2 {
+    color: #02d6ff; }
+  .courselist h3 {
+    color: #fff; }
+  .courselist ul li a {
+    font-size: 1.3em;
+    /*TODO*/
+    color: #fff; }
+  .courselist ul li a:hover {
+    color: #02d6ff; }
+
+.buttonConfirmContainer {
+  position: relative; }
+  .buttonConfirmContainer .confirmBox {
+    text-align: center;
+    min-width: 180px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid darkgray;
+    border-radius: 10px;
+    padding: 15px;
+    position: absolute;
+    top: 90%;
+    display: none;
+    z-index: 999; }
+  .buttonConfirmContainer .confirmBox-left {
+    right: 0%; }
+
+/*# sourceMappingURL=masterlayout.css.map */

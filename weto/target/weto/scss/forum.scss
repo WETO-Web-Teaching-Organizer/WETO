@@ -1,0 +1,39 @@
+@import "variables";
+
+/*Styles for WETO-Forum*/
+div{
+  .forumTopicTitle {
+    border: 1px solid #c9c9c9;
+    margin: 5px;
+    font-size: large;
+  }
+
+  .forumTopicTitle:hover {
+    background-color: lightgray;
+  }
+
+  .topicUser {
+    font-size: small;
+  }
+
+  .forumTopic {
+    border: 2px solid $wetodarker;
+    margin-bottom: 10px;
+  }
+
+  .forumReply {
+    border: 1px solid #c9c9c9;
+    margin: 5px;
+    margin-left: 10px;
+  }
+
+  .replyUser {
+    font-size: small;
+    border-bottom: 1px dotted #c9c9c9;
+    background: #efefef;
+  }
+
+  .replyText {
+    padding: 5px;
+  }
+}

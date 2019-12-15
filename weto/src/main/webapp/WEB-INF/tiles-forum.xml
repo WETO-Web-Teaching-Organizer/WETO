@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+      "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+      "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+  <!-- Forum view -->
+  <definition name="forum.page" extends="course.page">
+    <put-attribute name="body" value="/pages/forum/Forum.jsp" />
+  </definition>
+
+  <definition name="forumTopic.page" extends="course.page">
+    <put-attribute name="body" value="/pages/forum/Topic.jsp" />
+  </definition>
+
+  <definition name="editForumMessage.page" extends="course.page">
+    <put-attribute name="body" value="/pages/forum/EditMessage.jsp" />
+  </definition>
+</tiles-definitions>

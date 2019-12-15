@@ -1,0 +1,19 @@
+@import "variables";
+
+/*Styles for aceEditor (inline files) */
+#editorDiv{
+  min-width: 100%;
+  min-height: 100%;
+}
+#editDocumentHeader{
+  background-color: lighten($matteblack, 10%);
+  color: $white;
+
+}
+#deleteDocumentHeader{
+  background-color: lighten($matteblack, 10%);
+  color: $white;
+}
+#editor{
+  line-height: inherit;
+}

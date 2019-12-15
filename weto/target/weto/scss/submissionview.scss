@@ -1,0 +1,209 @@
+@import "variables";
+@import "fonts";
+
+/* Submission */
+
+$submissionElemMargin: 20px 0px 20px 0px;
+
+#submissionInstructions{
+   margin-bottom: 15px;
+}
+
+.submissions-list{
+   padding: 1em 0em;
+
+   @-webkit-keyframes myAnim {   
+      0% {opacity: 0.2;filter: alpha(opacity=20)}
+      100% {opacity: 1.0;filter: alpha(opacity=100)}
+   }
+   @keyframes myAnim {
+      0% {opacity: 0.2;filter: alpha(opacity=20)}
+      100% {opacity: 1.0;filter: alpha(opacity=100)}
+   }
+
+   .submissions-list-errors{
+      margin: $submissionElemMargin;
+      color: white;
+      background-color: $red;
+      cursor: pointer;
+      -webkit-animation: myAnim 0.3s linear 1;
+      animation: myAnim 0.3s linear 1;
+   }
+
+   .submission-list-excludedFiles{
+      margin: $submissionElemMargin;
+      cursor: pointer;
+      -webkit-animation: myAnim 0.3s linear 1;
+      animation: myAnim 0.3s linear 1;
+   }
+   
+   .submission{
+      margin: 10px 0px;
+
+      .content-col:first-of-type{
+         border: $darkeropaquelightgray solid 1px;
+      }
+
+      .submission-dropzoneContainer{
+            margin: $submissionElemMargin;
+
+            .submission-dropzone:hover{
+               border: 2px $darkgreen solid;
+            }
+            .submission-dropzone{
+               min-height: 100px;
+               border: 2px $darkeropaquelightgray solid;
+               cursor: pointer;
+
+            .dz-submissionMessage{
+              padding: 0.5em;
+              margin: 0.5em;
+              text-align: center;
+              font-size: 1.2em !important;
+              font-family: $OSitalic;
+              text-decoration: italic;
+              color: $black;
+              font-size: 0.7em;
+
+              .dz-filePattern{
+                font-family: $font-header-light;
+                padding: 0.1em 0.3em;
+                color: $red;
+                border-radius: 3px;
+              }
+            }
+            .dz-preview{
+               border: 2px solid $opaquelightgray;
+            }
+            .dz-message{
+                margin: 0.5em;
+                font-size: 1.4em;
+                font-family: $font-header-light;
+                text-align: center;
+                display: block;
+                color: $blue;
+            }
+         }
+      }
+
+      .submission-title.red{
+         background-color: $red;
+         h3{
+            color: $white !important;  
+         }
+      }
+      .submission-title.green{
+         background-color: $green;
+      }
+      .submission-title.yellow{
+         background-color: $lightyellow;
+      }
+      .submission-title.gray{
+         background-color: $opaquelightgray;
+      }      
+
+      .submission-title{
+         margin: 0em -1em;
+
+         .submission-title-glyphContainer{         
+            .glyphicon-spin{
+               //-webkit-animation: spin 1200ms infinite linear;
+               // animation: spin 1200ms infinite linear;
+               @-webkit-keyframes spin {
+                  0% {
+                      -webkit-transform: rotate(0deg);
+                      transform: rotate(0deg);
+                  }
+                  100% {
+                      -webkit-transform: rotate(359deg);
+                      transform: rotate(359deg);
+                  }
+               }
+               @keyframes spin {
+                   0% {
+                       -webkit-transform: rotate(0deg);
+                       transform: rotate(0deg);
+                   }
+                   100% {
+                       -webkit-transform: rotate(359deg);
+                       transform: rotate(359deg);
+                   }
+               }
+            }
+            .glyphicon-ok{
+               color: $darkgreen;
+            }
+            .glyphicon-alert{
+               color: orange;
+            }
+            .glyphicon-ban-circle{
+               color: $red;
+            }
+            .ajax-loading-gif{
+            }
+         }
+      }
+      .submission-createFileForm{
+         margin: $submissionElemMargin;
+         .input-group{
+            max-width: 40%;
+         }
+         /*If mobile let's bigger form input as full size*/
+        .input-group{ 
+          @media #{$onlyScreenRatio2}{
+            max-width: 100%;
+          }
+          @media #{$onlyScreenRatio3}{
+            max-width: 100%;
+          }
+          @media #{$tabletWidth68 $tabletMin48}{
+            max-width: 80%;
+          }
+            
+        }
+      }
+      .submission-documentTable{
+         margin: $submissionElemMargin;
+         .documentTable-transition-enter{
+            opacity: 0.01;
+         }
+         .documentTable-transition-enter-active {
+           opacity: 1;
+           transition: opacity .5s ease-in;
+         }
+      }
+      .submission-scoreTable{
+         margin: $submissionElemMargin;
+      }
+      .submission-deleteButtonContainer{
+         margin: 0px 0px 15px 0px;
+      }
+      .submission-submitButtonContainer{
+         display: inline-block;
+                  .lightyellow{
+            background-color: lighten($lightyellow, 25%);
+         }
+      }
+      .submission-error{
+         margin: $submissionElemMargin;
+         p{
+            color: $red;
+         }
+      }
+      .submission-compilerOutput{
+         margin: $submissionElemMargin;
+         .submission-compilerOutputText{
+            font-family: $code-font;
+            word-wrap: break-word;
+         }
+      }
+      .panel{
+         background-color: $lightgray;
+      }
+
+      .clearer{
+         height: 0px;
+         clear: both;
+      }
+   }
+}

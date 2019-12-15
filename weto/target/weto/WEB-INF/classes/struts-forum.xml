@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+  <package name="weto-forum" extends="weto-default">
+    <action name="viewForum" class="fi.uta.cs.weto.actions.forum.ForumActions$View">
+      <result type="tiles" name="success">forum.page</result>
+    </action>
+    <action name="viewForumTopic" class="fi.uta.cs.weto.actions.forum.ForumActions$ViewTopic">
+      <result type="tiles" name="success">forumTopic.page</result>
+    </action>
+    <action name="addForumTopic" class="fi.uta.cs.weto.actions.forum.ForumActions$AddTopic">
+      <result type="redirectAction" name="success,error">
+        <param name="actionName">viewForum</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="addForumMessage" class="fi.uta.cs.weto.actions.forum.ForumActions$AddMessage">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewForumTopic</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="topicId">${topicId}</param>
+      </result>
+    </action>
+    <action name="editForumMessage" class="fi.uta.cs.weto.actions.forum.ForumActions$EditMessage">
+      <result name="input" type="tiles">editForumMessage.page</result>
+      <result type="redirectAction" name="success,error">
+        <param name="actionName">viewForumTopic</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="topicId">${topicId}</param>
+      </result>
+    </action>
+  </package>
+</struts>

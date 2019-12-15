@@ -1,0 +1,317 @@
+@import "variables";
+
+/* Font-faces */
+@font-face {
+  font-family: "Opensans";
+  src: url(../fonts/OpenSans/OpenSans-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Opensans-light";
+  src: url(../fonts/OpenSans/OpenSans-Light.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Opensans-bold";
+  font-weight: bold;
+  src: url(../fonts/OpenSans/OpenSans-bold.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Opensans-bold2";
+  font-weight: bolder;
+  src: url(../fonts/OpenSans/OpenSans-Semibold.ttf) format('truetype');
+}
+@font-face {
+  font-family: "OSitalic";
+  src: url(../fonts/OpenSans/OpenSans-LightItalic.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Lato";
+  src: url(../fonts/lato/Lato-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Latolight";
+  src: url(../fonts/lato/Lato-Light.ttf) format('truetype');
+}
+@font-face{
+  font-family:"OldStandard";
+  src: url(../fonts/OldStandardTT/OldStandard-Regular.ttf) format('truetype');
+}
+@font-face{
+  font-family:"ArapeyR";
+  src: url(../fonts/Arapey/Arapey-Regular.ttf) format('truetype');
+}
+@font-face{
+  font-family:"ArapeyI";
+  src: url(../fonts/Arapey/Arapey-Italic.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Inconsolata";
+  src: url(../fonts/Inconsolata.otf) format('opentype');
+}
+@font-face {
+  font-family: "CrimsonItalic";
+  font-style : italic;
+  src: url(../fonts/Crimson/CrimsonText-Italic.ttf) format('truetype');
+}
+@font-face {
+  font-family: "Crimson";
+  src: url(../fonts/Crimson/CrimsonText-Roman.ttf) format('truetype');
+}
+@font-face{
+  font-family: "CrimsonBold";
+  src: url(../fonts/Crimson/CrimsonText-Bold.ttf) format('truetype');
+}
+
+/*
+Font variables
+*/
+$Opensans-bold2: "Opensans-bold2";
+$code-font: "Inconsolata";
+$font-stack: "Opensans", "Lato" , serif;
+$serif: "Merriweather";
+$sans: "Lato";
+$font-header: "Opensans";
+$font-header-light:"Opensans-light";
+$font-base: "Lato";
+$font-color: $matteblack;/* #51432F; */
+$weto-logo: "ArapeyI";
+$content-font: "Crimson";
+$CrimsonBold: "CrimsonBold";
+
+/*Font-types*/
+
+$Latolight: "Latolight";
+$OSitalic: "OSitalic";
+$OldStandard: "OldStandard";
+$ArapeyR: "ArapeyR";
+$ArapeyI: "ArapeyI";
+
+/*Added mediaqueries to change headers smaller for
+  better mobile usability
+*/
+
+@media #{$onlyScreenRatio2}{
+  h1.taskHeader{
+    font-size: 2em;
+  }
+  .content-col{
+    h2{
+      font-size: 1.6em;
+    }
+    h3{
+      font-size: 1.3;
+    }
+    h4, h5{
+      font-size: 1.1em;
+    }
+  }
+}
+@media #{$onlyScreenRatio3}{
+  h1.taskHeader{
+    font-size: 2em;
+  }
+  .content-col{
+    h2{
+      font-size: 1.6em;
+    }
+    h3{
+      font-size: 1.3;
+    }
+    h4, h5{
+      font-size: 1.1em;
+    }
+  }
+}
+@media #{$onlyScreen}{
+  h1.taskHeader{
+    font-size: 2em;
+  }
+  .content-col{
+    h2{
+      font-size: 1.6em;
+    }
+    h3{
+      font-size: 1.3;
+    }
+    h4, h5{
+      font-size: 1.1em;
+    }
+  }
+}
+
+/*Added mediaqueries to change glyphicons be bigger
+for bigger clicking area
+*/
+@media #{$onlyScreen2 $tabletWidth68}{
+  .glyphicons{
+    font-size: 1.1em !important;
+    margin: 0.3em;
+  }
+}
+body{
+  color: $font-color;
+  font-family: $sans;
+  h1, h2, h3, h4, h5{
+    font-family: $font-header-light;
+    //font-family:$font-header-light;
+    font-weight: 200;
+  }
+
+
+  h1{
+    color: $header-color;
+    font-size: 3em;
+    text-align: center;
+  }
+  /*If small screen width, let's change logo's font-size*/
+  @media(max-width:480px){
+    .main-header{
+      h1{
+        font-size: 6em !important;
+        margin-bottom: -10px;
+      }
+    }
+  }
+  .main-header{
+    h1, h4{
+      font-family: $ArapeyR;
+      text-align: center;
+    }
+    h1{
+      font-size: 10em;
+      color: $black;
+      text-shadow: 1px 1px $white;
+    }
+    h4{
+      color: lighten($black, 15%);
+    }
+    max-width: 90%;
+  }
+  h2{
+    font-size: 2em;
+  }
+  h3{
+    font-size: 1.7em;
+  }
+  h4{
+    font-size: 1.5em;
+  }
+  h5{
+
+  }
+  p{
+    color: $font-color;
+    font-family: $font-base;
+    font-size: 1.1em;
+
+  }
+  ul{
+    font-family: $sans;
+    li{
+      a{
+        font-family: $sans;
+      }
+    }
+    a{
+      font-family: $sans;
+    }
+  }
+  a{
+    font-family: $sans;
+  }
+  .content-col{
+    a{
+      text-decoration: underline;
+    }
+    a:hover{
+      color: $semi-lightgray;
+    }
+  }
+  /*Tabmenu and sidebar*/
+  #tabnav{
+    font-size: 1.2em;
+
+  }
+  #sidebar-wrapper{
+    font-family: $sans;
+  }
+  #main-page-link{
+    a{
+      font-family: $weto-logo;
+      color: $white;
+      font-style: italic;
+      font-size: 2em;
+    }
+    a:hover{
+      text-decoration: underline;
+    }
+  }
+}
+#TeacherRole-status{
+  a{
+    font-family: $ArapeyI;
+  }
+}
+/* Error and infobar*/
+#errors {
+  font-family: $font-header-light;
+
+}
+#messages{
+  font-family: $font-header-light;
+}
+
+/*Main page news*/
+.news-header{
+  padding-left: 1em;
+}
+.newsTitle{
+  font-family: $font-header-light;
+  font-weight: 200;
+  color: $red;
+  font-size: 1.2em;
+}
+.newsContent{
+  >p{
+    font-family: $sans;
+    font-size: 1em;
+    color: lighten($black, 10%);
+  }
+}
+/*Review instruction*/
+.gradingScore{
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.instructionText{
+  p{
+    font-family: "Latolight";
+    font-size: 1.1em;
+  }
+}
+.maincontents{
+  p{
+    font-family: $content-font;
+    font-size: 1.1em !important;
+    strong{
+      font-family: $CrimsonBold $CrimsonBold;
+    }
+  }
+}
+/*Subtask contents / links*/
+.content-tabs-actions-body{
+
+  .course-content-wrapper{
+    /*Task content show in parent*/
+    .content-col{
+      .showTextInParent{
+        a:link{
+          font-family: $font-header-light;
+        }
+      }
+      .subtask-list{
+
+      }
+    }
+  }
+}
+/*/Fonts*/

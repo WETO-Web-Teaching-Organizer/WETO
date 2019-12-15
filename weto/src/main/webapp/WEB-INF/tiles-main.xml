@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+      "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+      "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+  <definition name="taskContents.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/TaskContents.jsp" />
+  </definition>
+
+  <definition name="taskContentsBody.page" template="/layouts/BodyOnlyLayout.jsp">
+    <put-attribute name="body" value="/pages/main/TaskContents.jsp" />
+    <put-attribute name="infoBar" value="" />
+    <put-attribute name="head" value="/commons/Head.jsp" />
+  </definition>
+
+  <definition name="createTask.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/CreateTask.jsp" />
+  </definition>
+
+  <definition name="editTask.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/EditTask.jsp" />
+  </definition>
+
+  <definition name="revertTask.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/RevertTask.jsp" />
+  </definition>
+
+  <definition name="deleteTaskSubmissions.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/DeleteSubmissions.jsp" />
+  </definition>
+
+  <definition name="deleteTask.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/DeleteTask.jsp" />
+  </definition>
+
+  <definition name="taskSettings.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/TaskSettings.jsp" />
+  </definition>
+
+  <definition name="editCss.page" template="/layouts/BodyOnlyLayout.jsp">
+    <put-attribute name="body" value="/pages/main/EditCss.jsp" />
+    <put-attribute name="infoBar" value="/commons/InfoBar.jsp" />
+    <put-attribute name="head" value="/commons/Head.jsp" />
+  </definition>
+
+  <definition name="downloadTask.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/DownloadTask.jsp" />
+  </definition>
+
+  <definition name="organizeSubtasks.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/OrganizeSubtasks.jsp" />
+  </definition>
+
+  <definition name="confirmOrganizeSubtasks.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/ConfirmOrganizeSubtasks.jsp" />
+  </definition>
+
+  <definition name="editQuiz.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/EditQuiz.jsp" />
+  </definition>
+
+  <definition name="questionAnswers.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/QuestionAnswers.jsp" />
+  </definition>
+</tiles-definitions>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+      "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+      "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+  <!-- Task grading view -->
+  <definition name="nodeGradesView.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/NodeGrades.jsp" />
+  </definition>
+
+  <definition name="studentLeafGrades.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/StudentLeafGrades.jsp" />
+  </definition>
+
+  <definition name="teacherLeafGrades.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/TeacherLeafGrades.jsp" />
+  </definition>
+
+  <definition name="grade.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/Grade.jsp" />
+  </definition>
+
+  <definition name="createGrade.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/CreateGrade.jsp" />
+  </definition>
+
+  <definition name="editGrade.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/EditGrade.jsp" />
+  </definition>
+
+  <definition name="deleteGrade.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/DeleteGrade.jsp" />
+  </definition>
+
+  <definition name="gradingProperties.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/GradingProperties.jsp" />
+  </definition>
+
+  <definition name="setupPeerReview.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/SetupPeerReview.jsp" />
+  </definition>
+
+  <definition name="previewPeerReview.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/PreviewPeerReview.jsp" />
+  </definition>
+
+  <definition name="reviewInstructions.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/ViewReviewInstructions.jsp" />
+  </definition>
+
+  <definition name="generateGrades.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/GenerateGrades.jsp" />
+  </definition>
+
+  <definition name="calculateGrades.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/CalculateGrades.jsp" />
+  </definition>
+
+  <definition name="exportGrades.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/ExportGrades.jsp" />
+  </definition>
+
+  <definition name="discussGrade.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/DiscussGrade.jsp" />
+  </definition>
+
+  <definition name="editGradeDiscussionMessage.page" extends="course.page">
+    <put-attribute name="body" value="/pages/grading/EditDiscussionMessage.jsp" />
+  </definition>
+</tiles-definitions>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+  <package name="weto-submissions" extends="weto-default">
+    <action name="viewSubmissions" class="fi.uta.cs.weto.actions.submissions.ViewSubmissions">
+      <result type="tiles" name="success">submissions.page</result>
+    </action>
+
+    <action name="editSubmissionProperties"
+            class="fi.uta.cs.weto.actions.submissions.SubmissionPropertiesActions$Edit">
+      <result type="tiles" name="success">submissionProperties.page</result>
+    </action>
+    <action name="saveSubmissionProperties"
+            class="fi.uta.cs.weto.actions.submissions.SubmissionPropertiesActions$Save">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editSubmissionProperties</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="viewSubmission" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$View">
+      <result type="tiles" name="success">submission.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="createSubmission" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$Add">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="completeSubmission" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$Complete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="deleteSubmission" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$CommitDelete">
+      <result type="redirectAction" name="input">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+        <param name="deleteConfirm">true</param>
+      </result>
+      <result type="redirectAction" name="success">
+        viewSubmissions.action?taskId=${taskId}&amp;tabId=${tabId}&amp;dbId=${dbId}#${submitterId}
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="editTextDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$EditText">
+      <result type="tiles" name="success">editDocument.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="saveTextDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$SaveText">
+      <result name="success" type="stream">
+        <param name="contentType">text/html</param>
+        <param name="contentCharSet">utf-8</param>
+        <param name="inputName">messageStream</param>
+      </result>
+      <result type="httpheader" name="login">
+        <param name="status">403</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">500</param>
+      </result>
+    </action>
+
+    <action name="deleteDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$Delete">
+      <result type="tiles" name="success">deleteDocument.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="commitDeleteDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$CommitDelete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <!-- <param name="submissionId">${submissionId}</param> -->
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <!-- <param name="submissionId">${submissionId}</param> -->
+      </result>
+    </action>
+
+    <action name="downloadDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$Download">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">${contentType}</param>
+        <param name="contentDisposition">${contentDisposition}</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">404</param>
+      </result>
+    </action>
+
+    <action name="resubmit" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$Resubmit">
+      <result type="redirectAction" name="success">
+        viewSubmissions.action?taskId=${taskId}&amp;tabId=${tabId}&amp;dbId=${dbId}#${submitterId}
+      </result>
+    </action>
+
+    <action name="resubmit2" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$Resubmit">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewSubmission</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="resubmitAll" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$ResubmitAll">
+      <result type="redirectAction" name="success,error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="removeEmptySubmissions" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$RemoveEmpty">
+      <result type="redirectAction" name="success,error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="completeUncompletedSubmissions" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$CompleteUncompleted">
+      <result type="redirectAction" name="success,error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="downloadFeedback" class="fi.uta.cs.weto.actions.submissions.DownloadFeedback">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">text/plain</param>
+        <param name="contentCharSet">utf-8</param>
+        <param name="contentDisposition">inline;filename=feedback.txt</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">404</param>
+      </result>
+    </action>
+    <action name="viewFeedback" class="fi.uta.cs.weto.actions.submissions.ViewFeedback">
+      <result type="tiles" name="success">fullFeedback.page</result>
+      <result name="error" type="httpheader">
+        <param name="status">404</param>
+      </result>
+    </action>
+
+    <action name="exportSubmissions" class="fi.uta.cs.weto.actions.submissions.ExportSubmissions">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">application/zip</param>
+        <param name="contentDisposition">inline;filename=submissions_${taskId}.zip</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewSubmissions</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="viewAutoGrading" class="fi.uta.cs.weto.actions.submissions.AutoGradingActions$View">
+      <result type="tiles" name="success">autoGrading.page</result>
+    </action>
+
+    <action name="saveAutoGrading" class="fi.uta.cs.weto.actions.submissions.AutoGradingActions$Save">
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="deleteAutoGrading" class="fi.uta.cs.weto.actions.submissions.AutoGradingActions$Delete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewTask</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+    <action name="downloadAutograding" class="fi.uta.cs.weto.actions.submissions.AutoGradingActions$Download">
+      <result name="success" type="stream">
+        <param name="inputName">documentStream</param>
+        <param name="contentType">${contentType}</param>
+        <param name="contentDisposition">${contentDisposition}</param>
+        <param name="contentLength">${contentLength}</param>
+        <param name="bufferSize">${bufferSize}</param>
+      </result>
+      <result name="error" type="httpheader">
+        <param name="status">403</param>
+      </result>
+    </action>
+
+    <action name="editTestTextDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$EditText">
+      <result type="tiles" name="success">editTestDocument.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+
+    <action name="saveTestTextDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$SaveText">
+      <result type="redirectAction" name="success">
+        <param name="actionName">editTestTextDocument</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="documentId">${documentId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">editTestTextDocument</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="documentId">${documentId}</param>
+      </result>
+    </action>
+
+    <action name="deleteTestDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$Delete">
+      <result type="tiles" name="success">deleteTestDocument.page</result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="commitDeleteTestDocument" class="fi.uta.cs.weto.actions.submissions.DocumentActions$CommitDelete">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+        <param name="submissionId">${submissionId}</param>
+      </result>
+    </action>
+
+    <action name="submitTestSubmission" class="fi.uta.cs.weto.actions.submissions.SubmissionActions$Resubmit">
+      <result type="redirectAction" name="success">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+      <result type="redirectAction" name="error">
+        <param name="actionName">viewAutoGrading</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
+  </package>
+</struts>

@@ -1,0 +1,93 @@
+@import "variables";
+@import "fonts";
+/*Classes to editor auto styles*/
+.peerreview-border-box{
+  background-color: lighten($latte, 7%);
+  border: 1px dashed lighten($matteblack, 10%);
+  padding: 1em;
+  margin-bottom: 0.3em;
+
+}
+.code-panel{
+  min-width: 100%;
+  line-height: 2em;
+  font-family: $code-font;
+  background-color: $matteblack;
+  border: 0.1em solid $lightgray;
+  border-bottom: 0.5em solid $lightgray;
+  padding: 0.2em;
+  color: $white;
+  margin: 0em;
+}
+.content-col{
+  /*Look ia. weto.scss, masterlayout.scss*/
+}
+/*Gray panel-box*/
+.panel{
+  /*Look bootstrapoverride.scss*/
+}
+.peerreview-highlight{
+  color: $red;
+}
+.highlight-text-background{
+  background-color: $lighticemint;
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+}
+.icemint{
+  color: $icemint;
+}
+
+/*Red-background for p-element*/
+.panel-red{
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  background-color: lighten($red, 30%);
+}
+
+/*WETO-blue background for p-element*/
+
+.panel-blue{
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  background-color: $blue;
+  color: $white;
+}
+
+.panel-latte{
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  background-color: $latte;
+}
+
+.panel-darker-gray{
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  background-color: $lightgray;
+}
+/*Only paeddings + margins, b-color white*/
+.panel-news{
+  margin: 1em;
+  padding: 1em;
+  font-family: $sans;
+  font-size: 1em;
+  color: lighten($matteblack, 10%);
+}
+.news-title-style{
+  font-family: $font-header-light;
+  font-weight: 200;
+  color: $red;
+  font-size: 1.2em;
+}
+
+.only-border{
+  margin: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  border: 1px solid $black;
+}
