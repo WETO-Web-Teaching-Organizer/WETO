@@ -1,0 +1,8 @@
+<tomcat-users>
+<!--
+    This defines the accounts for accessing the tomcat manager
+-->
+   <role rolename="admin-gui"/>
+   <role rolename="manager-gui"/>
+   <user username="admin" password="admin" roles="admin-gui,manager-gui"/>
+</tomcat-users>
