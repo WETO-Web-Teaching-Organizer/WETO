@@ -12,15 +12,8 @@ sudo apt-get update
 
 ## Install psql and config it
 sudo apt-get -y -q install postgresql
-sudo sh -c 'echo "local   weto5_master    weto                                    md5" >> /etc/postgresql/9.3/main/pg_hba.conf'
-sudo sh -c 'echo "local   weto5_kurssi    weto                                    md5" >> /etc/postgresql/9.3/main/pg_hba.conf'
 sudo -u postgres psql -f /vagrant/init.sql
 sudo service postgresql restart
-
-## Initialize the database
-PGPASSWORD=weto psql weto5_master -h 127.0.0.1 --username=weto -f /weto/master.sql
-PGPASSWORD=weto psql weto5_master -h 127.0.0.1 --username=weto -f /weto/alustus.sql
-PGPASSWORD=weto psql weto5_kurssi -h 127.0.0.1 --username=weto -f /weto/course.sql
 
 ## Install java
 sudo add-apt-repository -y ppa:openjdk-r/ppa
@@ -30,9 +23,9 @@ sudo apt-get -y -q install openjdk-8-jdk
 ## Install tomcat
 sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
 sudo usermod -a -G tomcat vagrant
-wget -nv http://www.nic.funet.fi/pub/mirrors/apache.org/tomcat/tomcat-9/v9.0.30/bin/apache-tomcat-9.0.30.tar.gz -P /tmp
+wget -nv https://www.nic.funet.fi/pub/mirrors/apache.org/tomcat/tomcat-9/v9.0.31/bin/apache-tomcat-9.0.31.tar.gz -P /tmp
 sudo tar -xf /tmp/apache-tomcat-9.*.tar.gz -C /opt/tomcat
-sudo ln -s /opt/tomcat/apache-tomcat-9.0.30 /opt/tomcat/latest
+sudo ln -s /opt/tomcat/apache-tomcat-9.0.31 /opt/tomcat/latest
 sudo chown -RH tomcat: /opt/tomcat/latest
 sudo chmod -R 775 /opt/tomcat/latest
 sudo sh -c 'chmod +x /opt/tomcat/latest/bin/*.sh'
@@ -47,3 +40,16 @@ sudo -u tomcat cp /vagrant/tomcat-setup/manager-context.xml /opt/tomcat/latest/w
 sudo -u tomcat cp /vagrant/tomcat-setup/manager-context.xml /opt/tomcat/latest/webapps/host-manager/META-INF/context.xml
 sudo -u tomcat cp /vagrant/tomcat-setup/tomcat-users.xml /opt/tomcat/latest/conf/tomcat-users.xml
 sudo systemctl restart tomcat
+
+sudo mkdir -p /opt/flyway
+sudo chown vagrant /opt/flyway
+cd /opt/flyway
+wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/6.3.0/flyway-commandline-6.3.0-linux-x64.tar.gz | tar xvz
+cp -rf flyway-6.3.0/* .
+rm -rf flyway-6.3.0
+sudo chown -R vagrant *
+sudo ln -s `pwd`/flyway /usr/local/bin
+
+## Initialize the database
+flyway -configFiles=/weto/database/flyway-weto5_master.conf baseline
+flyway -configFiles=/weto/database/flyway-weto5_course.conf baseline
