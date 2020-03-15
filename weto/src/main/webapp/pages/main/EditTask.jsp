@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<script src="js/tinymce4/tinymce.min.js"></script>
 <s:text name="editTask.title.edit" />
 &nbsp;
 <button type="button" class="btn btn-sm btn-default" onclick="submitEditTaskForm(false)">

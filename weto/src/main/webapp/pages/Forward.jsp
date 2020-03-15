@@ -15,6 +15,6 @@
   </c:forEach>
   <input type="submit" value="<s:text name="general.header.forward" />" class="linkButton" />
 </form>
-<script type="text/javascript">
+<script>
   document.getElementById("forward_form").submit();
 </script>

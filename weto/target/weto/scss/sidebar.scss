@@ -12,11 +12,6 @@
   overflow-x: hidden;
   background: $wetodarker; /* Navbar background*/
 
-  -webkit-transition: all 0.5s ease;
-  -moz-transition: all 0.5s ease;
-  -o-transition: all 0.5s ease;
-  transition: all 0.5s ease;
-
   #course-name{
     padding-top: 1em;
     a{
@@ -211,7 +206,7 @@
   height: $togglerBtnHeight;
   width: $sidebarWidth;
   z-index: 999;
-  text-align: right;
+  text-align: left;
   position: fixed;
   display: block;
   background-color: #00B3D6;

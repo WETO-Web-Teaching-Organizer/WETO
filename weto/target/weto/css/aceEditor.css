@@ -1,17 +1,21 @@
 /*Styles for aceEditor (inline files) */
 #editorDiv {
   min-width: 100%;
-  min-height: 100%; }
+  min-height: 100%;
+}
 
 #editDocumentHeader {
   background-color: #3c433e;
-  color: #fff; }
+  color: #fff;
+}
 
 #deleteDocumentHeader {
   background-color: #3c433e;
-  color: #fff; }
+  color: #fff;
+}
 
 #editor {
-  line-height: inherit; }
+  line-height: inherit;
+}
 
 /*# sourceMappingURL=aceEditor.css.map */

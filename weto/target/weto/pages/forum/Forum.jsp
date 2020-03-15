@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/init.jsp"%>
-<script src="js/tinymce4/tinymce.min.js"></script>
 <h2><s:text name="forum.header.topics" /></h2>
 <s:url action="viewForumTopic" var="viewTopicUrl">
   <s:param name="taskId" value="%{taskId}" />

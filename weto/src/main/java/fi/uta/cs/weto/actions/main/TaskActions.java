@@ -1,7 +1,12 @@
 package fi.uta.cs.weto.actions.main;
 
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
+import fi.uta.cs.weto.db.ClusterIdReplication;
+import fi.uta.cs.weto.db.ClusterMember;
 import fi.uta.cs.weto.db.CourseImplementation;
+import fi.uta.cs.weto.db.Grade;
+import fi.uta.cs.weto.db.Permission;
+import fi.uta.cs.weto.db.RightsCluster;
 import fi.uta.cs.weto.db.Scoring;
 import fi.uta.cs.weto.db.SubmissionProperties;
 import fi.uta.cs.weto.db.SubtaskLink;
@@ -11,6 +16,10 @@ import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.db.UserAccount;
 import fi.uta.cs.weto.db.UserTaskView;
 import fi.uta.cs.weto.model.ClusterType;
+import fi.uta.cs.weto.model.GradingModel;
+import fi.uta.cs.weto.model.PermissionModel;
+import fi.uta.cs.weto.model.PermissionRefType;
+import fi.uta.cs.weto.model.PermissionType;
 import fi.uta.cs.weto.model.QuizModel;
 import fi.uta.cs.weto.model.SubmissionModel;
 import fi.uta.cs.weto.model.Tab;
@@ -18,6 +27,7 @@ import fi.uta.cs.weto.model.TagType;
 import fi.uta.cs.weto.model.TaskModel;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoTeacherAction;
+import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.util.WetoUtilities;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -385,6 +395,8 @@ public class TaskActions
     private static final Logger logger = Logger.getLogger(
             DeleteSubmissions.class);
 
+    private boolean deleteAll = false;
+
     public DeleteSubmissions()
     {
       super(Tab.MAIN.getBit(), 0, 0, Tab.MAIN.getBit());
@@ -393,10 +405,22 @@ public class TaskActions
     @Override
     public String action() throws Exception
     {
-      Connection conn = getCourseConnection();
+      Connection courseConn = getCourseConnection();
+      Connection masterConn = getMasterConnection();
       Integer taskId = getTaskId();
+      Integer courseTaskId = getCourseTaskId();
+      if(deleteAll)
+      {
+        taskId = courseTaskId;
+      }
       logger.debug("User " + this.getMasterUserId()
               + " is deleting submissions under task " + taskId);
+      HashSet<Integer> teacherIds = new HashSet<>();
+      for(UserTaskView user : UserTaskView.selectByTaskIdAndClusterType(
+              courseConn, taskId, ClusterType.TEACHERS.getValue()))
+      {
+        teacherIds.add(user.getUserId());
+      }
       ArrayDeque<Integer> dfsStack = new ArrayDeque<>();
       dfsStack.add(taskId);
       HashSet<Integer> processedSet = new HashSet<>();
@@ -405,19 +429,72 @@ public class TaskActions
         Integer currTaskId = dfsStack.getLast();
         if(!processedSet.contains(currTaskId))
         {
-          ArrayList<Integer> subtaskIds = Task
-                  .selectSubtaskIds(conn, currTaskId);
+          ArrayList<Integer> subtaskIds = Task.selectSubtaskIds(courseConn,
+                  currTaskId);
           dfsStack.addAll(subtaskIds);
           processedSet.add(currTaskId);
         }
         else
         {
-          SubmissionModel.deleteStudentTaskSubmissions(conn, currTaskId);
+          SubmissionModel.deleteStudentTaskSubmissions(courseConn, currTaskId);
+          if(deleteAll)
+          {
+            for(Grade grade : Grade.selectByTaskId(courseConn, currTaskId))
+            {
+              if(!teacherIds.contains(grade.getReceiverId()))
+              {
+                GradingModel.deleteGrade(courseConn, grade);
+              }
+            }
+            ArrayList<Permission> permissions = Permission.selectByTaskId(
+                    courseConn, currTaskId);
+            for(Permission permission : permissions)
+            {
+              if((permission.getUserRefId() != null) && !teacherIds.contains(
+                      permission.getUserRefId()))
+              {
+                PermissionModel.deleteCoursePermission(courseConn, masterConn,
+                        permission);
+              }
+            }
+            Tag.deleteByTaggedIdAndType(courseConn, currTaskId,
+                    TagType.COMPILER_RESULT.getValue());
+            Tag.deleteByTaggedIdAndType(courseConn, currTaskId,
+                    TagType.FORUM_MESSAGE.getValue());
+            Tag.deleteByTaggedIdAndType(courseConn, currTaskId,
+                    TagType.GRADE_DISCUSSION.getValue());
+            TaskModel.deleteTaskGroups(courseConn, currTaskId);
+          }
           dfsStack.removeLast();
+        }
+      }
+      if(deleteAll)
+      { // Remove all students
+        RightsCluster courseDbCluster = RightsCluster.select1ByTaskIdAndType(
+                courseConn, courseTaskId, ClusterType.STUDENTS.getValue());
+        ClusterIdReplication cir = ClusterIdReplication
+                .select1ByCourseDbClusterId(courseConn, courseDbCluster.getId());
+        Integer masterDbClusterId = cir.getMasterDbClusterId();
+        for(ClusterMember member : ClusterMember.selectByClusterId(courseConn,
+                courseDbCluster.getId()))
+        {
+          member.delete(courseConn);
+        }
+        RightsCluster masterDbCluster = RightsCluster.select1ById(masterConn,
+                masterDbClusterId);
+        for(ClusterMember member : ClusterMember.selectByClusterId(masterConn,
+                masterDbCluster.getId()))
+        {
+          member.delete(masterConn);
         }
       }
       addActionMessage(getText("deleteSubmissions.message.deleteSuccess"));
       return SUCCESS;
+    }
+
+    public void setDeleteAll(boolean deleteAll)
+    {
+      this.deleteAll = deleteAll;
     }
 
   }
@@ -625,6 +702,7 @@ public class TaskActions
       setHidden(task.getIsHidden());
       setPublicTask(task.getIsPublic());
       setQuiz(task.getIsQuiz());
+      setRandomTask(task.getIsRandomTask());
       return INPUT;
     }
 
@@ -651,6 +729,7 @@ public class TaskActions
       boolean sameHasForum = (task.getHasForum() == isHasForum());
       boolean sameHasGroups = (task.getHasGroups() == isHasGroups());
       boolean sameIsQuiz = (task.getIsQuiz() == isQuiz());
+      boolean sameIsRandomTask = (task.getIsRandomTask() == isRandomTask());
       boolean sameShowTextInParent = (task.getShowTextInParent()
               == isShowTextInParent());
       boolean sameIsHidden = (task.getIsHidden() == isHidden());
@@ -693,6 +772,10 @@ public class TaskActions
         {
           dfsTask.setIsQuiz(isQuiz());
         }
+        if(!(changesOnly && sameIsRandomTask))
+        {
+          dfsTask.setIsRandomTask(isRandomTask());
+        }
         if(!(changesOnly && sameShowTextInParent))
         {
           dfsTask.setShowTextInParent(isShowTextInParent());
@@ -732,6 +815,32 @@ public class TaskActions
         {
           dfsTask.setIsHidden(true);
           addActionError(getText("quiz.error.subQuizMustBeHidden"));
+        }
+        // Ensure that a random task has a default expired view permission.
+        if(dfsTask.getIsRandomTask())
+        {
+          Integer dfsTaskId = dfsTask.getId();
+          try
+          {
+            Permission permission = Permission.select1ByTaskIdAndUserIdAndType(
+                    conn, dfsTaskId, null, PermissionType.VIEW.getValue());
+            Integer endDate = permission.getEndDate();
+            if((endDate == null) || !endDate.equals(WetoTimeStamp.STAMP_MIN))
+            {
+              permission.setEndDate(WetoTimeStamp.STAMP_MIN);
+              permission.update(conn);
+            }
+          }
+          catch(NoSuchItemException e)
+          {
+            Permission permission = new Permission();
+            permission.setUserRefType(PermissionRefType.USER.getValue());
+            permission.setTaskId(dfsTaskId);
+            permission.setUserRefId(null);
+            permission.setType(PermissionType.VIEW.getValue());
+            permission.setEndDate(WetoTimeStamp.STAMP_MIN);
+            permission.insert(conn);
+          }
         }
         dfsTask.update(conn);
         if(hiddenChanged)
@@ -818,6 +927,7 @@ public class TaskActions
     private boolean hidden;
     private boolean publicTask;
     private boolean quiz;
+    private boolean randomTask;
     private int minScore;
     private int maxScore;
     private String filePatterns = "";
@@ -867,7 +977,7 @@ public class TaskActions
 
     public void setTaskName(String taskName)
     {
-      this.taskName = taskName;
+      this.taskName = WetoUtilities.escapeHtml(taskName);
     }
 
     public boolean isHasGrades()
@@ -969,6 +1079,16 @@ public class TaskActions
     public void setQuiz(boolean quiz)
     {
       this.quiz = quiz;
+    }
+
+    public boolean isRandomTask()
+    {
+      return randomTask;
+    }
+
+    public void setRandomTask(boolean randomTask)
+    {
+      this.randomTask = randomTask;
     }
 
     public Integer getMinScore()
@@ -1080,6 +1200,7 @@ public class TaskActions
     {
       this.acceptAllStudents = acceptAllStudents;
     }
+
   }
 
 }

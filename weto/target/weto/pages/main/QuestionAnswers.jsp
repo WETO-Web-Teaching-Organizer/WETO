@@ -6,10 +6,9 @@
 <s:set var="PROGRAM_ID">4</s:set>
 <s:set var="SCORETXT"><s:text name="general.header.score" /></s:set>
 <s:set var="FEEDBACKTXT"><s:text name="autograding.header.feedback" /></s:set>
-<s:set var="TESTNOTXT"><s:text name="autograding.header.testNo" /></s:set>
+<s:set var="TESTTXT"><s:text name="general.header.test" /></s:set>
+<s:set var="CHOICETXT"><s:text name="quiz.header.questionAnswer" /></s:set>
 <s:set var="inputStyle">disabled="disabled"</s:set>
-  <script src="js/grading.js"></script>
-  <script src="js/tinymce4/tinymce.min.js"></script>
   <script src="/wetoextra/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
@@ -199,47 +198,94 @@
                         </s:iterator>
                       </table>
                     </s:else>
-                    <s:if test="(#contentElem.resultFeedback != null) || (#contentElem.resultError != null)">
-                      <hr>
-                      <div style="min-width: 50%" id="feedbackDiv${contentElem.questionId}">
-                        <table>
+                    <s:if test="(#contentElem.resultMark != null) || ((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                      <div style="min-width: 50%" id="fbDiv${answerer.id}_${contentElem.questionId}">
+                        <table style="width: 100%">
                           <thead>
                             <tr>
                               <th colspan="2">
                                 ${SCORETXT}: ${contentElem.resultMark}
-                                &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small" onclick="$(this).closest('tr').next('tr').toggle()">
-                                  Show/hide feedback
-                                </span>
+                                <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                                  &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small"
+                                                    onclick="$(this).closest('tr').next('tr').toggle()">
+                                    Show/hide feedback
+                                  </span>
+                                </s:if>
                               </th>
                             </tr>
-                            <tr>
-                              <td>
-                                ${FEEDBACKTXT}
-                                <s:if test="#contentElem.resultTest">
-                                  (${TESTNOTXT}${contentElem.resultTest})
-                                </s:if>
-                              </td>
-                              <td>
-                                <s:if test="#contentElem.resultFullFeedback != null">
-                                  <s:url action="viewFeedback" var="viewFeedbackURL">
-                                    <s:param name="taskId" value="taskId" />
-                                    <s:param name="tabId" value="tabId" />
-                                    <s:param name="dbId" value="dbId" />
-                                    <s:param name="tagId" value="#contentElem.resultFullFeedback" />
-                                  </s:url>
-                                  <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
-                                    <s:text name="submissions.header.fullFeedback" />
-                                  </s:a>
-                                </s:if>
-                                <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${contentElem.resultFeedback} ${contentElem.resultError}</pre>
-                              </td>
-                            </tr>
+                            <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                              <tr>
+                                <td style="vertical-align:top" class="testCaseButtons">
+                                  <s:if test="#contentElem.resultError != null">
+                                    <button onclick="viewResTab(this, '#msg${answerer.id}_${contentElem.questionId}')" style="display: block; white-space: nowrap" class="linkButton">Message</button>
+                                  </s:if>
+                                  <s:if test="#contentElem.contentElementType == #PROGRAM_ID">
+                                    <s:set var="RESBTNTXT">${TESTTXT}</s:set>
+                                  </s:if>
+                                  <s:else>
+                                    <s:set var="RESBTNTXT">${CHOICETXT}</s:set>
+                                  </s:else>
+                                  <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                                    <s:if test="#contentElem.resultTestNos[#idx.index] != null">
+                                      <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                                        <button onclick="viewResTab(this, '#res_${answerer.id}_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                                        </s:if>
+                                        <s:else>
+                                        <button onclick="viewResTab(this, '#res_${answerer.id}_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                                        </s:else>
+                                      </s:if>
+                                      <s:else>
+                                        <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                                        <button onclick="viewResTab(this, '#res_${answerer.id}_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                                        </s:if>
+                                        <s:else>
+                                        <button onclick="viewResTab(this, '#res_${answerer.id}_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                                        </s:else>
+                                      </s:else>
+                                    </s:iterator>
+                                </td>
+                                <td style="width: 100%">
+                                  <s:if test="#contentElem.resultError != null">
+                                    <div id="msg${answerer.id}_${contentElem.questionId}" style="display: none">
+                                      <s:if test="#contentElem.resultFullError != null">
+                                        <s:url action="viewFeedback" var="viewErrorURL">
+                                          <s:param name="taskId" value="taskId" />
+                                          <s:param name="tabId" value="tabId" />
+                                          <s:param name="dbId" value="dbId" />
+                                          <s:param name="tagId" value="#contentElem.resultFullError" />
+                                        </s:url>
+                                        <s:a href="%{viewErrorURL}" target="_blank" cssClass="btn btn-default">
+                                          <s:text name="submissions.header.fullFeedback" />
+                                        </s:a>
+                                      </s:if>
+                                      ${contentElem.resultError}
+                                    </div>
+                                  </s:if>
+                                  <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                                    <div id="res_${answerer.id}_${contentElem.questionId}_${idx.count}" style="display: none">
+                                      <s:if test="#contentElem.resultFullFeedbacks[#idx.index] != null">
+                                        <s:url action="viewFeedback" var="viewFeedbackURL">
+                                          <s:param name="taskId" value="taskId" />
+                                          <s:param name="tabId" value="tabId" />
+                                          <s:param name="dbId" value="dbId" />
+                                          <s:param name="tagId" value="#contentElem.resultFullFeedbacks[#idx.index]" />
+                                        </s:url>
+                                        <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
+                                          <s:text name="submissions.header.fullFeedback" />
+                                        </s:a>
+                                      </s:if>
+                                      <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${fb}</pre>
+                                    </div>
+                                  </s:iterator>
+                                </td>
+                              </tr>
+                            </s:if>
                           </thead>
                         </table>
                       </div>
                     </s:if>
                     <s:else>
-                      <div style="display: none; min-width: 50%" id="feedbackDiv${contentElem.questionId}">
+                      <div style="display: none; min-width: 50%" id="fbDiv${answerer.id}_${contentElem.questionId}">
                       </div>
                     </s:else>
                   </div>
@@ -278,6 +324,18 @@
       inline: "true",
       menubar: false
     });
+
+    function viewResTab(btn, idStr)
+    {
+      $(btn).siblings().each(function (i)
+      {
+        this.style.fontWeight = "normal";
+      });
+      btn.style.fontWeight = "bold";
+      var showDiv = $(idStr);
+      showDiv.siblings().hide();
+      showDiv.show();
+    }
 
     function selectElementContents() {
       var el = document.getElementById('answerTable');
@@ -360,5 +418,13 @@
         notifyUser(xhr);
       });
     }
+
+    colorDiffFeedback($(".diffCell"));
+    $(function () {
+      $(".testCaseButtons").each(function (i)
+      {
+        $(this).children().last().click();
+      });
+    });
   </script>
 </s:if>

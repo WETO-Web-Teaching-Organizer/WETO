@@ -113,6 +113,7 @@ public class GradeActions
       catch(NoSuchItemException e)
       {
       }
+      final String userIP = getNavigator().getUserIP();
       // Checking time period related rights
       boolean isUserReceiver = SubmissionModel.checkSubmissionOwnership(conn,
               taskId, userId, receiverId, !isTeacher, ignoreGroups) || isTeacher;
@@ -120,17 +121,18 @@ public class GradeActions
               taskId, userId, reviewerId, !isTeacher, ignoreGroups)
               || (isTeacher && !reviewerIsTeacher);
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, isTeacher);
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              isTeacher);
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       gradingPeriodActive = (gradingValue == PermissionModel.CURRENT)
               && isUserReviewer;
       WetoTimeStamp[] resultsPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.RESULTS);
+              userIP, userId, taskId, PermissionType.RESULTS);
       int resultsValue = PermissionModel.checkTimeStampLimits(resultsPeriod);
       boolean resultsActive = (resultsValue == PermissionModel.CURRENT)
               && isUserReceiver;
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       if(!(isUserReceiver || isUserReviewer))
@@ -358,10 +360,12 @@ public class GradeActions
       Connection conn = getCourseConnection();
       Integer taskId = getTaskId();
       Integer userId = getCourseUserId();
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to update and create grades and that grading
       // is active.
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADING, getNavigator().isTeacher());
+              userIP, userId, taskId, PermissionType.GRADING, getNavigator()
+                      .isTeacher());
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       if(!haveUpdateRights(Tab.GRADING.getBit(), false, true)
               || !haveCreateRights(Tab.GRADING.getBit(), false, true))
@@ -520,11 +524,13 @@ public class GradeActions
       }
       validateCourseSubtaskId(grade.getTaskId());
       final boolean isTeacher = getNavigator().isTeacher();
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to update this grade and that grading is active
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, isTeacher);
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              isTeacher);
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       boolean challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       boolean gradingPeriodActive = (PermissionModel.checkTimeStampLimits(
@@ -810,10 +816,12 @@ public class GradeActions
       validateCourseSubtaskId(grade.getTaskId());
       Integer reviewerId = grade.getReviewerId();
       final boolean isTeacher = getNavigator().isTeacher();
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to delete this grade and that
       // grading is active
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, isTeacher);
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              isTeacher);
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       boolean ignoreGroups = false;
       try
@@ -940,11 +948,12 @@ public class GradeActions
       validateCourseSubtaskId(grade.getTaskId());
       receiverId = grade.getReceiverId();
       Integer reviewerId = grade.getReviewerId();
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to delete this grade and that
       // grading is active
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, getNavigator()
-              .isTeacher());
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              getNavigator().isTeacher());
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       if(!haveDeleteRights(Tab.GRADING.getBit(), userId.equals(reviewerId), true))
       {
@@ -1001,11 +1010,12 @@ public class GradeActions
       Integer userId = getCourseUserId();
       Grade grade = Grade.select1ById(conn, gradeId);
       validateCourseSubtaskId(grade.getTaskId());
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to update this grade and that
       // grading is active
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, getNavigator()
-              .isTeacher());
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              getNavigator().isTeacher());
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       if(!haveUpdateRights(Tab.GRADING.getBit(), userId.equals(grade
               .getReviewerId()), true))
@@ -1029,8 +1039,7 @@ public class GradeActions
       if(!getNavigator().isStudentRole())
       {
         new Log(getCourseTaskId(), taskId, userId, LogEvent.UPDATE_GRADE
-                .getValue(), grade.getId(), null, getRequest().getRemoteAddr())
-                .insert(conn);
+                .getValue(), grade.getId(), null, userIP).insert(conn);
       }
       return (submissionId == null) ? SUCCESS : "submission";
     }
@@ -1081,11 +1090,12 @@ public class GradeActions
       Integer userId = getCourseUserId();
       Grade grade = Grade.select1ById(conn, gradeId);
       validateCourseSubtaskId(grade.getTaskId());
+      final String userIP = getNavigator().getUserIP();
       // Check that user has rights to update this grade and that
       // grading is active
       WetoTimeStamp[] gradingPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, grade.getTaskId(), PermissionType.GRADING, getNavigator()
-              .isTeacher());
+              userIP, userId, grade.getTaskId(), PermissionType.GRADING,
+              getNavigator().isTeacher());
       int gradingValue = PermissionModel.checkTimeStampLimits(gradingPeriod);
       if(!haveUpdateRights(Tab.GRADING.getBit(), userId.equals(grade
               .getReviewerId()), true))
@@ -1108,8 +1118,7 @@ public class GradeActions
       if(!getNavigator().isStudentRole())
       {
         new Log(getCourseTaskId(), taskId, userId, LogEvent.UPDATE_GRADE
-                .getValue(), grade.getId(), null, getRequest().getRemoteAddr())
-                .insert(conn);
+                .getValue(), grade.getId(), null, userIP).insert(conn);
       }
       return (submissionId == null) ? SUCCESS : "submission";
     }
@@ -1179,8 +1188,9 @@ public class GradeActions
               .getSubmissionGroupMemberIds(conn, taskId, userId, ignoreGroups);
       boolean isUserReceiver = SubmissionModel.checkSubmissionOwnership(userId,
               receiverId, !isTeacher, ignoreGroups, submissionMemberIds);
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       boolean challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       if(!isUserReceiver && !isTeacher)
@@ -1338,8 +1348,9 @@ public class GradeActions
       boolean isUserReviewer = SubmissionModel.checkSubmissionOwnership(userId,
               reviewerId, !isTeacher, ignoreGroups, submissionMemberIds)
               || (isTeacher && !reviewerIsTeacher);
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       challengePeriod = WetoTimeStamp.limitsToStrings(challengeLimits);
@@ -1397,9 +1408,9 @@ public class GradeActions
       {
         new Log(getCourseTaskId(), taskId, userId,
                 LogEvent.VIEW_GRADE_DISCUSSION.getValue(), grade.getId(), null,
-                getRequest().getRemoteAddr()).insert(conn);
-        Email.cancelEmail(getNavigator().getUser().getLoginName(),
-                grade.getId().toString());
+                userIP).insert(conn);
+        Email.cancelEmail(getNavigator().getUser().getLoginName(), grade.getId()
+                .toString());
       }
       return SUCCESS;
     }
@@ -1473,8 +1484,9 @@ public class GradeActions
       boolean isUserReviewer = SubmissionModel.checkSubmissionOwnership(conn,
               taskId, userId, reviewerId, !isTeacher, ignoreGroups)
               || (isTeacher && !reviewerIsTeacher);
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       boolean challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       if(!(isUserReceiver || isUserReviewer))
@@ -1504,7 +1516,7 @@ public class GradeActions
       {
         new Log(getCourseTaskId(), taskId, userId,
                 LogEvent.UPDATE_GRADE_DISCUSSION.getValue(), tag.getId(), null,
-                getRequest().getRemoteAddr()).insert(conn);
+                userIP).insert(conn);
         String loginName;
         String email;
         if(isUserReceiver)
@@ -1575,8 +1587,9 @@ public class GradeActions
       {
         throw new WetoActionException(getText("ACCESS_DENIED"));
       }
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       if(PermissionModel.checkTimeStampLimits(challengeLimits)
               != PermissionModel.CURRENT)
       {
@@ -1587,7 +1600,6 @@ public class GradeActions
               .getAsJsonObject();
       if(commitSave)
       {
-        messageJson.remove("text");
         messageJson.addProperty("text", messageText);
         messageTag.setText(messageJson.toString());
         messageTag.update(conn);
@@ -1596,7 +1608,7 @@ public class GradeActions
         {
           new Log(getCourseTaskId(), taskId, userId,
                   LogEvent.UPDATE_GRADE_DISCUSSION.getValue(), messageTag
-                  .getId(), null, getRequest().getRemoteAddr()).insert(conn);
+                  .getId(), null, userIP).insert(conn);
         }
         result = SUCCESS;
       }

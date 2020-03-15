@@ -122,21 +122,22 @@ public class SubmissionActions
       {
         throw new WetoActionException(getText("general.error.accessDenied"));
       }
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] submitLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submissionTaskId, PermissionType.SUBMISSION,
+              userIP, userId, submissionTaskId, PermissionType.SUBMISSION,
               getNavigator().isTeacher());
       submissionPeriod = WetoTimeStamp.limitsToStrings(submitLimits);
       updateable = false;
       submissionUser = UserTaskView.select1ByTaskIdAndUserId(conn,
               submissionTaskId, submitterId);
       WetoTimeStamp[] gradingLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submissionTaskId, PermissionType.GRADING, getNavigator()
-                      .isTeacher());
+              userIP, userId, submissionTaskId, PermissionType.GRADING,
+              getNavigator().isTeacher());
       boolean gradingPeriodActive = (PermissionModel.checkTimeStampLimits(
               gradingLimits)
               == PermissionModel.CURRENT);
       WetoTimeStamp[] resultsLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submissionTaskId, PermissionType.RESULTS);
+              userIP, userId, submissionTaskId, PermissionType.RESULTS);
       boolean resultsPeriodActive = (PermissionModel.checkTimeStampLimits(
               resultsLimits)
               == PermissionModel.CURRENT);
@@ -539,9 +540,10 @@ public class SubmissionActions
         throw new WetoActionException(getText("general.error.accessDenied"),
                 ERROR);
       }
+      final String userIP = getNavigator().getUserIP();
       // Check submission time limits
       WetoTimeStamp[] submitLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submissionTaskId, PermissionType.SUBMISSION,
+              userIP, userId, submissionTaskId, PermissionType.SUBMISSION,
               getNavigator().isTeacher());
       boolean updateable = haveUpdateRights(Tab.SUBMISSIONS.getBit(),
               ownSubmission, true);
@@ -886,9 +888,11 @@ public class SubmissionActions
         throw new WetoActionException(getText(
                 "submissions.error.incompleteSubmission"));
       }
+      final String userIP = getNavigator().getUserIP();
       // Check time permissions for the submission.
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              taskId, PermissionType.SUBMISSION, getNavigator().isTeacher());
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, taskId, PermissionType.SUBMISSION, getNavigator()
+                      .isTeacher());
       int checkValue = PermissionModel.checkTimeStampLimits(limits);
       if(checkValue != PermissionModel.CURRENT)
       {
@@ -993,8 +997,10 @@ public class SubmissionActions
       {
         throw new WetoActionException(getText("general.error.accessDenied"));
       }
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              taskId, PermissionType.SUBMISSION, getNavigator().isTeacher());
+      final String userIP = getNavigator().getUserIP();
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, taskId, PermissionType.SUBMISSION, getNavigator()
+                      .isTeacher());
       int checkValue = PermissionModel.checkTimeStampLimits(limits);
       if(checkValue != PermissionModel.CURRENT)
       {
@@ -1129,9 +1135,11 @@ public class SubmissionActions
       {
         throw new WetoActionException(getText("general.error.accessDenied"));
       }
+      final String userIP = getNavigator().getUserIP();
       // Check permissions for the submission.
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              taskId, PermissionType.SUBMISSION, getNavigator().isTeacher());
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, taskId, PermissionType.SUBMISSION, getNavigator()
+                      .isTeacher());
       int checkValue = PermissionModel.checkTimeStampLimits(limits);
       if(checkValue != PermissionModel.CURRENT)
       {

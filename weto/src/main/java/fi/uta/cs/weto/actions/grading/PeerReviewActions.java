@@ -72,11 +72,11 @@ public class PeerReviewActions
       ReviewTask rt = new ReviewTask();
       if(form.getMinScore() == null)
       {
-        form.setMinScore(Float.parseFloat(scoring.getProperty("minScore", "0")));
+        form.setMinScore(scoring.getProperty("minScore", "0"));
       }
       if(form.getMaxScore() == null)
       {
-        form.setMaxScore(Float.parseFloat(scoring.getProperty("maxScore", "0")));
+        form.setMaxScore(scoring.getProperty("maxScore", "0"));
       }
       reviewTaskIdSet = new HashSet<>();
       if(!form.isOmitRootTaskGrades())
@@ -218,8 +218,8 @@ public class PeerReviewActions
       }
       Set<Integer> groups = groupMap.keySet();
       Random rnd = new Random();
-      ArrayList<ReviewerGroup> reviewersForSubmitters = new ArrayList<>();
       final int sizeLimit = reviewerCount * (reviewerCount + 1) / 2;
+      ArrayList<ReviewerGroup> reviewersForSubmitters = new ArrayList<>();
       for(Integer groupId : groups)
       {
         ArrayList<Integer> members = groupMap.get(groupId);
@@ -279,8 +279,8 @@ public class PeerReviewActions
           }
           reviewersForSubmitters.add(rg);
         }
-        allReviewersForSubmitters.add(reviewersForSubmitters);
       }
+      allReviewersForSubmitters.add(reviewersForSubmitters);
     }
 
     private String saveGroups() throws Exception
@@ -640,9 +640,16 @@ public class PeerReviewActions
       return minScore;
     }
 
-    public void setMinScore(Float minScore)
+    public void setMinScore(String minScore)
     {
-      this.minScore = minScore;
+      if(minScore != null && !minScore.isEmpty())
+      {
+        this.minScore = Float.parseFloat(minScore);
+      }
+      else
+      {
+        this.minScore = 0.0F;
+      }
     }
 
     public Float getMaxScore()
@@ -650,9 +657,16 @@ public class PeerReviewActions
       return maxScore;
     }
 
-    public void setMaxScore(Float maxScore)
+    public void setMaxScore(String maxScore)
     {
-      this.maxScore = maxScore;
+      if(maxScore != null && !maxScore.isEmpty())
+      {
+        this.maxScore = Float.parseFloat(maxScore);
+      }
+      else
+      {
+        this.maxScore = 0.0F;
+      }
     }
 
   }

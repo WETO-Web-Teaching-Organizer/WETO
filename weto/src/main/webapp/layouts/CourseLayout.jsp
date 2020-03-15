@@ -12,26 +12,26 @@
       <!-- Sidebar toggler -->
       <button
         id="sidebartoggle-button" type="button" class="btn btn-default btn-sidebar"
-        aria-label="Toggle sidebar" title ="Toggle sidebar" data-toggle="tooltip" data-container="body" data-placement="bottom">
+        aria-label="Toggle sidebar/tabs" title ="Toggle sidebar/tabs" data-toggle="tooltip" data-container="body" data-placement="bottom">
         <span class="glyphicon glyphicon-menu-hamburger"></span>
       </button>
       <s:if test="navigator.masterUserId != null">
         <!-- Logout button -->
-        <span class="buttonConfirmContainer">
+        <span class="buttonConfirmContainer" id="logoutSpan">
           <button
             id ="logout-button" onclick="toggleConfirmBox(this)" class="btn btn-default btn-sidebar"
             title="Log out" data-toggle="tooltip" data-container="body" data-placement="bottom">
             <span class="glyphicon glyphicon-log-out"></span>
           </button>
-          <span class="confirmBox text-center">
+          <div class="confirmBox text-center">
             <s:text name="general.header.logoutConfirm" />
-            <form>
+            <div>
               <button type="button" class="btn btn-sm btn-danger" onclick="$('#logoutContainer').show()"><s:text name="general.header.logout" /></button>
               <button type="button" class="btn btn-sm btn-default" onclick="toggleConfirmBox(this)">
                 <s:text name="general.header.cancel" />
               </button>
-            </form>
-          </span>
+            </div>
+          </div>
         </span>
       </s:if>
       <!-- Buttons only shown for teacher -->
@@ -43,40 +43,26 @@
         </s:url>
         <span id="teacherRole-status">
           <s:if test="navigator.teacher">
-            <s:a href="%{switchRoleUrl}" title="Switch to student view">
-              <!-- Role Teacher -->
-              <button class="btn btn-default btn-sidebar" type="button">
-                <img src="<s:url value='/images/roleoff.png'/>" width="30" height="30" border="0"/>
-              </button>
-            </s:a>
+            <!-- Role Teacher -->
+            <button onclick="window.location.href = '${switchRoleUrl}'" class="btn btn-default btn-sidebar" title="Switch to student view">
+              <img src="<s:url value='/images/roleoff.png'/>" width="30" height="30" style="border: 0" alt="Student view"/>
+            </button>
           </s:if>
           <s:else>
             <!-- Specific student role -->
             <s:if test="navigator.studentRole">
-              <s:a href="%{switchRoleUrl}" title="Role: %{navigator.user.firstName} %{navigator.user.lastName}">
-                <button type="button" class="btn btn-default btn-sidebar">
-                  ${navigator.user.firstName.charAt(0)} ${navigator.user.lastName.charAt(0)}
-                </button>
-              </s:a>
+              <button onclick="window.location.href = '${switchRoleUrl}'" class="btn btn-default btn-sidebar" title="Role: %{navigator.user.firstName} %{navigator.user.lastName}">
+                ${navigator.user.firstName.charAt(0)} ${navigator.user.lastName.charAt(0)}
+              </button>
             </s:if>
             <!-- General student view -->
             <s:else>
-              <s:a href="%{switchRoleUrl}" title="Switch to teacher view">
-                <button type="button" class="btn btn-default btn-sidebar">
-                  <img class="roleactive" src="<s:url value='/images/roleon.png'/>" width="30" height="30" border="0"/>
-                </button>
-              </s:a>
+              <button onclick="window.location.href = '${switchRoleUrl}'" class="btn btn-default btn-sidebar" title="Switch to teacher view">
+                <img class="roleactive" src="<s:url value='/images/roleon.png'/>" width="30" height="30" style="border: 0" alt=""Teacher view/>
+              </button>
             </s:else>
           </s:else>
         </span>
-      </s:if>
-      <s:if test="tabs.size() > 1">
-        <!-- Tabs toggler -->
-        <button
-          id="tabstoggle-button" type="button" class="btn btn-default btn-sidebar"
-          aria-label="Toggle tabs" title ="Toggle tabs" data-toggle="tooltip" data-container="body" data-placement="bottom">
-          <span class="glyphicon glyphicon-option-horizontal"></span>
-        </button>
       </s:if>
     </div>
     <div id="wrapper" style="display: none">
@@ -145,7 +131,7 @@
                         <s:text name="general.header.publicView" />
                       </div>
                     </s:elseif>
-                    <s:elseif test="navigator.student">
+                    <s:elseif test="navigator.student && !navigator.isHopsCourse">
                       <s:url action="viewStudent" var="viewStudentUrl">
                         <s:param name="taskId" value="%{taskId}" />
                         <s:param name="tabId" value="%{tabId}" />
@@ -244,5 +230,16 @@
       </div>
     </div>
     <%--<div id="footer"><tiles:insertAttribute name="footer" /></div>--%>
+    <script>
+      function reloginPopup(tinymceInstance)
+      {
+        tinymceInstance.windowManager.open({
+          file: '${reloginUrl}',
+          title: '<s:text name="general.header.relogin" />',
+          width: window.innerWidth * 0.8,
+          height: window.innerHeight * 0.8
+        });
+      }
+    </script>
   </body>
 </html>

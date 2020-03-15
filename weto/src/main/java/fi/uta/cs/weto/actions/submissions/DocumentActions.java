@@ -102,11 +102,11 @@ public class DocumentActions
       }
       updateable = haveUpdateRights(Tab.SUBMISSIONS.getBit(), ownSubmission,
               true);
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              submission.getTaskId(), PermissionType.SUBMISSION, getNavigator()
-              .isTeacher());
-      if(PermissionModel.checkTimeStampLimits(limits)
-              != PermissionModel.CURRENT)
+      final String userIP = getNavigator().getUserIP();
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, submission.getTaskId(), PermissionType.SUBMISSION,
+              getNavigator().isTeacher());
+      if(PermissionModel.checkTimeStampLimits(limits) != PermissionModel.CURRENT)
       {
         updateable = false;
       }
@@ -223,9 +223,10 @@ public class DocumentActions
         throw new WetoActionException(getText("general.error.accessDenied"),
                 ACCESS_DENIED);
       }
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              submission.getTaskId(), PermissionType.SUBMISSION, getNavigator()
-              .isTeacher());
+      final String userIP = getNavigator().getUserIP();
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, submission.getTaskId(), PermissionType.SUBMISSION,
+              getNavigator().isTeacher());
       if(PermissionModel.checkTimeStampLimits(limits)
               != PermissionModel.CURRENT)
       {
@@ -326,9 +327,10 @@ public class DocumentActions
         throw new WetoActionException(getText("general.error.accessDenied"),
                 ACCESS_DENIED);
       }
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              submission.getTaskId(), PermissionType.SUBMISSION, getNavigator()
-              .isTeacher());
+      final String userIP = getNavigator().getUserIP();
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, submission.getTaskId(), PermissionType.SUBMISSION,
+              getNavigator().isTeacher());
       if(PermissionModel.checkTimeStampLimits(limits)
               != PermissionModel.CURRENT)
       {
@@ -450,9 +452,10 @@ public class DocumentActions
         throw new WetoActionException(getText("general.error.accessDenied"),
                 ACCESS_DENIED);
       }
-      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userId,
-              submission.getTaskId(), PermissionType.SUBMISSION, getNavigator()
-              .isTeacher());
+      final String userIP = getNavigator().getUserIP();
+      WetoTimeStamp[] limits = PermissionModel.getTimeStampLimits(conn, userIP,
+              userId, submission.getTaskId(), PermissionType.SUBMISSION,
+              getNavigator().isTeacher());
       if(PermissionModel.checkTimeStampLimits(limits)
               != PermissionModel.CURRENT)
       {
@@ -543,13 +546,16 @@ public class DocumentActions
       ArrayList<Grade> grades = Grade.selectPeerVisibleByTaskIdAndReceiverId(
               conn, taskId, submitterId);
       boolean isReviewer = false;
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] gradingLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submission.getTaskId(), PermissionType.GRADING);
+              userIP, userId, submission.getTaskId(), PermissionType.GRADING);
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, submission.getTaskId(), PermissionType.GRADE_CHALLENGE);
+              userIP, userId, submission.getTaskId(),
+              PermissionType.GRADE_CHALLENGE);
       if((PermissionModel.checkTimeStampLimits(gradingLimits)
               == PermissionModel.CURRENT) || (PermissionModel
-              .checkTimeStampLimits(challengeLimits) == PermissionModel.CURRENT))
+                      .checkTimeStampLimits(challengeLimits)
+              == PermissionModel.CURRENT))
       {
         for(Grade grade : grades)
         {

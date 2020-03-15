@@ -17,16 +17,14 @@
     <s:param name="tabId" value="%{tabId}" />
     <s:param name="dbId" value="%{dbId}" />
   </s:url>
-  <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="js/tinymce4/tinymce.min.js"></script>
-  <script src="js/grading.js"></script>
+  <script src="js/ace/ace.js"></script>
   <s:set var="MULTICHOICE_ID">1</s:set>
   <s:set var="ESSAY_ID">2</s:set>
   <s:set var="SURVEY_ID">3</s:set>
   <s:set var="PROGRAM_ID">4</s:set>
   <s:set var="SCORETXT"><s:text name="general.header.score" /></s:set>
   <s:set var="FEEDBACKTXT"><s:text name="autograding.header.feedback" /></s:set>
-  <s:set var="TESTNOTXT"><s:text name="autograding.header.testNo" /></s:set>
+  <s:set var="TESTTXT"><s:text name="general.header.test" /></s:set>
   <h3><s:text name="mainTab.header.editQuiz" /></h3>
   <div class="contentBox" id="newQuestionBox">
     <h4>
@@ -853,41 +851,82 @@
             </table>
           </s:else>
         </form>
-        <hr>
-        <s:if test="(#contentElem.resultMark != null) || (#contentElem.resultFeedback != null) || (#contentElem.resultError != null)">
+        <s:if test="(#contentElem.resultMark != null) || ((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
           <div style="min-width: 50%" id="feedbackDiv${contentElem.questionId}">
-            <table>
+            <table style="width: 100%">
               <thead>
                 <tr>
                   <th colspan="2">
                     ${SCORETXT}: ${contentElem.resultMark}
-                    &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small" onclick="$(this).closest('tr').next('tr').toggle()">
-                      Show/hide feedback
-                    </span>
+                    <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                      &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small"
+                                        onclick="$(this).closest('tr').next('tr').toggle()">
+                        Show/hide feedback
+                      </span>
+                    </s:if>
                   </th>
                 </tr>
-                <tr>
-                  <td>
-                    ${FEEDBACKTXT}
-                    <s:if test="#contentElem.resultTest">
-                      <br/>(${TESTNOTXT}${contentElem.resultTest})
-                    </s:if>
-                  </td>
-                  <td>
-                    <s:if test="#contentElem.resultFullFeedback != null">
-                      <s:url action="viewFeedback" var="viewFeedbackURL">
-                        <s:param name="taskId" value="taskId" />
-                        <s:param name="tabId" value="tabId" />
-                        <s:param name="dbId" value="dbId" />
-                        <s:param name="tagId" value="#contentElem.resultFullFeedback" />
-                      </s:url>
-                      <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
-                        <s:text name="submissions.header.fullFeedback" />
-                      </s:a>
-                    </s:if>
-                    <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${contentElem.resultFeedback} ${contentElem.resultError}</pre>
-                  </td>
-                </tr>
+                <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                  <tr>
+                    <td style="vertical-align:top" class="testCaseButtons">
+                      <s:if test="#contentElem.resultError != null">
+                        <button onclick="viewResTab(this, '#msg${contentElem.questionId}')" style="display: block">Message</button>
+                      </s:if>
+                      <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                        <s:if test="#contentElem.resultTestNos[#idx.index] != null">
+                          <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                            <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                            </s:if>
+                            <s:else>
+                            <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                            </s:else>
+                          </s:if>
+                          <s:else>
+                            <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                            <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                            </s:if>
+                            <s:else>
+                            <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                            </s:else>
+                          </s:else>
+                        </s:iterator>
+                    </td>
+                    <td style="width: 100%">
+                      <s:if test="#contentElem.resultError != null">
+                        <div id="msg${contentElem.questionId}" style="display: none">
+                          <s:if test="#contentElem.resultFullError != null">
+                            <s:url action="viewFeedback" var="viewErrorURL">
+                              <s:param name="taskId" value="taskId" />
+                              <s:param name="tabId" value="tabId" />
+                              <s:param name="dbId" value="dbId" />
+                              <s:param name="tagId" value="#contentElem.resultFullError" />
+                            </s:url>
+                            <s:a href="%{viewErrorURL}" target="_blank" cssClass="btn btn-default">
+                              <s:text name="submissions.header.fullFeedback" />
+                            </s:a>
+                          </s:if>
+                          ${contentElem.resultError}
+                        </div>
+                      </s:if>
+                      <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                        <div id="res_${contentElem.questionId}_${idx.count}" style="display: none">
+                          <s:if test="#contentElem.resultFullFeedbacks[#idx.index] != null">
+                            <s:url action="viewFeedback" var="viewFeedbackURL">
+                              <s:param name="taskId" value="taskId" />
+                              <s:param name="tabId" value="tabId" />
+                              <s:param name="dbId" value="dbId" />
+                              <s:param name="tagId" value="#contentElem.resultFullFeedback[#idx.index]" />
+                            </s:url>
+                            <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
+                              <s:text name="submissions.header.fullFeedback" />
+                            </s:a>
+                          </s:if>
+                          <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${fb}</pre>
+                        </div>
+                      </s:iterator>
+                    </td>
+                  </tr>
+                </s:if>
               </thead>
             </table>
           </div>
@@ -1020,22 +1059,38 @@
       });
     }
 
-    function populateFeedback(feedbackEl, result)
+    function viewResTab(btn, idStr)
+    {
+      $(btn).siblings().each(function (i)
+      {
+        this.style.fontWeight = "normal";
+        this.style.border = "outset";
+      });
+      btn.style.fontWeight = "bold";
+      btn.style.border = "inset";
+      var showDiv = $(idStr);
+      showDiv.siblings().hide();
+      showDiv.show();
+    }
+
+    function populateFeedback(feedbackEl, questionId, result)
     {
       var markText = '';
-      var feedbackText = '';
       var errorText = '';
-      var testText = '';
-      var fullFeedbackId = '';
-      var fullFeedbackElem = '';
+      var casesJSON = [];
       try
       {
         var resultJSON = JSON.parse(result);
         markText = resultJSON["mark"];
-        feedbackText = resultJSON["feedback"];
-        fullFeedbackId = resultJSON["fullFeedbackId"];
-        errorText = resultJSON["error"];
-        testText = resultJSON["test"];
+        casesJSON = resultJSON["cases"];
+        if ("warning" in resultJSON)
+        {
+          errorText = resultJSON["error"];
+        }
+        if ("error" in resultJSON)
+        {
+          errorText = resultJSON["error"];
+        }
       } catch (e)
       {
       }
@@ -1050,38 +1105,63 @@
           markText += ".0";
         }
       }
-      if (!feedbackText)
-      {
-        feedbackText = '';
-      } else
-      {
-        feedbackText = escapeHtml(feedbackText);
-      }
+      var fbHtml = '<table style="width: 100%"><thead><tr><th colspan="2">${SCORETXT}: ' + markText;
+      fbHtml += '&nbsp;&nbsp<span style="float: right" class="btn btn-primary-small"';
+      fbHtml += 'onclick="$(this).closest(\'tr\').next(\'tr\').toggle()">';
+      fbHtml += 'Show/hide feedback</span></th></tr>';
+      fbHtml += '<tr><td style="vertical-align:top" class="testCaseButtons">';
       if (errorText && (errorText.length > 0))
       {
-        errorText = "\n" + "ERROR MESSAGE\n" + escapeHtml(errorText);
-      } else
-      {
-        errorText = '';
+        errorText = escapeHtml(errorText);
+        fbHtml += '<button onclick="viewResTab(this, \'#msg' + questionId + '\')"';
+        fbHtml += ' style="display: block; white-space: nowrap" class="linkButton">Message</button>'
       }
-      if (testText)
+      for (var i = 0; i < casesJSON.length; i++)
       {
-        testText = " (${TESTNOTXT} " + testText + ")";
-      } else
-      {
-        testText = '';
+        var caseJSON = casesJSON[i];
+        var test = (("test" in caseJSON) && (caseJSON["test"] !== null)) ? caseJSON["test"] : i + 1;
+        var score = (("score" in caseJSON) && (caseJSON["score"] !== null)) ? caseJSON["score"] : 0;
+        var markSymbol = '<span class="glyphicon glyphicon-remove-sign" style="color: red"></span>';
+        if (typeof score === 'number')
+        {
+          score = "" + score;
+        }
+        if (parseFloat(score) > 0)
+        {
+          markSymbol = '<span class="glyphicon glyphicon-ok-sign" style="color: green"></span>';
+        }
+        fbHtml += '<button onclick="viewResTab(this, \'#res_' + questionId + '_' + i + '\')"';
+        fbHtml += ' style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#';
+        fbHtml += test + '&nbsp;' + markSymbol + '</button>';
       }
-      if (fullFeedbackId)
+      fbHtml += '</td><td style="width: 100%">';
+      if (errorText.length > 0)
       {
-        var url = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + fullFeedbackId;
-        fullFeedbackElem = '<a href="' + url + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
+        fbHtml += '<div id="msg' + questionId + ' style="display: none">';
+        if (("fullErrorId" in resultJSON) && (resultJSON["fullErrorId"] !== null))
+        {
+          var errUrl = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + resultJSON["fullErrorId"];
+          fbHtml += '<a href="' + errUrl + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
+        }
+        fbHtml += errorText + '</div>';
       }
-      feedbackEl.html('<table><thead><tr><th colspan="2">${SCORETXT}: '
-              + markText + '&nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small" onclick="$(this).closest(\'tr\').next(\'tr\').toggle()">Show/hide feedback</span></th></tr><tr><td>${FEEDBACKTXT}' + '<br/>' + testText + '</td>'
-              + '<td>' + fullFeedbackElem
-              + '<pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">' + feedbackText + errorText
-              + '</pre></td></tr></thead></table>');
+      for (var i = 0; i < casesJSON.length; i++)
+      {
+        var caseJSON = casesJSON[i];
+        var fb = (("feedback" in caseJSON) && (caseJSON["feedback"] !== null)) ? caseJSON["feedback"] : "";
+        fbHtml += '<div id="res_' + questionId + '_' + i + '" style="display: none">';
+        if ("fullFeedback" in caseJSON)
+        {
+          var fullFbUrl = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + caseJSON["fullFeedback"];
+          fbHtml += '<a href="' + fullFbUrl + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
+        }
+        fbHtml += '<pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">';
+        fbHtml += escapeHtml(fb) + '</pre></div>';
+      }
+      fbHtml += '</td></tr></thead></table>';
+      feedbackEl.html(fbHtml);
       colorDiffFeedback(feedbackEl.find(".diffCell"));
+      feedbackEl.find("button").last().click();
     }
 
     function pollAutograding(feedbackEl, questionId)
@@ -1089,7 +1169,7 @@
       $.get('getQuizScoreJSON.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&quizQuestionId=' + questionId).done(function (data, stat, xhr) {
         if (xhr.status == 200)
         {
-          populateFeedback(feedbackEl, data);
+          populateFeedback(feedbackEl, questionId, data);
         } else
         {
           feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" /> (queue pos: ' + xhr.getResponseHeader("queuepos") + ')');
@@ -1374,7 +1454,7 @@
           lang = "ace/mode/c_cpp";
         }
         var epilogueLines = 0;
-        if (prologueDiv.html().length > 0)
+        if (prologueDiv.html().trim().length > 0)
         {
           var prologueEditor = ace.edit(prologueDiv[0]);
           prologueEditor.setHighlightActiveLine(false);
@@ -1418,7 +1498,7 @@
             return row + session.$firstLineNumber;
           }
         };
-        if (epilogueDiv.html().length > 0)
+        if (epilogueDiv.html().trim().length > 0)
         {
           var epilogueEditor = ace.edit(epilogueDiv[0]);
           epilogueEditor.setHighlightActiveLine(false);
@@ -1448,6 +1528,10 @@
         }
       });
       colorDiffFeedback($(".diffCell"));
+      $(".testCaseButtons").each(function (i)
+      {
+        $(this).children().last().click();
+      });
     });
   </script>
 </s:if>

@@ -1,5 +1,7 @@
 package fi.uta.cs.weto.actions.main;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
@@ -480,14 +482,15 @@ public class QuizActions
         }
         doNotClean = question.getText().contains("<question type=\"program\">")
                 || question.getText()
-                .contains("<question type=\"multichoice\">");
+                        .contains("<question type=\"multichoice\">");
       }
       catch(NoSuchItemException e)
       {
         throw new WetoActionException();
       }
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] timeLimits = PermissionModel
-              .getTimeStampLimits(courseConn, userId, taskId,
+              .getTimeStampLimits(courseConn, userIP, userId, taskId,
                       PermissionType.SUBMISSION);
       boolean submissionOpen = getNavigator().isTeacher() || (PermissionModel
               .checkTimeStampLimits(timeLimits) == PermissionModel.CURRENT);
@@ -643,7 +646,7 @@ public class QuizActions
         {
           Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(courseConn, taskId,
                   answer.getId(), userId, TagType.QUIZ_SCORE.getValue()).delete(
-                          courseConn);
+                  courseConn);
         }
         catch(NoSuchItemException e)
         {
@@ -1089,7 +1092,7 @@ public class QuizActions
     public String action() throws Exception
     {
       String result = SUCCESS;
-      // ADD RESULT PERMISSION CHECK (OR CHECK ITS CORRECTNESS...)
+      // TODO: ADD RESULT PERMISSION CHECK (OR CHECK ITS CORRECTNESS...)
       Connection conn = getCourseConnection();
       Integer userId = getCourseUserId();
       Integer taskId = getTaskId();
@@ -1111,51 +1114,86 @@ public class QuizActions
         }
         else
         {
-          JsonObject resultJson = new JsonParser().parse(quizScoreTag
-                  .getText()).getAsJsonObject();
-          boolean hideFeedback = false;
-          if(resultJson.has("feedback") && resultJson.has("mark") && !resultJson
-                  .get("mark").isJsonNull())
+          JsonObject resultJson = null;
+          try
           {
-            String feedback = resultJson.getAsJsonPrimitive("feedback")
-                    .getAsString();
-            if(!"OK".equals(feedback) && resultJson.has("phase")
-                    && !resultJson.get("phase").isJsonNull())
-            {
-              int phase = resultJson.getAsJsonPrimitive("phase").getAsInt();
-              hideFeedback = (phase == AutoGradeJobQueue.IMMEDIATE_PRIVATE)
-                      && getNavigator().isStudent();
-            }
+            resultJson = new JsonParser().parse(quizScoreTag.getText())
+                    .getAsJsonObject();
           }
-          if(hideFeedback)
+          catch(Exception e)
           {
-            resultJson.remove("feedback");
-            resultJson.addProperty("feedback", getText(
-                    "autograding.message.incorrectResult"));
+            resultJson = new JsonObject();
           }
-          else
+          JsonArray casesJson = resultJson.getAsJsonArray("cases");
+          if(casesJson != null)
           {
-            Integer fullFeedbackId = null;
-            ArrayList<Tag> fullFeedbacks = Tag.selectByTaggedIdAndRankAndType(
-                    conn, taskId, quizAnswerTag.getId(), TagType.FEEDBACK
-                    .getValue());
-            if(!fullFeedbacks.isEmpty())
+            HashMap<Integer, Integer> fullFeedbackMap = new HashMap<>();
+            ArrayList<Tag> fullFeedbackTags = Tag
+                    .selectByTaggedIdAndRankAndType(conn, taskId, quizAnswerTag
+                            .getId(), TagType.FEEDBACK.getValue());
+            for(Tag fullFeedbackTag : fullFeedbackTags)
             {
-              fullFeedbackId = fullFeedbacks.get(0).getId();
-            }
-            else
-            {
-              ArrayList<Tag> fullErrors = Tag.selectByTaggedIdAndRankAndType(
-                      conn, taskId, quizAnswerTag.getId(),
-                      TagType.COMPILER_RESULT.getValue());
-              if(!fullErrors.isEmpty())
+              String text = fullFeedbackTag.getText();
+              if((text != null) && text.startsWith("{"))
               {
-                fullFeedbackId = fullErrors.get(0).getId();
+                JsonObject fullFeedbackJson = new JsonParser().parse(text)
+                        .getAsJsonObject();
+                int test = Integer.MIN_VALUE;
+                JsonElement testJson = fullFeedbackJson.get("test");
+                if((testJson != null) && !testJson.isJsonNull())
+                {
+                  test = testJson.getAsInt();
+                }
+                fullFeedbackMap.put(test, fullFeedbackTag.getId());
               }
             }
-            if(fullFeedbackId != null)
+            final boolean isStudent = getNavigator().isStudent();
+            final String notShownStr = getText(
+                    "autograding.message.incorrectResult");
+            int i = 0;
+            for(JsonElement caseElem : casesJson)
             {
-              resultJson.addProperty("fullFeedbackId", fullFeedbackId);
+              JsonObject caseJson = caseElem.getAsJsonObject();
+              String feedback = caseJson.get("feedback").getAsString();
+              JsonElement phaseJson = caseJson.get("phase");
+              boolean hideFeedback = false;
+              if((phaseJson != null) && !phaseJson.isJsonNull() && !"OK".equals(
+                      feedback))
+              {
+                int phase = phaseJson.getAsInt();
+                if(isStudent && ((phase == AutoGradeJobQueue.IMMEDIATE_PRIVATE)
+                        || (phase == AutoGradeJobQueue.FINAL_PRIVATE)))
+                {
+                  hideFeedback = true;
+                  caseJson.addProperty("feedback", notShownStr);
+                }
+              }
+              JsonElement testJson = caseJson.get("test");
+              if(!hideFeedback && (testJson != null) && !testJson.isJsonNull())
+              {
+                int test = testJson.getAsInt();
+                Integer fullFeedbackId = fullFeedbackMap.get(test);
+                if(fullFeedbackId != null)
+                {
+                  caseJson.addProperty("fullFeedback", fullFeedbackId);
+                }
+              }
+              i += 1;
+            }
+          }
+          JsonElement errorJson = resultJson.get("error");
+          if(errorJson == null)
+          {
+            errorJson = resultJson.get("warning");
+          }
+          if((errorJson != null) && !errorJson.isJsonNull())
+          {
+            ArrayList<Tag> fullErrors = Tag.selectByTaggedIdAndRankAndType(conn,
+                    taskId, quizAnswerTag.getId(), TagType.COMPILER_RESULT
+                    .getValue());
+            if(!fullErrors.isEmpty())
+            {
+              resultJson.addProperty("fullErrorId", fullErrors.get(0).getId());
             }
           }
           messageStream = new ByteArrayInputStream(resultJson.toString()

@@ -15,6 +15,7 @@ import fi.uta.cs.weto.model.WetoTeacherAction;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class GroupActions
 {
@@ -131,6 +132,7 @@ public class GroupActions
     {
       Connection conn = getCourseConnection();
       String groupName = (getGroupName() != null) ? getGroupName().trim() : null;
+      Integer taskId = getTaskId();
       if((groupName == null) || groupName.isEmpty())
       {
         throw new WetoActionException(getText("groups.error.groupName"),
@@ -144,22 +146,22 @@ public class GroupActions
       }
       if(GroupType.SUBMISSION.getValue().equals(groupType))
       {
-        String[] userStrs = groupName.split("[,;\\s]");
-        ArrayList<String> loginNames = new ArrayList<>();
+        String[] userStrs = groupName.split("[,;\\s]+");
+        HashMap<String, UserAccount> userMap = new HashMap<>();
         ArrayList<String> badUserStrs = new ArrayList<>();
         for(String userStr : userStrs)
         {
           try
           {
-            loginNames.add(UserAccount.select1ByLoginName(conn, userStr)
-                    .getLoginName());
+            UserAccount user = UserAccount.select1ByLoginName(conn, userStr);
+            userMap.put(user.getLoginName(), user);
           }
           catch(NoSuchItemException e)
           {
             try
             {
-              loginNames.add(UserAccount.select1ByEmail(conn, userStr)
-                      .getLoginName());
+              UserAccount user = UserAccount.select1ByEmail(conn, userStr);
+              userMap.put(user.getLoginName(), user);
             }
             catch(NoSuchItemException e2)
             {
@@ -175,7 +177,7 @@ public class GroupActions
                     String.join(", ", badUserStrs)
                   }), WetoCourseAction.INPUT);
         }
-        if(loginNames.size() < 2)
+        if(userMap.size() < 2)
         {
           throw new WetoActionException(getText(
                   "groups.error.invalidSubmissionGroupSize"),
@@ -183,25 +185,52 @@ public class GroupActions
         }
         else
         {
+          ArrayList<String> loginNames = new ArrayList<>(userMap.keySet());
           Collections.sort(loginNames);
           String submissionGroupName = String.join(";", loginNames);
           UserGroup group = new UserGroup();
-          group.setTaskId(getTaskId());
+          group.setTaskId(taskId);
           group.setName(submissionGroupName);
           group.setType(GroupType.SUBMISSION.getValue());
           group.insert(conn);
-          /* UNDER CONSTRUCTION!!! */
-          GroupView.select1ByTaskIdAndUserIdAndType(conn, groupType, groupType,
-                  groupType);
+          Integer newGroupId = group.getId();
+          for(UserAccount user : userMap.values())
+          {
+            Integer userId = user.getId();
+            GroupMember oldMembership = null;
+            try
+            {
+              GroupView gv = GroupView.select1ByTaskIdAndUserIdAndType(conn,
+                      taskId, userId, GroupType.SUBMISSION.getValue());
+              oldMembership = GroupMember.select1ByTaskIdAndGroupIdAndUserId(
+                      conn, taskId, gv.getId(), userId);
+            }
+            catch(NoSuchItemException e)
+            {
+            }
+            if(oldMembership != null)
+            {
+              oldMembership.setGroupId(newGroupId);
+              oldMembership.update(conn);
+            }
+            else
+            {
+              GroupMember gm = new GroupMember();
+              gm.setTaskId(taskId);
+              gm.setGroupId(newGroupId);
+              gm.setUserId(userId);
+              gm.insert(conn);
+            }
+          }
         }
       }
       else
       {
         UserGroup group = new UserGroup();
-        group.setTaskId(getTaskId());
+        group.setTaskId(taskId);
         group.setName(getGroupName());
         group.setType(getGroupType());
-        group.insert(getCourseConnection());
+        group.insert(conn);
       }
       addActionMessage(getText("updateGroup.message.createSuccess"));
       return SUCCESS;

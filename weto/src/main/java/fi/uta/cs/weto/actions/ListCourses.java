@@ -88,6 +88,7 @@ public class ListCourses extends WetoMasterAction
     {
       permittedCourses = new HashSet<>();
     }
+    final String userIP = getRequest().getRemoteAddr();
     for(CourseView course : CourseView.selectAll(masterConn))
     {
       Integer courseMasterTaskId = course.getMasterTaskId();
@@ -98,10 +99,10 @@ public class ListCourses extends WetoMasterAction
       boolean isStudent = false;
       boolean isShown = false;
       WetoTimeStamp[] viewPeriod = PermissionModel.getTaskTimeStampLimits(
-              masterConn, masterUserId, courseMasterTaskId, PermissionType.VIEW,
-              false);
+              masterConn, userIP, masterUserId, courseMasterTaskId,
+              PermissionType.VIEW, false);
       WetoTimeStamp[] registerPeriod = PermissionModel.getTaskTimeStampLimits(
-              masterConn, masterUserId, courseMasterTaskId,
+              masterConn, userIP, masterUserId, courseMasterTaskId,
               PermissionType.REGISTER, false);
       // If student has registered to course, insert the course to
       // registeredCourses and if not, insert into default courses
@@ -134,7 +135,8 @@ public class ListCourses extends WetoMasterAction
       {
         if((PermissionModel.checkTimeStampLimits(viewPeriod)
                 == PermissionModel.CURRENT) && ((PermissionModel
-                .checkTimeStampLimits(registerPeriod) == PermissionModel.CURRENT)
+                        .checkTimeStampLimits(registerPeriod)
+                == PermissionModel.CURRENT)
                 || permittedCourses.contains(courseMasterTaskId) || isPublic))
         {
           ArrayList<CourseView> subjectCourses = courses.get(courseSubjectId);

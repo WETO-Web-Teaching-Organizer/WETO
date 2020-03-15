@@ -152,19 +152,10 @@
       </tr>
       <tr>
         <td>
-          <s:text name="editPermissions.header.conditionTask" />
+          <s:text name="editPermissions.header.conditions" />
         </td>
         <td>
           <input type="text" name="permissionDetail" value="${permissionDetail}" />
-          <%--          <select name="conditionDbIdTaskId">
-                      <s:iterator var="loopName" value="taskNames" status="loop">
-                        <option value="${courseDbId_TaskIds[loop.index]}"
-                                <s:if test="%{courseDbId_TaskIds[#loop.index] == otherCourseDbId_TaskId}">selected="selected"</s:if> >
-                          ${loopName}
-                        </option>
-                      </s:iterator>
-                    </select>
-          --%>
         </td>
       </tr>
     </table>

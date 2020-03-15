@@ -1,29 +1,36 @@
 /* Style definitions for nestable (=draggable/sortable list used mainly in
    "reorganize tasks"). */
 #subtask-table ul li {
-  list-style-type: none; }
-  #subtask-table ul li button.btn-default-small {
-    height: 100%;
-    float: left;
-    margin: 0 2px 0 0;
-    display: block;
-    border: 1px solid #005768 !important;
-    border-radius: 0px; }
-    #subtask-table ul li button.btn-default-small span:hover {
-      color: #00acce; }
-    #subtask-table ul li button.btn-default-small span.glyphicon-minus {
-      color: #A52929; }
+  list-style-type: none;
+}
+#subtask-table ul li button.btn-default-small {
+  height: 100%;
+  float: left;
+  margin: 0 2px 0 0;
+  display: block;
+  border: 1px solid #005768 !important;
+  border-radius: 0px;
+}
+#subtask-table ul li button.btn-default-small span:hover {
+  color: #00acce;
+}
+#subtask-table ul li button.btn-default-small span.glyphicon-minus {
+  color: #A52929;
+}
 
 .dd-list .dd-list {
-  padding-left: 20px; }
+  padding-left: 20px;
+}
 
 .dd-collapsed .dd-list {
-  display: none; }
+  display: none;
+}
 
 .dd-item, .dd-empty, .dd-placeholder {
   position: relative;
   margin: 0;
-  padding: 0px; }
+  padding: 0px;
+}
 
 .dd-handle {
   margin: 5px 0px;
@@ -31,13 +38,16 @@
   color: #000;
   text-decoration: none;
   border: 1px solid #000;
-  background: #fff; }
+  background: #fff;
+}
 
 .dd-handle:hover, .dd-handle.chosen {
-  background: #fff; }
+  background: #fff;
+}
 
 .dd-item > button {
-  float: left; }
+  float: left;
+}
 
 .dd-empty {
   margin: 5px 0;
@@ -46,37 +56,46 @@
   background: #f2fbff;
   border: 1px dashed #b6bcbf;
   box-sizing: border-box;
-  -moz-box-sizing: border-box; }
+  -moz-box-sizing: border-box;
+}
 
 .dd-placeholder, .dd-empty {
   margin: 5px 0;
   padding: 0;
   border: 1px dashed rgba(0, 0, 0, 0.1);
-  list-style-type: none; }
+  list-style-type: none;
+}
 
 .dd-dragel {
   position: absolute;
   pointer-events: none;
-  z-index: 9999; }
+  z-index: 9999;
+}
 
 .dd-dragel > .dd-item .dd-handle {
   margin-top: 0;
-  line-height: 1em; }
+  line-height: 1em;
+}
 
 #elMove, li span.moveItem {
-  background: skyblue; }
+  background: skyblue;
+}
 
 #elCopy, li span.copyItem {
-  background: coral; }
+  background: coral;
+}
 
 #ui-datepicker-div {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #accordion {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 /* Accordion headers */
 h3.handle {
-  padding-left: 22px !important; }
+  padding-left: 22px !important;
+}
 
 /*# sourceMappingURL=draggablelist.css.map */

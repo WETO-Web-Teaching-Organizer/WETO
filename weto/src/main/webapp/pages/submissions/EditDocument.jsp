@@ -47,8 +47,7 @@
 </form>
 <s:url action="relogin" var="reloginUrl" escapeAmp="false" />
 <div id="dummyDiv" style="display: none;"></div>
-<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="js/tinymce4/tinymce.min.js"></script>
+<script src="js/ace/ace.js"></script>
 <script>
         var editor;
         var textArea;

@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<script src="js/tinymce4/tinymce.min.js"></script>
 <s:url action="popupTaskDocuments" var="taskDocumentsUrl" escapeAmp="false">
   <s:param name="taskId" value="%{taskId}" />
   <s:param name="tabId" value="%{#mainTabId}" />

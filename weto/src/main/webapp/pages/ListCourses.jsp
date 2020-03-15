@@ -182,14 +182,3 @@
     </s:if>
   </div>
 </div>
-
-<script>
-  $(function () {
-    $("#news-container").mCustomScrollbar({
-      axis: "y",
-      setHeight: 180,
-      setWidth: "100%",
-      scrollInertia: 0
-    });
-  });
-</script>

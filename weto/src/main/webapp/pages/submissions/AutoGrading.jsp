@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<script src="js/grading.js"></script>
 <h2><s:text name="autograding.title" /></h2>
 <p>
   <s:if test="autoGraded">

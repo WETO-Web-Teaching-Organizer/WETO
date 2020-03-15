@@ -6,7 +6,8 @@
 <s:set var="PROGRAM_ID">4</s:set>
 <s:set var="SCORETXT"><s:text name="general.header.score" /></s:set>
 <s:set var="FEEDBACKTXT"><s:text name="autograding.header.feedback" /></s:set>
-<s:set var="TESTNOTXT"><s:text name="autograding.header.testNo" /></s:set>
+<s:set var="TESTTXT"><s:text name="general.header.test" /></s:set>
+<s:set var="CHOICETXT"><s:text name="quiz.header.questionAnswer" /></s:set>
 <s:if test="navigator.teacher && pendingStudents">
   <div class="teacherTodo">
     <s:text name="pendingstudents.message.havePending" />
@@ -24,9 +25,7 @@
   <s:set var="inputStyle">disabled="disabled"</s:set>
 </s:if>
 <s:else>
-  <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="js/tinymce4/tinymce.min.js"></script>
-  <script src="js/grading.js"></script>
+  <script src="js/ace/ace.js"></script>
 </s:else>
 <s:if test="elements.size() > 0">
   <div class="maincontents content-col">
@@ -275,41 +274,88 @@
               </table>
             </s:else>
           </form>
-          <s:if test="(#contentElem.resultMark != null) || (#contentElem.resultFeedback != null) || (#contentElem.resultError != null)">
-            <hr>
+          <s:if test="(#contentElem.resultMark != null) || ((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
             <div style="min-width: 50%" id="feedbackDiv${contentElem.questionId}">
-              <table>
+              <table style="width: 100%">
                 <thead>
                   <tr>
                     <th colspan="2">
                       ${SCORETXT}: ${contentElem.resultMark}
-                      &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small" onclick="$(this).closest('tr').next('tr').toggle()">
-                        Show/hide feedback
-                      </span>
+                      <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                        &nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small"
+                                          onclick="$(this).closest('tr').next('tr').toggle()">
+                          Show/hide feedback
+                        </span>
+                      </s:if>
                     </th>
                   </tr>
-                  <tr>
-                    <td>
-                      ${FEEDBACKTXT}
-                      <s:if test="#contentElem.resultTest">
-                        <br/>(${TESTNOTXT}${contentElem.resultTest})
-                      </s:if>
-                    </td>
-                    <td>
-                      <s:if test="#contentElem.resultFullFeedback != null">
-                        <s:url action="viewFeedback" var="viewFeedbackURL">
-                          <s:param name="taskId" value="taskId" />
-                          <s:param name="tabId" value="tabId" />
-                          <s:param name="dbId" value="dbId" />
-                          <s:param name="tagId" value="#contentElem.resultFullFeedback" />
-                        </s:url>
-                        <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
-                          <s:text name="submissions.header.fullFeedback" />
-                        </s:a>
-                      </s:if>
-                      <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${contentElem.resultFeedback} ${contentElem.resultError}</pre>
-                    </td>
-                  </tr>
+                  <s:if test="((#contentElem.resultFeedbacks != null) && (#contentElem.resultFeedbacks.length > 0)) || (#contentElem.resultError != null)">
+                    <tr>
+                      <td style="vertical-align:top" class="testCaseButtons">
+                        <s:if test="#contentElem.resultError != null">
+                          <button onclick="viewResTab(this, '#msg${contentElem.questionId}')" style="display: block; white-space: nowrap" class="linkButton">Message</button>
+                        </s:if>
+                        <s:if test="#contentElem.contentElementType == #PROGRAM_ID">
+                          <s:set var="RESBTNTXT">${TESTTXT}</s:set>
+                        </s:if>
+                        <s:else>
+                          <s:set var="RESBTNTXT">${CHOICETXT}</s:set>
+                        </s:else>
+                        <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                          <s:if test="#contentElem.resultTestNos[#idx.index] != null">
+                            <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                              <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                              </s:if>
+                              <s:else>
+                              <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${contentElem.resultTestNos[idx.index]}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                              </s:else>
+                            </s:if>
+                            <s:else>
+                              <s:if test="#contentElem.resultScores[#idx.index] > 0">
+                              <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-ok-sign" style="color: green"></span></button>
+                              </s:if>
+                              <s:else>
+                              <button onclick="viewResTab(this, '#res_${contentElem.questionId}_${idx.count}')" style="display: block; white-space: nowrap" class="linkButton">${RESBTNTXT}&nbsp;#${idx.count}&nbsp;<span class="glyphicon glyphicon-remove-sign" style="color: red"></span></button>
+                              </s:else>
+                            </s:else>
+                          </s:iterator>
+                      </td>
+                      <td style="width: 100%">
+                        <s:if test="#contentElem.resultError != null">
+                          <div id="msg${contentElem.questionId}" style="display: none">
+                            <s:if test="#contentElem.resultFullError != null">
+                              <s:url action="viewFeedback" var="viewErrorURL">
+                                <s:param name="taskId" value="taskId" />
+                                <s:param name="tabId" value="tabId" />
+                                <s:param name="dbId" value="dbId" />
+                                <s:param name="tagId" value="#contentElem.resultFullError" />
+                              </s:url>
+                              <s:a href="%{viewErrorURL}" target="_blank" cssClass="btn btn-default">
+                                <s:text name="submissions.header.fullFeedback" />
+                              </s:a>
+                            </s:if>
+                            ${contentElem.resultError}
+                          </div>
+                        </s:if>
+                        <s:iterator var="fb" value="#contentElem.resultFeedbacks" status="idx">
+                          <div id="res_${contentElem.questionId}_${idx.count}" style="display: none">
+                            <s:if test="#contentElem.resultFullFeedbacks[#idx.index] != null">
+                              <s:url action="viewFeedback" var="viewFeedbackURL">
+                                <s:param name="taskId" value="taskId" />
+                                <s:param name="tabId" value="tabId" />
+                                <s:param name="dbId" value="dbId" />
+                                <s:param name="tagId" value="#contentElem.resultFullFeedbacks[#idx.index]" />
+                              </s:url>
+                              <s:a href="%{viewFeedbackURL}" target="_blank" cssClass="btn btn-default">
+                                <s:text name="submissions.header.fullFeedback" />
+                              </s:a>
+                            </s:if>
+                            <pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">${fb}</pre>
+                          </div>
+                        </s:iterator>
+                      </td>
+                    </tr>
+                  </s:if>
                 </thead>
               </table>
             </div>
@@ -359,339 +405,336 @@
     </s:iterator>
   </s:if>
 </s:if>
-<s:if test="quizOpen">
-  <div id="dummyDiv" style="display: none;"></div>
-  <script>
-    var entityMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-      '/': '&#x2F;',
-      '`': '&#x60;',
-      '=': '&#x3D;'
-    };
+<div id="dummyDiv" style="display: none;"></div>
+<script>
+  var entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  };
 
-    function escapeHtml(string) {
-      return String(string).replace(/[&<>"'`=\/]/g, function (s) {
-        return entityMap[s];
-      });
-    }
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+      return entityMap[s];
+    });
+  }
 
-    function populateFeedback(feedbackEl, result)
+  function viewResTab(btn, idStr)
+  {
+    $(btn).siblings().each(function (i)
     {
-      var markText = '';
-      var feedbackText = '';
-      var errorText = '';
-      var testText = '';
-      var fullFeedbackId = '';
-      var fullFeedbackElem = '';
-      try
+      this.style.fontWeight = "normal";
+    });
+    btn.style.fontWeight = "bold";
+    var showDiv = $(idStr);
+    showDiv.siblings().hide();
+    showDiv.show();
+  }
+
+  function populateFeedback(feedbackEl, questionId, result)
+  {
+    var markText = '';
+    var errorText = '';
+    var casesJSON = [];
+    try
+    {
+      var resultJSON = JSON.parse(result);
+      markText = resultJSON["mark"];
+      if ("cases" in resultJSON)
       {
-        var resultJSON = JSON.parse(result);
-        markText = resultJSON["mark"];
-        feedbackText = resultJSON["feedback"];
-        fullFeedbackId = resultJSON["fullFeedbackId"];
+        casesJSON = resultJSON["cases"];
+      }
+      if ("warning" in resultJSON)
+      {
+        errorText = resultJSON["warning"];
+      }
+      if ("error" in resultJSON)
+      {
         errorText = resultJSON["error"];
-        testText = resultJSON["test"];
-      } catch (e)
-      {
       }
-      if (!markText)
-      {
-        markText = '0.0';
-      } else if (typeof markText === 'number')
-      {
-        markText = "" + markText;
-        if (markText.indexOf(".") < 0)
-        {
-          markText += ".0";
-        }
-      }
-      if (!feedbackText)
-      {
-        feedbackText = '';
-      } else
-      {
-        feedbackText = escapeHtml(feedbackText);
-      }
-      if (errorText && (errorText.length > 0))
-      {
-        errorText = "\n" + "ERROR MESSAGE\n" + escapeHtml(errorText);
-      } else
-      {
-        errorText = '';
-      }
-      if (testText)
-      {
-        testText = " (${TESTNOTXT} " + testText + ")";
-      } else
-      {
-        testText = '';
-      }
-      if (fullFeedbackId)
-      {
-        var url = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + fullFeedbackId;
-        fullFeedbackElem = '<a href="' + url + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
-      }
-      feedbackEl.html('<table><thead><tr><th colspan="2">${SCORETXT}: '
-              + markText + '&nbsp;&nbsp;<span style="float: right" class="btn btn-primary-small" onclick="$(this).closest(\'tr\').next(\'tr\').toggle()">Show/hide feedback</span></th></tr><tr><td>${FEEDBACKTXT}' + '<br/>' + testText + '</td>'
-              + '<td>' + fullFeedbackElem
-              + '<pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">' + feedbackText + errorText
-              + '</pre></td></tr></thead></table>');
-      colorDiffFeedback(feedbackEl.find(".diffCell"));
-      $.get('getNavigationTree.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}').done(function (data, stat, xhr) {
-        if (xhr.status == 200)
-        {
-          var older = document.getElementById("navtree").getAttribute("data-json");
-          var newer = decodeURIComponent(jQuery("<div>" + data + "</div>").text());
-          if (older != newer)
-          {
-            $("#navtree").empty();
-            buildTreemenuUnder("#navtree", $.parseJSON(data), ${dbId}, ${taskId}, "viewTask.action");
-          }
-        }
-      });
-    }
-
-    function pollAutograding(feedbackEl, questionId)
+    } catch (e)
     {
-      $.get('getQuizScoreJSON.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&quizQuestionId=' + questionId).done(function (data, stat, xhr) {
-        if (xhr.status == 200)
+    }
+    if (!markText)
+    {
+      markText = '0.0';
+    } else if (typeof markText === 'number')
+    {
+      markText = "" + markText;
+      if (markText.indexOf(".") < 0)
+      {
+        markText += ".0";
+      }
+    }
+    var fbHtml = '<table style="width: 100%"><thead><tr><th colspan="2">${SCORETXT}: ' + markText;
+    fbHtml += '&nbsp;&nbsp<span style="float: right" class="btn btn-primary-small"';
+    fbHtml += 'onclick="$(this).closest(\'tr\').next(\'tr\').toggle()">';
+    fbHtml += 'Show/hide feedback</span></th></tr>';
+    fbHtml += '<tr><td style="vertical-align:top" class="testCaseButtons">';
+    if (errorText && (errorText.length > 0))
+    {
+      errorText = escapeHtml(errorText);
+      fbHtml += '<button onclick="viewResTab(this, \'#msg' + questionId + '\')"';
+      fbHtml += ' style="display: block; white-space: nowrap" class="linkButton">Message</button>'
+    }
+    for (var i = 0; i < casesJSON.length; i++)
+    {
+      var caseJSON = casesJSON[i];
+      var test = (("test" in caseJSON) && (caseJSON["test"] !== null)) ? caseJSON["test"] : i + 1;
+      var score = (("score" in caseJSON) && (caseJSON["score"] !== null)) ? caseJSON["score"] : 0;
+      var markSymbol = '<span class="glyphicon glyphicon-remove-sign" style="color: red"></span>';
+      if (typeof score === 'number')
+      {
+        score = "" + score;
+      }
+      if (parseFloat(score) > 0)
+      {
+        markSymbol = '<span class="glyphicon glyphicon-ok-sign" style="color: green"></span>';
+      }
+      fbHtml += '<button onclick="viewResTab(this, \'#res_' + questionId + '_' + i + '\')"';
+      fbHtml += ' style="display: block; white-space: nowrap" class="linkButton">${TESTTXT}&nbsp;#';
+      fbHtml += test + '&nbsp;' + markSymbol + '</button>';
+    }
+    fbHtml += '</td><td style="width: 100%">';
+    if (errorText.length > 0)
+    {
+      fbHtml += '<div id="msg' + questionId + ' style="display: none">';
+      if (("fullErrorId" in resultJSON) && (resultJSON["fullErrorId"] !== null))
+      {
+        var errUrl = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + resultJSON["fullErrorId"];
+        fbHtml += '<a href="' + errUrl + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
+      }
+      fbHtml += errorText + '</div>';
+    }
+    for (var i = 0; i < casesJSON.length; i++)
+    {
+      var caseJSON = casesJSON[i];
+      var fb = (("feedback" in caseJSON) && (caseJSON["feedback"] !== null)) ? caseJSON["feedback"] : "";
+      fbHtml += '<div id="res_' + questionId + '_' + i + '" style="display: none">';
+      if ("fullFeedback" in caseJSON)
+      {
+        var fullFbUrl = 'viewFeedback.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&tagId=' + caseJSON["fullFeedback"];
+        fbHtml += '<a href="' + fullFbUrl + '" target="_blank" class="btn btn-default"><s:text name="submissions.header.fullFeedback" /></a>';
+      }
+      fbHtml += '<pre class="diffCell" style="word-wrap: break-word; white-space: pre-wrap; margin: 0px">';
+      fbHtml += escapeHtml(fb) + '</pre></div>';
+    }
+    fbHtml += '</td></tr></thead></table>';
+    feedbackEl.html(fbHtml);
+    colorDiffFeedback(feedbackEl.find(".diffCell"));
+    feedbackEl.find("button").last().click();
+    $.get('getNavigationTree.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}').done(function (data, stat, xhr) {
+      if (xhr.status == 200)
+      {
+        var older = document.getElementById("navtree").getAttribute("data-json");
+        var newer = decodeURIComponent(jQuery("<div>" + data + "</div>").text());
+        if (older != newer)
         {
-          populateFeedback(feedbackEl, data);
-        } else
-        {
-          feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" /> (queue pos: ' + xhr.getResponseHeader("queuepos") + ')');
-          setTimeout(function () {
-            pollAutograding(feedbackEl, questionId);
-          }, 1000);
+          $("#navtree").empty();
+          buildTreemenuUnder("#navtree", $.parseJSON(data), ${dbId}, ${taskId}, "viewTask.action");
         }
+      }
+    });
+  }
+
+  function pollAutograding(feedbackEl, questionId)
+  {
+    $.get('getQuizScoreJSON.action?dbId=${dbId}&taskId=${taskId}&tabId=${tabId}&quizQuestionId=' + questionId).done(function (data, stat, xhr) {
+      if (xhr.status == 200)
+      {
+        populateFeedback(feedbackEl, questionId, data);
+      } else
+      {
+        feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" /> (queue pos: ' + xhr.getResponseHeader("queuepos") + ')');
+        setTimeout(function () {
+          pollAutograding(feedbackEl, questionId);
+        }, 1000);
+      }
+    }).fail(function (xhr, stat, err) {
+      feedbackEl.empty();
+      feedbackEl.hide();
+      showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span>' + err + '</span></li></ul></div></div>');
+    });
+  }
+
+  var filterResubmitMap = {};
+
+  function notifyUser(xhr, data, formEl, questionId)
+  {
+    if ((xhr.status == 200) || (xhr.status == 204)) {
+      var commaPos = data.indexOf(";");
+      var answerDate = "<s:text name="general.header.never"/>";
+      var answerText = "";
+      if (commaPos >= 0)
+      {
+        answerDate = data.substring(0, commaPos);
+        answerText = data.substring(commaPos + 1);
+      }
+      if (answerText.length > 100)
+      {
+        answerText = answerText.substr(0, 100) + "...";
+      }
+      var dateSpan = formEl.find("span.answerDate");
+      if (dateSpan.length > 0)
+      {
+        dateSpan.first().html(answerDate);
+      }
+      if (answerText.length)
+      {
+        formEl.closest("div").removeClass("questionBox").addClass("highlightBox");
+      } else
+      {
+        formEl.closest("div").removeClass("highlightBox").addClass("questionBox");
+      }
+      showInfoBarMessage('<div id="messages"><div class="message_header"><s:text name="quiz.header.answerSuccess" /></div>'
+              + escapeHtml(answerText) + '</div>');
+      if (typeof MathJax != "undefined")
+      {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "messages"]);
+      }
+    } else if (xhr.status == 403)
+    {
+      reloginPopup(tinymce.get('dummyDiv'));
+    } else
+    {
+      showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span><s:text name="quiz.message.answerError" /></span></li></ul></div></div>');
+    }
+    filterResubmitMap[questionId] = false;
+  }
+
+  function filterResubmit(questionId)
+  {
+    if (!filterResubmitMap[questionId])
+    {
+      filterResubmitMap[questionId] = true;
+      return true;
+    } else
+    {
+      showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span><s:text name="quiz.message.resubmitError" /></span></li></ul></div></div>');
+      return false;
+    }
+  }
+
+  function submitAnswer(btn, questionId)
+  {
+    if (filterResubmit(questionId))
+    {
+      var formEl = $(btn).closest("form");
+      var formData = formEl.serialize();
+      var url = '<s:url action="saveQuizAnswer"/>';
+      $.post(url, formData).done(function (data, stat, xhr) {
+        notifyUser(xhr, data, formEl, questionId);
       }).fail(function (xhr, stat, err) {
-        feedbackEl.empty();
-        feedbackEl.hide();
-        showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span>' + err + '</span></li></ul></div></div>');
+        notifyUser(xhr, "", formEl, questionId);
       });
     }
+  }
 
-    var filterResubmitMap = {};
-
-    function notifyUser(xhr, data, formEl, questionId)
+  function submitEssay(btn, essayId)
+  {
+    if (filterResubmit(essayId))
     {
-      if ((xhr.status == 200) || (xhr.status == 204)) {
-        var commaPos = data.indexOf(";");
-        var answerDate = "<s:text name="general.header.never"/>";
-        var answerText = "";
-        if (commaPos >= 0)
+      // Copy text from editor to the form input field upon submit
+      var ansText = tinymce.get("essay" + essayId).getContent().trim();
+      var inputJQElement = $(btn).prevAll(".essayInput").first();
+      inputJQElement.val(ansText);
+      var formEl = $(btn).closest("form");
+      var formData = formEl.serialize();
+      var url = '<s:url action="saveQuizAnswer"/>';
+      $.post(url, formData).done(function (data, stat, xhr) {
+        if ((xhr.status == 200) || (xhr.status == 204))
         {
-          answerDate = data.substring(0, commaPos);
-          answerText = data.substring(commaPos + 1);
+          tinymce.triggerSave();
         }
-        if (answerText.length > 100)
-        {
-          answerText = answerText.substr(0, 100) + "...";
-        }
-        var dateSpan = formEl.find("span.answerDate");
-        if (dateSpan.length > 0)
-        {
-          dateSpan.first().html(answerDate);
-        }
-        if (answerText.length)
-        {
-          formEl.closest("div").removeClass("questionBox").addClass("highlightBox");
-        } else
-        {
-          formEl.closest("div").removeClass("highlightBox").addClass("questionBox");
-        }
-        showInfoBarMessage('<div id="messages"><div class="message_header"><s:text name="quiz.header.answerSuccess" /></div>'
-                + escapeHtml(answerText) + '</div>');
-        if (typeof MathJax != "undefined")
-        {
-          MathJax.Hub.Queue(["Typeset", MathJax.Hub, "messages"]);
-        }
-      } else if (xhr.status == 403)
+        notifyUser(xhr, data, formEl, essayId);
+      }).fail(function (xhr, stat, err) {
+        notifyUser(xhr, "", formEl, essayId);
+      });
+    }
+  }
+
+  function submitCode(btn, programId)
+  {
+    if (filterResubmit(programId))
+    {
+      var inputJQElement = $(btn).prevAll("input.programInput").first();
+      var ansText = ace.edit("program" + programId).getSession().getValue();
+      inputJQElement.val(ansText);
+      var formEl = $(btn).closest("form");
+      var formData = formEl.serialize();
+      var url = '<s:url action="saveQuizAnswer"/>';
+      $.post(url, formData).done(function (data, stat, xhr) {
+        notifyUser(xhr, data, formEl, programId);
+      }).fail(function (xhr, stat, err) {
+        notifyUser(xhr, "", formEl, programId);
+      });
+    }
+  }
+
+  function saveAndSubmitCode(btn, questionId)
+  {
+    var formEl = $(btn).closest("form");
+    formEl.find("input[name='autograde']").attr("value", "true");
+    formEl.find("input[name='testRun']").attr("value", "false");
+    submitCode(btn, questionId);
+    var feedbackEl = $("#feedbackDiv" + questionId);
+    feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" style="display: block; margin: 0 auto;" />');
+    feedbackEl.show();
+    setTimeout(function () {
+      pollAutograding(feedbackEl, questionId);
+    }, 1000);
+  }
+
+  function saveAndTestCode(btn, questionId)
+  {
+    var formEl = $(btn).closest("form");
+    formEl.find("input[name='autograde']").attr("value", "true");
+    formEl.find("input[name='testRun']").attr("value", "true");
+    submitCode(btn, questionId);
+    var feedbackEl = $("#feedbackDiv" + questionId);
+    feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" style="display: block; margin: 0 auto;" />');
+    feedbackEl.show();
+    setTimeout(function () {
+      pollAutograding(feedbackEl, questionId);
+    }, 1000);
+  }
+
+  $(function () {
+    $(".programEditor").each(function (i)
+    {
+      var answerDiv = $(this);
+      var prologueDiv = answerDiv.prev();
+      var epilogueDiv = answerDiv.next();
+      var lang = answerDiv.data("lang").trim();
+      if (lang.length > 0)
       {
-        reloginPopup(tinymce.get('dummyDiv'));
+        lang = "ace/mode/" + lang;
       } else
       {
-        showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span><s:text name="quiz.message.answerError" /></span></li></ul></div></div>');
+        lang = "ace/mode/c_cpp";
       }
-      filterResubmitMap[questionId] = false;
-    }
-
-    function filterResubmit(questionId)
-    {
-      if (!filterResubmitMap[questionId])
+      var epilogueLines = 0;
+      if (prologueDiv.html().trim().length > 0)
       {
-        filterResubmitMap[questionId] = true;
-        return true;
-      } else
-      {
-        showInfoBarMessage('<div id="errors"><div class="error_header">ERROR!</div><div class="error_message"><ul><li><span><s:text name="quiz.message.resubmitError" /></span></li></ul></div></div>');
-        return false;
-      }
-    }
-
-    function submitAnswer(btn, questionId)
-    {
-      console.log(btn)
-      console.log(questionId)
-      if (filterResubmit(questionId))
-      {
-        var formEl = $(btn).closest("form");
-        var formData = formEl.serialize();
-        console.log("form data: " + formData)
-        var url = '<s:url action="saveQuizAnswer"/>';
-        $.post(url, formData).done(function (data, stat, xhr) {
-          notifyUser(xhr, data, formEl, questionId);
-        }).fail(function (xhr, stat, err) {
-          notifyUser(xhr, "", formEl, questionId);
-        });
-      }
-    }
-
-    function submitEssay(btn, essayId)
-    {
-      if (filterResubmit(essayId))
-      {
-        // Copy text from editor to the form input field upon submit
-        var ansText = tinymce.get("essay" + essayId).getContent().trim();
-        var inputJQElement = $(btn).prevAll(".essayInput").first();
-        inputJQElement.val(ansText);
-        var formEl = $(btn).closest("form");
-        var formData = formEl.serialize();
-        var url = '<s:url action="saveQuizAnswer"/>';
-        $.post(url, formData).done(function (data, stat, xhr) {
-          if ((xhr.status == 200) || (xhr.status == 204))
-          {
-            tinymce.triggerSave();
-          }
-          notifyUser(xhr, data, formEl, essayId);
-        }).fail(function (xhr, stat, err) {
-          notifyUser(xhr, "", formEl, essayId);
-        });
-      }
-    }
-
-    function submitCode(btn, programId)
-    {
-      if (filterResubmit(programId))
-      {
-        var inputJQElement = $(btn).prevAll("input.programInput").first();
-        var ansText = ace.edit("program" + programId).getSession().getValue();
-        inputJQElement.val(ansText);
-        var formEl = $(btn).closest("form");
-        var formData = formEl.serialize();
-        var url = '<s:url action="saveQuizAnswer"/>';
-        $.post(url, formData).done(function (data, stat, xhr) {
-          notifyUser(xhr, data, formEl, programId);
-        }).fail(function (xhr, stat, err) {
-          notifyUser(xhr, "", formEl, programId);
-        });
-      }
-    }
-
-    function saveAndSubmitCode(btn, questionId)
-    {
-      var formEl = $(btn).closest("form");
-      formEl.find("input[name='autograde']").attr("value", "true");
-      formEl.find("input[name='testRun']").attr("value", "false");
-      submitCode(btn, questionId);
-      var feedbackEl = $("#feedbackDiv" + questionId);
-      feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" style="display: block; margin: 0 auto;" />');
-      feedbackEl.show();
-      setTimeout(function () {
-        pollAutograding(feedbackEl, questionId);
-      }, 1000);
-    }
-
-    function saveAndTestCode(btn, questionId)
-    {
-      var formEl = $(btn).closest("form");
-      formEl.find("input[name='autograde']").attr("value", "true");
-      formEl.find("input[name='testRun']").attr("value", "true");
-      submitCode(btn, questionId);
-      var feedbackEl = $("#feedbackDiv" + questionId);
-      feedbackEl.html('<img src="images/ajax-blue.gif" height="50px" style="display: block; margin: 0 auto;" />');
-      feedbackEl.show();
-      setTimeout(function () {
-        pollAutograding(feedbackEl, questionId);
-      }, 1000);
-    }
-
-    $(function () {
-      tinymce.init({
-        selector: "div.essayText",
-        inline: "true",
-        entity_encoding: "raw",
-        plugins: [
-          "advlist autolink autosave link image lists charmap preview hr anchor pagebreak",
-          "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
-          "save table contextmenu directionality emoticons template paste textcolor mathslate"
-        ],
-        menubar: false,
-        toolbar: [
-          "undo redo | styleselect | alignleft aligncenter alignright alignjustify | forecolor backcolor emoticons | table",
-          "bold italic underline superscript subscript mathslate | outdent indent bullist numlist | link image | preview code"
-        ]
-      });
-      tinymce.init({
-        selector: "#dummyDiv",
-        inline: "true",
-        menubar: false
-      });
-      $(".programEditor").each(function (i)
-      {
-        var answerDiv = $(this);
-        var prologueDiv = answerDiv.prev();
-        var epilogueDiv = answerDiv.next();
-        var lang = answerDiv.data("lang").trim();
-        if (lang.length > 0)
-        {
-          lang = "ace/mode/" + lang;
-        } else
-        {
-          lang = "ace/mode/c_cpp";
-        }
-        var epilogueLines = 0;
-        if (prologueDiv.html().trim().length > 0)
-        {
-          var prologueEditor = ace.edit(prologueDiv[0]);
-          prologueEditor.setHighlightActiveLine(false);
-          prologueEditor.setHighlightGutterLine(false);
-          prologueEditor.setReadOnly(true);
-          prologueEditor.setOptions({
-            maxLines: Infinity,
-            fontSize: "11pt"
-          });
-          prologueEditor.getSession().setMode(lang);
-          prologueEditor.getSession().setTabSize(2);
-          prologueEditor.getSession().setUseSoftTabs(true);
-          prologueEditor.getSession().setUseWrapMode(true);
-          prologueEditor.setTheme("ace/theme/solarized_light");
-          prologueEditor.session.gutterRenderer = {
-            getWidth: function (session, lastLineNumber, config) {
-              return 3 * config.characterWidth;
-            },
-            getText: function (session, row) {
-              return row + session.$firstLineNumber;
-            }
-          };
-          epilogueLines = prologueEditor.getSession().getLength();
-        }
-        var answerEditor = ace.edit(answerDiv[0]);
-        answerEditor.setOptions({
+        var prologueEditor = ace.edit(prologueDiv[0]);
+        prologueEditor.setHighlightActiveLine(false);
+        prologueEditor.setHighlightGutterLine(false);
+        prologueEditor.setReadOnly(true);
+        prologueEditor.setOptions({
           maxLines: Infinity,
-          fontSize: "11pt",
-          firstLineNumber: epilogueLines + 1
+          fontSize: "11pt"
         });
-        answerEditor.getSession().setMode(lang);
-        answerEditor.getSession().setTabSize(2);
-        answerEditor.getSession().setUseSoftTabs(true);
-        answerEditor.getSession().setUseWrapMode(true);
-        answerEditor.setTheme("ace/theme/textmate");
-        answerEditor.session.gutterRenderer = {
+        prologueEditor.getSession().setMode(lang);
+        prologueEditor.getSession().setTabSize(2);
+        prologueEditor.getSession().setUseSoftTabs(true);
+        prologueEditor.getSession().setUseWrapMode(true);
+        prologueEditor.setTheme("ace/theme/solarized_light");
+        prologueEditor.session.gutterRenderer = {
           getWidth: function (session, lastLineNumber, config) {
             return 3 * config.characterWidth;
           },
@@ -699,36 +742,80 @@
             return row + session.$firstLineNumber;
           }
         };
-        if (epilogueDiv.html().trim().length > 0)
-        {
-          var epilogueEditor = ace.edit(epilogueDiv[0]);
-          epilogueEditor.setHighlightActiveLine(false);
-          epilogueEditor.setHighlightGutterLine(false);
-          epilogueEditor.setReadOnly(true);
-          epilogueEditor.setOptions({
-            maxLines: Infinity,
-            fontSize: "11pt",
-            firstLineNumber: epilogueLines + answerEditor.getSession().getLength() + 1
-          });
-          epilogueEditor.getSession().setMode(lang);
-          epilogueEditor.getSession().setTabSize(2);
-          epilogueEditor.getSession().setUseSoftTabs(true);
-          epilogueEditor.getSession().setUseWrapMode(true);
-          epilogueEditor.setTheme("ace/theme/solarized_light");
-          epilogueEditor.session.gutterRenderer = {
-            getWidth: function (session, lastLineNumber, config) {
-              return 3 * config.characterWidth;
-            },
-            getText: function (session, row) {
-              return row + session.$firstLineNumber;
-            }
-          };
-          answerEditor.on("change", function (e) {
-            epilogueEditor.setOptions({maxLines: Infinity, firstLineNumber: epilogueLines + answerEditor.getSession().getLength() + 1});
-          });
-        }
+        epilogueLines = prologueEditor.getSession().getLength();
+      }
+      var answerEditor = ace.edit(answerDiv[0]);
+      answerEditor.setOptions({
+        maxLines: Infinity,
+        fontSize: "11pt",
+        firstLineNumber: epilogueLines + 1
       });
-      colorDiffFeedback($(".diffCell"));
+      answerEditor.getSession().setMode(lang);
+      answerEditor.getSession().setTabSize(2);
+      answerEditor.getSession().setUseSoftTabs(true);
+      answerEditor.getSession().setUseWrapMode(true);
+      answerEditor.setTheme("ace/theme/textmate");
+      answerEditor.session.gutterRenderer = {
+        getWidth: function (session, lastLineNumber, config) {
+          return 3 * config.characterWidth;
+        },
+        getText: function (session, row) {
+          return row + session.$firstLineNumber;
+        }
+      };
+      if (epilogueDiv.html().trim().length > 0)
+      {
+        var epilogueEditor = ace.edit(epilogueDiv[0]);
+        epilogueEditor.setHighlightActiveLine(false);
+        epilogueEditor.setHighlightGutterLine(false);
+        epilogueEditor.setReadOnly(true);
+        epilogueEditor.setOptions({
+          maxLines: Infinity,
+          fontSize: "11pt",
+          firstLineNumber: epilogueLines + answerEditor.getSession().getLength() + 1
+        });
+        epilogueEditor.getSession().setMode(lang);
+        epilogueEditor.getSession().setTabSize(2);
+        epilogueEditor.getSession().setUseSoftTabs(true);
+        epilogueEditor.getSession().setUseWrapMode(true);
+        epilogueEditor.setTheme("ace/theme/solarized_light");
+        epilogueEditor.session.gutterRenderer = {
+          getWidth: function (session, lastLineNumber, config) {
+            return 3 * config.characterWidth;
+          },
+          getText: function (session, row) {
+            return row + session.$firstLineNumber;
+          }
+        };
+        answerEditor.on("change", function (e) {
+          epilogueEditor.setOptions({maxLines: Infinity, firstLineNumber: epilogueLines + answerEditor.getSession().getLength() + 1});
+        });
+      }
     });
-  </script>
-</s:if>
+    tinymce.init({
+      selector: "div.essayText",
+      inline: "true",
+      entity_encoding: "raw",
+      plugins: [
+        "advlist autolink autosave link image lists charmap preview hr anchor pagebreak",
+        "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
+        "save table contextmenu directionality emoticons template paste textcolor mathslate"
+      ],
+      menubar: false,
+      toolbar: [
+        "undo redo | styleselect | alignleft aligncenter alignright alignjustify | forecolor backcolor emoticons | table",
+        "bold italic underline superscript subscript mathslate | outdent indent bullist numlist | link image | preview code"
+      ]
+    });
+    tinymce.init({
+      selector: "#dummyDiv",
+      inline: "true",
+      menubar: false
+    });
+    colorDiffFeedback($(".diffCell"));
+    $(".testCaseButtons").each(function (i)
+    {
+      $(this).children().last().click();
+    });
+  });
+</script>

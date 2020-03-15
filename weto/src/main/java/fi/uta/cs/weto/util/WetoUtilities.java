@@ -931,9 +931,8 @@ public class WetoUtilities
     int i = s.hashCode() % randomFirstNames.length;
     int j = s.hashCode() % randomLastNames.length;
     return randomFirstNames[i].substring(0, 1).toLowerCase()
-            + randomLastNames[j].substring(0,
-                    1).toLowerCase() + new Integer(100000 + new Random(s)
-                    .nextInt(900000)).toString();
+            + randomLastNames[j].substring(0, 1).toLowerCase()
+            + String.valueOf(100000 + new Random(s).nextInt(900000));
   }
 
   public static String getRandomEmail(Integer s)
@@ -953,7 +952,7 @@ public class WetoUtilities
     {
       s = new Random().nextInt();
     }
-    return new Integer(100000 + new Random(s).nextInt(900000)).toString();
+    return String.valueOf(100000 + new Random(s).nextInt(900000));
   }
    */
 

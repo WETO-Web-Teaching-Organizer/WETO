@@ -113,7 +113,8 @@ public class DownloadTaskDocument extends ActionSupport
           }
         }
         WetoTimeStamp[] viewPeriod = PermissionModel.getTimeStampLimits(
-                courseConn, courseUserId, taskId, PermissionType.VIEW);
+                courseConn, request.getRemoteAddr(), courseUserId, taskId,
+                PermissionType.VIEW);
         if(isHidden || (PermissionModel.checkTimeStampLimits(viewPeriod)
                 != PermissionModel.CURRENT) || ((clusterType == null)
                 && isNotPublic))

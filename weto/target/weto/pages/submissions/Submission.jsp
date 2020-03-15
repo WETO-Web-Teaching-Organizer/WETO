@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<script src="js/grading.js"></script>
 <s:if test="deleteConfirm">
   <s:set var="statusClass" scope="page">yellow</s:set>
 </s:if>
