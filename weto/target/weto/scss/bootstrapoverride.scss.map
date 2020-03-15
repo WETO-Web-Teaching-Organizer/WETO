@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": ";AAGA,UAAU;EACP,SAAS,EAAE,IAAI;EACf,UAAU,EAAE,IAAI;;AAInB,OAAO;EACJ,gBAAgB,EAAE,OAAyB;EAC3C,KAAK,ECNA,IAAI;;ADQZ,OAAO;EACJ,WAAW,EAAE,OAAO",
-"sources": ["aceEditor.scss","variables.scss"],
-"names": [],
-"file": "bootstrapoverride.scss"
-}

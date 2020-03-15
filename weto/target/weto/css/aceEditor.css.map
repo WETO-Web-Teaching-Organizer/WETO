@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AAEA,wCAAwC;AACxC,UAAU;EACR,SAAS,EAAE,IAAI;EACf,UAAU,EAAE,IAAI;;;AAElB,mBAAmB;EACjB,gBAAgB,EAAE,OAAyB;EAC3C,KAAK,ECJC,IAAI;;;ADOZ,qBAAqB;EACnB,gBAAgB,EAAE,OAAyB;EAC3C,KAAK,ECTC,IAAI;;;ADWZ,OAAO;EACL,WAAW,EAAE,OAAO",
-"sources": ["../scss/aceEditor.scss","../scss/variables.scss"],
-"names": [],
-"file": "aceEditor.css"
-}
