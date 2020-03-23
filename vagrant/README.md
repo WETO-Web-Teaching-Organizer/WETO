@@ -37,7 +37,7 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
 2. Set up the deployment settings from Tools > Deployment > Configuration
     - Add new SFTP "Vagrant"
     - Host: localhost, Port: 2222
-    - User and password: vagrant
+    - User: vagrant, use Keypair authentication. You need to navigate to the key file which should be under the directory vagrant/vagrant/machines/default/virtualbox/private_key
     - Hit OK
 3. Download the tomcat binaries for debugging
     - SSH to your Vagrant
@@ -57,7 +57,7 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
     - From templates select Tomcat Server and Remote
     - Hit "Create configuration" in the top right corner
     - Rename the configuration (e.g "Vagrant")
-    - Set the browser URL setting to http://localhost:8080/weto
+    - Set the browser URL setting to http://localhost:8080/weto5
     - Configure the Application Server
       - Tomcat home is the directory where we extracted the tomcat binaries to (project_root/vagrant/tomcat)
       - Hit OK
@@ -69,16 +69,17 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
         - Program:
           - Host: localhost
           - Port: 2222
-          - User and password: vagrant
+          - Credentials are the same as earlier
         - -> then select the file /vagrant/deploy.sh from the dialog that opens
         - Hit OK
     - Go to the tab "Startup/Connection"
       - Select "debug"
       - Change the port to 8081 from below
-5. Run the debug to test it's working
+5. Run the debugger to test it's working
     - If you're getting permission denied on the deploy.sh script, run the following commands within the vagrant folder:
     ```shell
     chmod +X deploy.sh
     chmod 777 deploy.sh
     ```
+    - If you're still facing issues it might be because the file is encoded with Windows file endings (CRLF). Linux can only run scripts with Unix file endings (LF). You can convert the file using most modern text editors.
 6. Done!
