@@ -463,13 +463,14 @@ public class ForumActions
         // Message
         valueMap.put("&message;", messageText);
 
-
+        CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
         // Send to all participants
         for(Integer authorId : messageAuthors) {
           UserAccount user = UserAccount.select1ById(courseConnection, authorId);
           UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
 
-          Notification notification = new Notification(masterUser.getId(), getCourseTaskId(), Notification.FORUM_POST);
+
+          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST);
           notification.setMessageFromTemplate(masterConnection, valueMap);
           notification.createNotification(masterConnection);
         }
