@@ -35,10 +35,11 @@ import org.apache.struts2.ServletActionContext;
 public class CourseMemberModel
 {
   public static void addStudent(Connection masterConn, Connection courseConn,
-          UserAccount addUser, String studentNumber, UserGroup addGroup,
-          boolean updateUserInfo, boolean addNewUser)
+          Integer courseDbId, UserAccount addUser, String studentNumber,
+          UserGroup addGroup, boolean updateUserInfo, boolean addNewUser)
           throws InvalidValueException, SQLException, ObjectNotValidException,
-                 NoSuchItemException, TooManyItemsException, IOException
+                 NoSuchItemException, TooManyItemsException, IOException,
+                 WetoTimeStampException
   {
     Integer courseTaskId = addGroup.getTaskId();
     String loginName = addUser.getLoginName();
@@ -298,6 +299,11 @@ public class CourseMemberModel
     {
       // No group information; do nothing
     }
+    // Make random tasks visible, if any, and also enforce register time
+    // limit, if any.
+    TaskModel
+            .selectRandomTasks(masterConn, courseConn, courseDbId, courseTaskId,
+                    courseUserId);
     // As last, remove possible information about pending or permitted student.
     try
     {
@@ -361,7 +367,7 @@ public class CourseMemberModel
         uidr.setCourseDbUserId(addedMember.getId());
         uidr.insert(courseConn);
       }
-      if(ClusterType.TEACHERS.equals(clusterType))
+      if(ClusterType.TEACHERS.getValue().equals(clusterType))
       {
         // Check if the user is already in the master and course database
         // teacher tables. If not, add user to them.
@@ -494,13 +500,13 @@ public class CourseMemberModel
     ServletContext context = ServletActionContext.getServletContext();
     HashMap<String, HashSet<Integer>> allPermittedLogins
                                               = (HashMap<String, HashSet<Integer>>) context
-            .getAttribute("permittedLogins");
+                    .getAttribute("permittedLogins");
     HashMap<String, HashSet<Integer>> allPermittedEmails
                                               = (HashMap<String, HashSet<Integer>>) context
-            .getAttribute("permittedEmails");
+                    .getAttribute("permittedEmails");
     HashMap<String, HashSet<Integer>> allPermittedStudentNumbers
                                               = (HashMap<String, HashSet<Integer>>) context
-            .getAttribute("permittedStudentNumbers");
+                    .getAttribute("permittedStudentNumbers");
     if((allPermittedLogins == null) || (allPermittedEmails == null)
             || (allPermittedStudentNumbers == null))
     { // The step below refreshes the permitted student information.

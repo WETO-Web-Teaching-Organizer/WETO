@@ -214,7 +214,7 @@ public class CreateGradesActions
           Integer submissionTimeStamp = latest.getTimeStamp();
           if(latest.getAutoGradeMark() != null)
           {
-            newMark = new Float(latest.getAutoGradeMark());
+            newMark = (float) latest.getAutoGradeMark();
             if(!latePenaltySchedule.isEmpty())
             {
               float penalty = 0;

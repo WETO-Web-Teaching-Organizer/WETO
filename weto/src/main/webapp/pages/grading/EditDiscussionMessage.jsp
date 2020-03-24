@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<script src="js/tinymce4/tinymce.min.js"></script>
 <form action="<s:url action="editGradeDiscussionMessage"/>" method="post" onsubmit="return pollLogin()">
   <input type="hidden" name="taskId" value="${taskId}" />
   <input type="hidden" name="tabId" value="${tabId}" />

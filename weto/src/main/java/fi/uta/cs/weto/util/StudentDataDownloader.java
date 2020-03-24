@@ -386,7 +386,7 @@ public class StudentDataDownloader
         }
       }
       WetoTimeStamp[] limits = PermissionModel
-              .getTaskTimeStampLimits(courseConn, null, tb.taskId,
+              .getTaskTimeStampLimits(courseConn, null, null, tb.taskId,
                       PermissionType.SUBMISSION, false);
       if((limits[1] != null) && !limits[1].getTimeStamp().equals(
               WetoTimeStamp.STAMP_MIN))

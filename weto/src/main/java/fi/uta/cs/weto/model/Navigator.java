@@ -35,6 +35,7 @@ public class Navigator
   private Integer activeCourseUserId;
   private final UserAccount realUser;
   private UserAccount activeUser;
+  private final String userIP;
   private final RightsCluster realCluster;
   private final RightsCluster studentCluster;
   private RightsCluster activeCluster;
@@ -55,10 +56,11 @@ public class Navigator
   // Navtree JSON defaults
   private final String DEFAULTROOTNAME = "root";
 
-  private Navigator(Connection masterConn, UserAccount masterUser,
+  private Navigator(Connection masterConn, String userIP, UserAccount masterUser,
           HashMap<Integer, String> databases, Integer masterDbId)
           throws InvalidValueException, SQLException, NoSuchItemException
   {
+    this.userIP = userIP;
     Integer masterUserId = masterUser.getId();
     if((masterUser.getLastName() == null) || masterUser.getLastName().isEmpty())
     {
@@ -82,11 +84,12 @@ public class Navigator
     this.courseSubtaskIds = new HashSet<>();
   }
 
-  private Navigator(Connection masterConn, Integer masterUserId,
+  private Navigator(Connection masterConn, String userIP, Integer masterUserId,
           Connection courseConn, Integer courseUserId, Integer courseTaskId,
           HashMap<Integer, String> databases, Integer dbId)
           throws InvalidValueException, SQLException, NoSuchItemException
   {
+    this.userIP = userIP;
     UserAccount masterUser = UserAccount.select1ById(masterConn, masterUserId);
     if((masterUser.getLastName() == null) || masterUser.getLastName().isEmpty())
     {
@@ -115,10 +118,11 @@ public class Navigator
     this.courseSubtaskIds = new HashSet<>();
   }
 
-  private Navigator(Navigator oldNavigator, Integer courseTaskId,
+  private Navigator(String userIP, Navigator oldNavigator, Integer courseTaskId,
           HashMap<Integer, String> databases, Integer dbId)
           throws InvalidValueException, SQLException, NoSuchItemException
   {
+    this.userIP = userIP;
     UserAccount masterUser = new UserAccount();
     masterUser.setFirstName((oldNavigator != null) ? oldNavigator.getUser()
             .getFirstName() : "Guest");
@@ -172,8 +176,8 @@ public class Navigator
               masterConn);
       UserAccount masterUser = Login.retrieveShibbolethAttributes(request,
               masterConn, databases);
-      instance = new Navigator(masterConn, masterUser, databases,
-              DatabasePool.MASTER_ID);
+      instance = new Navigator(masterConn, request.getRemoteAddr(), masterUser,
+              databases, DatabasePool.MASTER_ID);
       request.getSession().setAttribute("navigator", instance);
     }
     return instance;
@@ -186,8 +190,8 @@ public class Navigator
                  WetoTimeStampException
   {
     UserAccount masterUser = UserAccount.select1ById(masterConn, masterUserId);
-    Navigator instance = new Navigator(masterConn, masterUser, databases,
-            masterDbId);
+    Navigator instance = new Navigator(masterConn, request.getRemoteAddr(),
+            masterUser, databases, masterDbId);
     request.getSession().setAttribute("navigator", instance);
     return instance;
   }
@@ -199,8 +203,9 @@ public class Navigator
           throws SQLException, NoSuchItemException, InvalidValueException,
                  WetoTimeStampException
   {
-    Navigator instance = new Navigator(masterConn, masterUserId, courseConn,
-            courseUserId, courseTaskId, databases, dbId);
+    Navigator instance = new Navigator(masterConn, request.getRemoteAddr(),
+            masterUserId, courseConn, courseUserId, courseTaskId, databases,
+            dbId);
     instance.buildNavigationTree(courseConn, instance.DEFAULTROOTNAME);
     request.getSession().setAttribute("navigator", instance);
     return instance;
@@ -213,8 +218,8 @@ public class Navigator
           throws SQLException, NoSuchItemException, InvalidValueException,
                  WetoTimeStampException
   {
-    Navigator instance = new Navigator(oldNavigator, courseTaskId, databases,
-            dbId);
+    Navigator instance = new Navigator(request.getRemoteAddr(), oldNavigator,
+            courseTaskId, databases, dbId);
     instance.buildNavigationTree(courseConn, instance.DEFAULTROOTNAME);
     request.getSession().setAttribute("navigator", instance);
     return instance;
@@ -282,7 +287,7 @@ public class Navigator
       validGrades.put(grade.getTaskId(), grade.getMark());
     }
     HashSet<Integer> viewableSubtaskSet = isTeacher() ? null : PermissionModel
-            .getViewableCourseSubtasks(courseConn, courseTaskId, false,
+            .getViewableCourseSubtasks(courseConn, userIP, courseTaskId, false,
                     subtaskListMap, activeCourseUserId);
     // Create root
     JsonObject root = new JsonObject();
@@ -446,6 +451,11 @@ public class Navigator
   public UserAccount getRealUser()
   {
     return realUser;
+  }
+
+  public String getUserIP()
+  {
+    return userIP;
   }
 
   public boolean isAdmin()

@@ -231,6 +231,23 @@ public class Task extends BeanTask
     }
   }
 
+  public boolean getIsRandomTask()
+  {
+    return ((getStatus() & TaskStatus.RANDOM_TASK.getBit()) != 0);
+  }
+
+  public void setIsRandomTask(boolean is) throws InvalidValueException
+  {
+    if(is)
+    {
+      setStatus(getStatus() | TaskStatus.RANDOM_TASK.getBit());
+    }
+    else
+    {
+      setStatus(getStatus() & (~TaskStatus.RANDOM_TASK.getBit()));
+    }
+  }
+
   public boolean getIsAutoGraded()
   {
     return ((getStatus() & TaskStatus.AUTOGRADED.getBit()) != 0);

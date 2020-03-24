@@ -1,5 +1,9 @@
 package fi.uta.cs.weto.actions.submissions;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import fi.uta.cs.weto.db.AutoGradeJobQueue;
 import fi.uta.cs.weto.db.Submission;
 import fi.uta.cs.weto.db.Tag;
 import fi.uta.cs.weto.model.Tab;
@@ -58,9 +62,26 @@ public class DownloadFeedback extends WetoCourseAction
     {
       throw new WetoActionException(getText("general.error.accessDenied"));
     }
+    String base64Text = feedbackTag.getText();
+    if(base64Text.startsWith("{"))
+    {
+      JsonObject fullFeedbackJson = new JsonParser().parse(base64Text)
+              .getAsJsonObject();
+      JsonElement phaseJson = fullFeedbackJson.get("phase");
+      if((phaseJson != null) && !phaseJson.isJsonNull())
+      {
+        int phase = phaseJson.getAsInt();
+        if(getNavigator().isStudent() && ((phase
+                == AutoGradeJobQueue.IMMEDIATE_PRIVATE) || (phase
+                == AutoGradeJobQueue.FINAL_PRIVATE)))
+        {
+          return ACCESS_DENIED;
+        }
+      }
+      base64Text = fullFeedbackJson.get("data").getAsString();
+    }
     documentStream = new GZIPInputStream(new ByteArrayInputStream(
-            DatatypeConverter.parseBase64Binary(feedbackTag.getText())),
-            bufferSize);
+            DatatypeConverter.parseBase64Binary(base64Text)), bufferSize);
     contentLength = feedbackTag.getStatus();
     return SUCCESS;
   }

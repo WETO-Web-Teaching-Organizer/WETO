@@ -1,5 +1,8 @@
 package fi.uta.cs.weto.actions.submissions;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import fi.uta.cs.weto.db.Submission;
 import fi.uta.cs.weto.db.Tag;
 import fi.uta.cs.weto.model.Tab;
@@ -58,7 +61,16 @@ public class ViewFeedback extends WetoCourseAction
     {
       throw new WetoActionException(getText("general.error.accessDenied"));
     }
-    feedback = WetoUtilities.gzippedBase64ToString(feedbackTag.getText());
+    String base64Data = feedbackTag.getText();
+    try
+    {
+      JsonObject fbJson = new JsonParser().parse(base64Data).getAsJsonObject();
+      base64Data = fbJson.get("data").getAsString();
+    }
+    catch(JsonSyntaxException e)
+    {
+    }
+    feedback = WetoUtilities.gzippedBase64ToString(base64Data);
     return SUCCESS;
   }
 

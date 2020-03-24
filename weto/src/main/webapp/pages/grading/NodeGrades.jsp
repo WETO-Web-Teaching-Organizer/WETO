@@ -110,39 +110,16 @@
               <td>
                 ${groupMembers[student.userId]}
               </td>
-              <s:if test="courseUserId == #student.userId) && !resultsPeriodActive)">
-                <td>
-                  <s:text name="general.header.notAvailable" />
-                </td>
-              </s:if>
-              <s:else>
-                <s:iterator var="grade" value="grades[#studentLoop.index]" status="gradeLoop">
-                  <s:if test="courseUserId == #student.userId">
-                    <s:if test="!resultsPeriods[#gradeLoop.index]">
-                      <td>
-                        <s:text name="general.header.notAvailable" />
-                      </td>
-                    </s:if>
-                    <s:elseif test="#grade != null">
-                      <td>${grade}</td>
-                    </s:elseif>
-                    <s:else>
-                      <td>
-                        <s:text name="general.header.unspecified" />
-                      </td>
-                    </s:else>
-                  </s:if>
-                  <s:elseif test="#grade != null">
-                    <td>${grade}</td>
-                  </s:elseif>
-                  <s:else>
-                    <td>
-                      <s:text name="general.header.unspecified" />
-                    </td>
-                  </s:else>
-                  <s:set var="grade" value="null"/>
-                </s:iterator>
-              </s:else>
+              <s:iterator var="grade" value="grades[#studentLoop.index]" status="gradeLoop">
+                <s:if test="#grade != null">
+                  <td>${grade}</td>
+                </s:if>
+                <s:else>
+                  <td>
+                    <s:text name="general.header.unspecified" />
+                  </td>
+                </s:else>
+              </s:iterator>
             </tr>
           </s:iterator>
         </tbody>
@@ -158,6 +135,7 @@
     <table class="table tablesorter" id="gradeTable">
       <thead>
         <tr>
+          <th></th>
           <th><s:text name="general.header.receiver" /></th>
           <th><s:text name="general.header.group" /></th>
             <s:iterator var="gradeTask" value="tasks">
@@ -168,6 +146,7 @@
       <tbody>
         <s:iterator var="student" value="students" status="studentLoop">
           <tr>
+            <td>${studentLoop.count}</td>
             <td>
               ${student.lastName}, ${student.firstName} (${student.loginName})
             </td>
@@ -182,29 +161,15 @@
             <s:else>
               <s:iterator var="grade" value="grades[#studentLoop.index]" status="gradeLoop">
                 <s:if test="courseUserId == #student.userId">
-                  <s:if test="!resultsPeriods[#gradeLoop.index]">
-                    <td>
-                      <s:text name="general.header.notAvailable" />
-                    </td>
-                  </s:if>
-                  <s:elseif test="#grade != null">
+                  <s:if test="#grade != null">
                     <td>${grade}</td>
-                  </s:elseif>
+                  </s:if>
                   <s:else>
                     <td>
                       <s:text name="general.header.unspecified" />
                     </td>
                   </s:else>
                 </s:if>
-                <s:elseif test="#grade != null">
-                  <td>${grade}</td>
-                </s:elseif>
-                <s:else>
-                  <td>
-                    <s:text name="general.header.unspecified" />
-                  </td>
-                </s:else>
-                <s:set var="grade" value="null"/>
               </s:iterator>
             </s:else>
           </tr>

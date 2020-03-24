@@ -1,6 +1,5 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
 <s:if test="tabs.size() > 1">
-  <script src ="js/tabmenu-sticky.js"></script>
   <ul id="tabnav" class="tabnav-sticky" style="display: none">
     <s:iterator var="tab" value="tabs">
       <s:if test='%{#tab.value == tabId}'>

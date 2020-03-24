@@ -25,7 +25,7 @@
   <s:textarea id="textArea" name="documentText"/>
   <div id="editorDiv"></div>
 </form>
-<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/ace/ace.js"></script>
 <script>
   $(function () {
     var textarea = $('#textArea');

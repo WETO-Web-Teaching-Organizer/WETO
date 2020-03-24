@@ -142,7 +142,6 @@ var SubmissionsList = React.createClass({
 
         // Fetch documents
         this.setState({submissionsMap: {}});
-        console.log(response);
         var receivedSubmissions = response.submissions;
         receivedSubmissions.forEach(function (receivedSubmission) {
           var submissionsMap = this.state.submissionsMap;

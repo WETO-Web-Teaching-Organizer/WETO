@@ -33,6 +33,7 @@ public class ImportStudents extends WetoTeacherAction
     Connection courseConn = getCourseConnection();
     Connection masterConn = getMasterConnection();
     Integer courseTaskId = getCourseTaskId();
+    Integer courseDbId = getDbId();
     Integer masterTaskId = CourseImplementation
             .select1ByDatabaseIdAndCourseTaskId(masterConn, getDbId(),
                     courseTaskId).getMasterTaskId();
@@ -89,8 +90,8 @@ public class ImportStudents extends WetoTeacherAction
           }
           try
           {
-            CourseMemberModel.addStudent(masterConn, courseConn, addUser,
-                    studentNumber, addGroup, true, false);
+            CourseMemberModel.addStudent(masterConn, courseConn, courseDbId,
+                    addUser, studentNumber, addGroup, true, false);
           }
           catch(NoSuchItemException e)
           {

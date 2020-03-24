@@ -19,5 +19,16 @@
       </div>
       <%-- <div id="footer"><tiles:insertAttribute name="footer" /></div>--%>
     </div>
+    <script>
+      function reloginPopup(tinymceInstance)
+      {
+        tinymceInstance.windowManager.open({
+          file: '${reloginUrl}',
+          title: '<s:text name="general.header.relogin" />',
+          width: window.innerWidth * 0.8,
+          height: window.innerHeight * 0.8
+        });
+      }
+    </script>
   </body>
 </html>

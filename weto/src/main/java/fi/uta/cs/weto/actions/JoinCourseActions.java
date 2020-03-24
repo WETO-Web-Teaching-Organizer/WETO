@@ -74,8 +74,11 @@ public class JoinCourseActions
       {
       }
       UserAccount masterUser = getNavigator().getUser();
-      if(checkPermittedSet(masterConn, masterUser, masterTaskId, studentNumber)
-              || checkRegisterPermissions(masterConn, masterUser, masterTaskId))
+      final String userIP = getNavigator().getUserIP();
+      if(checkViewPermissions(masterConn, userIP, masterUserId, masterTaskId)
+              && (checkPermittedSet(masterConn, masterUser, masterTaskId,
+                      studentNumber) || checkRegisterPermissions(masterConn,
+                      userIP, masterUserId, masterTaskId)))
       {
         Integer courseTaskId = course.getCourseTaskId();
         // Get the databasepool for course
@@ -109,7 +112,7 @@ public class JoinCourseActions
         groupList = null;
       }
       publicViewingOk = courseTask.getIsPublic() && checkViewPermissions(
-              masterConn, masterUserId, masterTaskId);
+              masterConn, userIP, masterUserId, masterTaskId);
       return SUCCESS;
     }
 
@@ -181,10 +184,12 @@ public class JoinCourseActions
       catch(NoSuchItemException e)
       {
       }
+      final String userIP = getNavigator().getUserIP();
       boolean inPermittedSet = checkPermittedSet(masterConn, addUser,
               masterTaskId, studentNumber);
-      if(inPermittedSet || checkRegisterPermissions(masterConn, addUser,
-              masterTaskId))
+      if(checkViewPermissions(masterConn, userIP, masterUserId, masterTaskId)
+              && (inPermittedSet || checkRegisterPermissions(masterConn, userIP,
+                      masterUserId, masterTaskId)))
       {
         Connection courseConn = getConnection(dbId);
         if(course.getAcceptAllStudents() || inPermittedSet)
@@ -195,8 +200,8 @@ public class JoinCourseActions
           {
             addGroup.setId(groupId);
           }
-          CourseMemberModel.addStudent(masterConn, courseConn, addUser, null,
-                  addGroup, false, false);
+          CourseMemberModel.addStudent(masterConn, courseConn, dbId, addUser,
+                  null, addGroup, false, false);
           addActionMessage(getText("courseRegistration.message.registered"));
           result = "forward";
         }
@@ -268,22 +273,22 @@ public class JoinCourseActions
   }
 
   private static boolean checkRegisterPermissions(Connection masterConn,
-          UserAccount masterUser, Integer masterTaskId)
+          String userIP, Integer masterUserId, Integer masterTaskId)
           throws SQLException, WetoTimeStampException
   {
     WetoTimeStamp[] registerPeriod = PermissionModel.getTaskTimeStampLimits(
-            masterConn, masterUser.getId(), masterTaskId,
+            masterConn, userIP, masterUserId, masterTaskId,
             PermissionType.REGISTER);
     return (PermissionModel.checkTimeStampLimits(registerPeriod)
             == PermissionModel.CURRENT);
   }
 
   private static boolean checkViewPermissions(Connection masterConn,
-          Integer masterUserId, Integer masterTaskId)
+          String userIP, Integer masterUserId, Integer masterTaskId)
           throws SQLException, WetoTimeStampException
   {
     WetoTimeStamp[] viewPeriod = PermissionModel.getTaskTimeStampLimits(
-            masterConn, masterUserId, masterTaskId, PermissionType.VIEW);
+            masterConn, userIP, masterUserId, masterTaskId, PermissionType.VIEW);
     return (PermissionModel.checkTimeStampLimits(viewPeriod)
             == PermissionModel.CURRENT);
   }

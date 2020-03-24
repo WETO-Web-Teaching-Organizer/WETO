@@ -7,7 +7,8 @@ public enum TaskStatus
   AUTOGRADED(2, "general.header.autoGraded"),
   NO_INLINE(3, "NO_INLINE"),
   REVIEWINSTRUCTIONS(4, "general.header.reviewInstructions"),
-  PUBLIC(5, "general.header.public");
+  PUBLIC(5, "general.header.public"),
+  RANDOM_TASK(6, "general.header.randomTask");
 
   private final Integer value;
   private final String property;

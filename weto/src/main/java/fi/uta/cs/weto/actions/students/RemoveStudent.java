@@ -38,8 +38,9 @@ public class RemoveStudent extends WetoCourseAction
     Integer courseTaskId = getCourseTaskId();
     Integer userId = getCourseUserId();
     final boolean isTeacher = getNavigator().isTeacher();
+    final String userIP = getNavigator().getUserIP();
     WetoTimeStamp[] withdrawLimits = PermissionModel.getTimeStampLimits(conn,
-            userId, courseTaskId, PermissionType.WITHDRAW, isTeacher);
+            userIP, userId, courseTaskId, PermissionType.WITHDRAW, isTeacher);
     int withdrawValue = PermissionModel.checkTimeStampLimits(withdrawLimits);
     // Verify that the current user is allowed to withdraw the specified student
     if((withdrawValue != PermissionModel.CURRENT) || !(isTeacher || userId

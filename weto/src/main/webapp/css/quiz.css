@@ -5,111 +5,140 @@
   padding: 2px;
   border-spacing: 1px;
   border: 0;
-  width: 80%; }
+  width: 80%;
+}
 
 #hideDetailsLinkDiv {
   display: none;
   padding: 2px;
   border-spacing: 1px;
   border: 0;
-  width: 80%; }
+  width: 80%;
+}
 
 .rightAlign {
-  float: right; }
+  float: right;
+}
 
 .leftAlign {
-  float: left; }
+  float: left;
+}
 
 .centerAlign {
   display: table;
-  margin: 0 auto; }
+  margin: 0 auto;
+}
 
 .essayText {
   padding: 3px;
-  border: 1px dotted #c9c9c9; }
+  border: 1px dotted #c9c9c9;
+}
 
 .noteBox {
   margin: 3px;
   padding: 3px;
-  border: 1px dotted #c9c9c9; }
+  border: 1px dotted #c9c9c9;
+}
 
 .noteBox p {
   margin-top: 3px;
-  margin-bottom: 3px; }
+  margin-bottom: 3px;
+}
 
 .filter {
-  margin: 8px; }
+  margin: 8px;
+}
 
 .survey {
   overflow-x: auto;
-  width: 100%; }
+  width: 100%;
+}
 
 div.questionBox {
   border: 1px dotted #c9c9c9;
-  margin: 5px; }
-  div.questionBox hr {
-    border-top: 1px solid #005768; }
+  margin: 5px;
+}
+div.questionBox hr {
+  border-top: 1px solid #005768;
+}
 
 div.highlightBox {
   border: 2px solid #005768;
   border-radius: 8px;
   padding: 1em;
   margin: 5px;
-  width: 100%; }
-  div.highlightBox hr {
-    border-top: 1px solid #005768; }
+  width: 100%;
+}
+div.highlightBox hr {
+  border-top: 1px solid #005768;
+}
 
 div.answerBox {
   border: 1px dashed #005768;
   margin: 0px;
-  padding: 3px; }
+  padding: 3px;
+}
 
 .contentBox .form-group > * {
-  margin: 0.4em; }
-  .contentBox .form-group > * span {
-    margin-left: 2em; }
+  margin: 0.4em;
+}
+.contentBox .form-group > * span {
+  margin-left: 2em;
+}
 
 form input[type="radio"] {
-  margin-right: 0.6em; }
+  margin-right: 0.6em;
+}
 form .addSurvey .btn-group .saveButton {
   border: 0.3em solid !important;
   border-color: #00829b !important;
   background-color: #f4f4f4;
-  float: right; }
+  float: right;
+}
 form fieldset .delete-choice {
   float: right;
-  background-color: #A52929; }
+  background-color: #A52929;
+}
 form fieldset .btn-delete {
-  background-color: #A52929; }
+  background-color: #A52929;
+}
 
 .ui-accordion-content {
-  background-color: white; }
+  background-color: white;
+}
 
 .ui-progressbar-value {
   font-size: 13px;
   font-weight: normal;
   line-height: 18px;
-  padding-left: 10px; }
+  padding-left: 10px;
+}
 
 /* Quiz list styles */
 ol.bullet_123 {
-  list-style-type: decimal; }
+  list-style-type: decimal;
+}
 
 ol.bullet_abc {
-  list-style-type: lower-alpha; }
+  list-style-type: lower-alpha;
+}
 
 ol.bullet_ABCD {
-  list-style-type: upper-alpha; }
+  list-style-type: upper-alpha;
+}
 
 ol.bullet_none {
-  list-style-type: none; }
+  list-style-type: none;
+}
 
 ol.bullet_horiz > li {
   display: inline;
-  padding-left: 10px; }
+  padding-left: 10px;
+}
 
 ol.quiz {
   margin-top: 0;
-  margin-bottom: 0; }
+  margin-bottom: 0;
+}
 
 /*# sourceMappingURL=quiz.css.map */

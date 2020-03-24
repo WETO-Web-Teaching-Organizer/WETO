@@ -44,6 +44,18 @@ public class Tag extends BeanTag
     return result;
   }
 
+  public static ArrayList<Tag> selectByType(Connection conn, Integer tagType)
+          throws SQLException
+  {
+    ArrayList<Tag> tags = new ArrayList<>();
+    Iterator<?> iter = selectionIterator(conn, "type=" + tagType);
+    while(iter.hasNext())
+    {
+      tags.add((Tag) iter.next());
+    }
+    return tags;
+  }
+
   /**
    * Retrieves tags associated with the given tagged object and tag type.
    *
@@ -211,6 +223,23 @@ public class Tag extends BeanTag
     catch(WetoTimeStampException | InvalidValueException e)
     {
       throw new ObjectNotValidException("Error setting time stamp.");
+    }
+    super.update(conn);
+  }
+
+  public void update(Connection conn, boolean updateTimeStamp)
+          throws SQLException, ObjectNotValidException, NoSuchItemException
+  {
+    if(updateTimeStamp)
+    {
+      try
+      {
+        setTimeStamp(new WetoTimeStamp().getTimeStamp());
+      }
+      catch(WetoTimeStampException | InvalidValueException e)
+      {
+        throw new ObjectNotValidException("Error setting time stamp.");
+      }
     }
     super.update(conn);
   }

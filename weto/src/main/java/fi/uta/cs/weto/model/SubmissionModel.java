@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 
 public class SubmissionModel
 {
-  // Awkward: use DbConnectionManager as a means to access resource files
   public static final String resubmitComment = WetoUtilities.getMessageResource(
           "autograding.header.resubmitComment");
 
@@ -166,12 +165,12 @@ public class SubmissionModel
       ArrayList<Submission> quizSubmissions = Submission
               .selectByUserIdAndTaskIdAndStatus(conn, submitterId,
                       submissionTaskId, SubmissionStatus.QUIZ_SUBMISSION
-                      .getValue());
+                              .getValue());
       if(quizSubmissions.size() == 1)
       {
         ArrayList<Tag> quizAnswerTags = Tag.selectByTaggedIdAndAuthorIdAndType(
                 conn, submissionTaskId, submitterId, TagType.QUIZ_ANSWER
-                .getValue());
+                        .getValue());
         for(Tag tag : quizAnswerTags)
         {
           tag.delete(conn);
@@ -291,7 +290,7 @@ public class SubmissionModel
     Format timeFormatter = new SimpleDateFormat("HH-mm-ss");
     Set<Map.Entry<Integer, ArrayList<Submission>>> submissionLists
                                                            = submissions
-            .entrySet();
+                    .entrySet();
     for(Map.Entry<Integer, ArrayList<Submission>> entry : submissionLists)
     {
       UserAccount student = UserAccount.select1ById(conn, entry.getKey());
