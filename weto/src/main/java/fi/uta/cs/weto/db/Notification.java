@@ -179,7 +179,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             rs.close();
         }
 
-        if( rows != 1 ) throw new SQLException("Insert did not return a row");
+        if( rows != 1 ) throw new SQLException("Update did not return a row");
     }
 
     public void select(Connection con) throws SQLException, InvalidValueException, NoSuchItemException {
@@ -187,7 +187,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
         ResultSet rs = null;
         try (PreparedStatement ps = con.prepareStatement(prepareString)) {
-            ps.setObject(1, id);
+            ps.setInt(1, id);
             rs = ps.executeQuery();
             if (rs.next()) {
                 setFromResultSet(rs,0);
