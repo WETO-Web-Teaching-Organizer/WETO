@@ -9,10 +9,21 @@ import fi.uta.cs.weto.util.Email;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
+
+    // Create a list of the different types
+    public static final List<String> notificationTypes;
+    static {
+        List<String> typeList = new ArrayList<>();
+        typeList.add(FORUM_POST);
+        notificationTypes = Collections.unmodifiableList(typeList);
+    }
 
     private static final Logger logger = Logger.getLogger(Notification.class);
 

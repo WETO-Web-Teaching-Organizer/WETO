@@ -8,19 +8,7 @@ import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.ObjectNotValidException;
 import fi.uta.cs.sqldatamodel.TooManyItemsException;
-import fi.uta.cs.weto.db.ClusterIdReplication;
-import fi.uta.cs.weto.db.ClusterMember;
-import fi.uta.cs.weto.db.GroupMember;
-import fi.uta.cs.weto.db.Permission;
-import fi.uta.cs.weto.db.PermissionIdReplication;
-import fi.uta.cs.weto.db.Property;
-import fi.uta.cs.weto.db.RightsCluster;
-import fi.uta.cs.weto.db.Student;
-import fi.uta.cs.weto.db.Task;
-import fi.uta.cs.weto.db.Teacher;
-import fi.uta.cs.weto.db.UserAccount;
-import fi.uta.cs.weto.db.UserGroup;
-import fi.uta.cs.weto.db.UserIdReplication;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.util.WetoUtilities;
 import java.io.IOException;
 import java.sql.Connection;
@@ -202,6 +190,10 @@ public class CourseMemberModel
       uidr.setCourseDbUserId(courseUserId);
       uidr.insert(courseConn);
     }
+
+    // Create notification settings
+    NotificationSetting.createSettings(courseConn, courseUserId, courseCluster.getTaskId());
+
     Integer masterTaskId = masterCluster.getTaskId();
     boolean inPermittedCourses = CourseMemberModel.getPermittedCourses(
             masterConn, addUser, studentNumber).contains(masterTaskId);
@@ -402,6 +394,10 @@ public class CourseMemberModel
         clusterMember.setUserId(uidr.getCourseDbUserId());
         clusterMember.insert(courseConn);
       }
+
+      // Create notification settings
+      NotificationSetting.createSettings(courseConn, uidr.getCourseDbUserId(), courseCluster.getTaskId());
+
       addedMembers.add(addedMember);
     }
     return addedMembers;
@@ -1188,6 +1184,13 @@ public class CourseMemberModel
       {
         throw new WetoActionException();
       }
+    }
+
+    // 5. Create default notification settings for user
+    try {
+      NotificationSetting.createSettings(courseConn, uidr.getCourseDbUserId(), courseTaskId);
+    } catch (SQLException e) {
+      throw new WetoActionException("Failed to create default notification settings: " + e.getMessage());
     }
   }
 
