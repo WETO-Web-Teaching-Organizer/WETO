@@ -122,7 +122,7 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
             ps.setInt(1, id);
             rs = ps.executeQuery();
             if (rs.next()) {
-                setFromResultSet(rs,0);
+                setFromResultSet(rs);
             } else {
                 throw new NoSuchItemException();
             }
@@ -133,18 +133,18 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         }
     }
 
-    public static ArrayList<NotificationSetting> selectByUserAndCourse(Connection con, int userId, int courseId) throws SQLException {
+    public static ArrayList<NotificationSetting> selectByUserAndCourse(Connection connection, int userId, int courseId) throws SQLException {
         String prepareString = "SELECT id, userId, courseId, type, notifications, emailNotifications FROM NotificationSetting WHERE userId = ? AND courseId = ?";
 
         ResultSet rs = null;
         ArrayList<NotificationSetting> settings = new ArrayList<>();
-        try (PreparedStatement ps = con.prepareStatement(prepareString)) {
+        try (PreparedStatement ps = connection.prepareStatement(prepareString)) {
             ps.setInt(1, userId);
             ps.setInt(2, courseId);
 
             rs = ps.executeQuery();
             while (rs.next()) {
-                settings.add(initFromResultSet(rs, 0));
+                settings.add(initFromResultSet(rs));
             }
         } finally {
             if(rs != null) {
@@ -165,15 +165,23 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         this.emailNotifications = resultSet.getBoolean(baseIndex + 6);
     }
 
-    public static NotificationSetting initFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException {
+    public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
+        this.id = resultSet.getInt("id");
+        this.userId = resultSet.getInt("userId");
+        this.courseId = resultSet.getInt("courseId");
+        this.type = resultSet.getString("type");
+        this.notifications = resultSet.getBoolean("notifications");
+        this.emailNotifications = resultSet.getBoolean("emailNotifications");
+    }
+
+    public static NotificationSetting initFromResultSet(ResultSet resultSet) throws SQLException {
         NotificationSetting result = new NotificationSetting();
 
-        result.setId(resultSet.getInt(baseIndex + 1));
-        result.setUserId(resultSet.getInt(baseIndex + 2));
-        result.setCourseId(resultSet.getInt(baseIndex + 3));
-        result.setType(resultSet.getString(baseIndex + 4));
-        result.setNotifications(resultSet.getBoolean(baseIndex + 5));
-        result.setEmailNotifications(resultSet.getBoolean(baseIndex + 6));
+        try {
+            result.setFromResultSet(resultSet);
+        } catch (InvalidValueException e) {
+            throw new SQLException(e);
+        }
 
         return result;
     }

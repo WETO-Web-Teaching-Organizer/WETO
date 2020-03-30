@@ -185,7 +185,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             rows = ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if(rs.next()) {
-                setFromResultSet(rs, 0);
+                setFromResultSet(rs);
             }
             rs.close();
         }
@@ -201,7 +201,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             ps.setInt(1, id);
             rs = ps.executeQuery();
             if (rs.next()) {
-                setFromResultSet(rs,0);
+                setFromResultSet(rs);
             } else {
                 throw new NoSuchItemException();
             }
@@ -212,6 +212,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         id = resultSet.getInt(baseIndex+1);
         userId = resultSet.getInt(baseIndex+2);
@@ -221,6 +222,17 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         createdAt = resultSet.getInt(baseIndex+6);
         readByUser = resultSet.getBoolean(baseIndex+7);
         sentByEmail = resultSet.getBoolean(baseIndex+8);
+    }
+
+    public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
+        id = resultSet.getInt("id");
+        userId = resultSet.getInt("userId");
+        courseId = resultSet.getInt("courseId");
+        type = resultSet.getString("type");
+        message = resultSet.getString("message");
+        createdAt = resultSet.getInt("createdAt");
+        readByUser = resultSet.getBoolean("readByUser");
+        sentByEmail = resultSet.getBoolean("sentByEmail");
     }
 
     public Object clone() throws CloneNotSupportedException {

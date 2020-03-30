@@ -46,7 +46,7 @@ public class NotificationActions {
 
             try {
                 settings = NotificationSetting.createSettings(courseConnection, userId, courseId);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new WetoActionException("Failed to retrieve notification settings");
             }
 
