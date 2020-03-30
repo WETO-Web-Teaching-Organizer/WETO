@@ -79,8 +79,19 @@ public class NotificationActions {
                 List<NotificationSetting> currentSettings = NotificationSetting.selectByUserAndCourse(courseConnection, userId, courseId);
                 for(NotificationSetting setting : currentSettings) {
 
-                    setting.setNotifications(Boolean.parseBoolean(settingsMap.get(setting.getType() + "_notifications")));
-                    setting.setEmailNotifications(Boolean.parseBoolean(settingsMap.get(setting.getType() + "_emailNotifications")));
+                    try {
+                        String notifications = settingsMap.get(setting.getType() + "_notifications");
+                        setting.setNotifications(Boolean.parseBoolean(notifications));
+                    } catch (NullPointerException e) {
+                        setting.setNotifications(false);
+                    }
+
+                    try {
+                        String emailNotifications = settingsMap.get(setting.getType() + "_emailNotifications");
+                        setting.setEmailNotifications(Boolean.parseBoolean(emailNotifications));
+                    } catch (NullPointerException e) {
+                        setting.setEmailNotifications(false);
+                    }
 
                     // Make sure that notifications are on if email notifications are checked
                     if(setting.isEmailNotifications()) {
