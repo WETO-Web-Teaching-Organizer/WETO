@@ -1,6 +1,7 @@
 package fi.uta.cs.weto.actions;
 
 import fi.uta.cs.weto.db.NotificationSetting;
+import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
@@ -12,15 +13,29 @@ import java.util.Map;
 
 public class NotificationActions {
     public static class ViewNotificationSettings extends WetoCourseAction {
+        private boolean saveFailed;
         private List<NotificationSetting> settings;
+
+        public boolean getSaveFailed() {
+            return saveFailed;
+        }
+
+        public void setSaveFailed(boolean saveFailed) {
+            this.saveFailed = saveFailed;
+        }
 
         public List<NotificationSetting> getSettings() {
             return settings;
         }
 
+        public void setSettings(List<NotificationSetting> settings) {
+            this.settings = settings;
+        }
+
         public ViewNotificationSettings() {
             super(Tab.MAIN.getBit(), 0, 0, 0);
             settings = null;
+            saveFailed = false;
         }
 
         @Override
@@ -66,6 +81,11 @@ public class NotificationActions {
 
                     setting.setNotifications(Boolean.parseBoolean(settingsMap.get(setting.getType() + "_notifications")));
                     setting.setEmailNotifications(Boolean.parseBoolean(settingsMap.get(setting.getType() + "_emailNotifications")));
+
+                    // Make sure that notifications are on if email notifications are checked
+                    if(setting.isEmailNotifications()) {
+                        setting.setNotifications(true);
+                    }
 
                     setting.update(courseConnection);
                 }

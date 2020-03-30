@@ -351,6 +351,7 @@
         <param name="taskId">${taskId}</param>
         <param name="tabId">${tabId}</param>
         <param name="dbId">${dbId}</param>
+        <param name="saveFailed">true</param>
       </result>
     </action>
   </package>
