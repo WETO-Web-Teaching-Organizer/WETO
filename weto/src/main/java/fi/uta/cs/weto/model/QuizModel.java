@@ -1,5 +1,7 @@
 package fi.uta.cs.weto.model;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
@@ -10,10 +12,8 @@ import fi.uta.cs.weto.db.AutoGradeJobQueue;
 import fi.uta.cs.weto.db.Tag;
 import static fi.uta.cs.weto.model.TaskModel.migrateStringDocumentIds;
 import fi.uta.cs.weto.util.WetoCsvReader;
-import fi.uta.cs.weto.util.WetoCsvWriter;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.AbstractMap;
@@ -210,8 +210,8 @@ public class QuizModel
       qList.add(question);
       hadQuestions = decodeQuestions(qList);
     }
-    catch(InvalidValueException | NoSuchItemException | ObjectNotValidException |
-          SQLException e)
+    catch(InvalidValueException | NoSuchItemException | ObjectNotValidException
+                  | SQLException e)
     {
       e.printStackTrace();
     }
@@ -470,7 +470,6 @@ public class QuizModel
                  ObjectNotValidException, WetoTimeStampException
   {
     boolean hadMultipleChoiceQuestions = false;
-    HashMap<Integer, WetoCsvWriter> partScoreMap = new HashMap<>();
     HashMap<Integer, Float> totalScoreMap = new HashMap<>();
     for(QuestionBean qb : questions)
     {
@@ -503,15 +502,8 @@ public class QuizModel
           String[][] answerTable = qb.getUserAnswers();
           if((answerTable != null) && (answerTable[0] != null))
           {
-            StringBuilder feedbackSB = new StringBuilder();
-            boolean hasFeedback = false;
-            WetoCsvWriter wcw = partScoreMap.get(answer.getAuthorId());
-            if(wcw == null)
-            {
-              wcw = new WetoCsvWriter(new StringWriter());
-              partScoreMap.put(answer.getAuthorId(), wcw);
-            }
             Float answerScore = 0.0F;
+            JsonArray casesJson = new JsonArray();
             for(int i = 0; i < answerTable[0].length; ++i)
             {
               if("true".equals(answerTable[0][i]))
@@ -519,24 +511,17 @@ public class QuizModel
                 Float scoreFraction = qb.getScoreFractions()[i];
                 String feedback = qb.getFeedbacks()[i];
                 answerScore += ((scoreFraction != null) ? scoreFraction : 0.0F);
-                ArrayList<String> row = new ArrayList<>();
-                row.add(qb.getQuestionId().toString());
-                row.add((scoreFraction != null) ? scoreFraction.toString()
-                                : null);
-                row.add((feedback != null) ? feedback : null);
-                wcw.writeStrings(row);
-                feedbackSB.append((feedback != null) ? feedback : "");
-                if((feedback != null) && !feedback.isEmpty())
-                {
-                  hasFeedback = true;
-                }
+                JsonObject scoreJson = new JsonObject();
+                scoreJson.addProperty("choice", i);
+                scoreJson.addProperty("score", (scoreFraction != null)
+                                                       ? scoreFraction : 0.0F);
+                scoreJson.addProperty("feedback", feedback);
+                casesJson.add(scoreJson);
               }
-              feedbackSB.append("\n");
             }
             JsonObject resultJson = new JsonObject();
             resultJson.addProperty("mark", answerScore);
-            resultJson.addProperty("feedback", hasFeedback ? feedbackSB
-                    .toString() : "");
+            resultJson.add("cases", casesJson);
             Tag quizScoreTag = new Tag();
             quizScoreTag.setType(TagType.QUIZ_SCORE.getValue());
             quizScoreTag.setTaggedId(taskId);
@@ -687,6 +672,9 @@ public class QuizModel
               .getTaskId(), quizAnswerTag.getId(), quizAnswerTag.getAuthorId(),
               TagType.QUIZ_SCORE.getValue());
       String resultString = quizScoreTag.getText();
+      final boolean isStudent = wca.getNavigator().isStudent();
+      final String notShownStr = wca.getText(
+              "autograding.message.incorrectResult");
       if(resultString != null)
       {
         resultString = resultString.trim();
@@ -694,62 +682,99 @@ public class QuizModel
         {
           JsonObject resultJson = new JsonParser().parse(quizScoreTag.getText())
                   .getAsJsonObject();
-          boolean hideFeedback = false;
-          if(resultJson.has("mark") && !resultJson.get("mark").isJsonNull())
+          float mark = 0.0F;
+          JsonElement markJson = resultJson.get("mark");
+          if((markJson != null) && !markJson.isJsonNull())
           {
-            float score = resultJson.get("mark").getAsFloat();
-            if(resultJson.has("feedback"))
+            mark = markJson.getAsFloat();
+          }
+          JsonArray casesJson = resultJson.getAsJsonArray("cases");
+          if(casesJson != null)
+          {
+            HashMap<Integer, Integer> fullFeedbackMap = new HashMap<>();
+            ArrayList<Tag> fullFeedbackTags = Tag
+                    .selectByTaggedIdAndRankAndType(conn, qb.getTaskId(),
+                            quizAnswerTag.getId(), TagType.FEEDBACK.getValue());
+            for(Tag fullFeedbackTag : fullFeedbackTags)
             {
-              String feedback = resultJson.getAsJsonPrimitive("feedback")
-                      .getAsString();
-              if(!"OK".equals(feedback) && resultJson.has("phase")
-                      && !resultJson.get("phase").isJsonNull())
+              String text = fullFeedbackTag.getText();
+              if((text != null) && text.startsWith("{"))
               {
-                int phase = resultJson.getAsJsonPrimitive("phase").getAsInt();
-                hideFeedback = (phase == AutoGradeJobQueue.IMMEDIATE_PRIVATE)
-                        && wca.getNavigator().isStudent();
+                JsonObject fullFeedbackJson = new JsonParser().parse(text)
+                        .getAsJsonObject();
+                int test = Integer.MIN_VALUE;
+                JsonElement testJson = fullFeedbackJson.get("test");
+                if((testJson != null) && !testJson.isJsonNull())
+                {
+                  test = testJson.getAsInt();
+                }
+                fullFeedbackMap.put(test, fullFeedbackTag.getId());
               }
             }
-            qb.setResultMark(score);
+            String[] feedbacks = new String[casesJson.size()];
+            Integer[] testNos = new Integer[casesJson.size()];
+            Float[] scores = new Float[casesJson.size()];
+            Integer[] fullFeedbacks = new Integer[casesJson.size()];
+            int i = 0;
+            for(JsonElement caseElem : casesJson)
+            {
+              JsonObject caseJson = caseElem.getAsJsonObject();
+              String feedback = caseJson.get("feedback").getAsString();
+              JsonElement phaseJson = caseJson.get("phase");
+              feedbacks[i] = feedback;
+              boolean hideFeedback = false;
+              if((phaseJson != null) && !phaseJson.isJsonNull() && !"OK".equals(
+                      feedback))
+              {
+                int phase = phaseJson.getAsInt();
+                if(isStudent
+                        && ((phase == AutoGradeJobQueue.IMMEDIATE_PRIVATE)
+                        || (phase == AutoGradeJobQueue.FINAL_PRIVATE)))
+                {
+                  hideFeedback = true;
+                  feedbacks[i] = notShownStr;
+                }
+              }
+              JsonElement testJson = caseJson.get("test");
+              if((testJson != null) && !testJson.isJsonNull())
+              {
+                int test = testJson.getAsInt();
+                if(!hideFeedback)
+                {
+                  fullFeedbacks[i] = fullFeedbackMap.get(test);
+                }
+                testNos[i] = test;
+              }
+              float score = 0.0F;
+              JsonElement scoreJson = caseJson.get("score");
+              if((scoreJson != null) && !scoreJson.isJsonNull())
+              {
+                score = scoreJson.getAsFloat();
+              }
+              scores[i] = score;
+              i += 1;
+            }
+            qb.setResultFeedbacks(feedbacks);
+            qb.setResultTestNos(testNos);
+            qb.setResultScores(scores);
+            qb.setResultFullFeedbacks(fullFeedbacks);
           }
-          if(hideFeedback)
+          qb.setResultMark(mark);
+          JsonElement errorJson = resultJson.get("error");
+          if(errorJson == null)
           {
-            resultJson.remove("feedback");
-            resultJson.addProperty("feedback", wca.getText(
-                    "autograding.message.incorrectResult"));
+            errorJson = resultJson.get("warning");
           }
-          else
+          if((errorJson != null) && !errorJson.isJsonNull())
           {
-            ArrayList<Tag> fullFeedbacks = Tag.selectByTaggedIdAndRankAndType(
+            qb.setResultError(errorJson.getAsString());
+            ArrayList<Tag> fullErrors = Tag.selectByTaggedIdAndRankAndType(
                     conn, qb.getTaskId(), quizAnswerTag.getId(),
-                    TagType.FEEDBACK.getValue());
-            if(!fullFeedbacks.isEmpty())
+                    TagType.COMPILER_RESULT.getValue());
+            if(!fullErrors.isEmpty())
             {
-              qb.setResultFullFeedback(fullFeedbacks.get(0).getId());
+              qb.setResultFullError(fullErrors.get(0).getId());
             }
-            else
-            {
-              ArrayList<Tag> fullErrors = Tag.selectByTaggedIdAndRankAndType(
-                      conn, qb.getTaskId(), quizAnswerTag.getId(),
-                      TagType.COMPILER_RESULT.getValue());
-              if(!fullErrors.isEmpty())
-              {
-                qb.setResultFullFeedback(fullErrors.get(0).getId());
-              }
-            }
-          }
-          if(resultJson.has("feedback") && !resultJson.get("feedback")
-                  .isJsonNull())
-          {
-            qb.setResultFeedback(resultJson.get("feedback").getAsString());
-          }
-          if(resultJson.has("error") && !resultJson.get("error").isJsonNull())
-          {
-            qb.setResultError(resultJson.get("error").getAsString());
-          }
-          if(resultJson.has("test") && !resultJson.get("test").isJsonNull())
-          {
-            qb.setResultTest(resultJson.get("test").getAsInt());
           }
         }
       }

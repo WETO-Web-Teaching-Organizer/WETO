@@ -203,6 +203,9 @@
         <param name="contentLength">${contentLength}</param>
         <param name="bufferSize">${bufferSize}</param>
       </result>
+      <result name="courseAccessDenied" type="httpheader">
+        <param name="status">403</param>
+      </result>
       <result name="error" type="httpheader">
         <param name="status">404</param>
       </result>

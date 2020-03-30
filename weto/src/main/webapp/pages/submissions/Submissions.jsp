@@ -25,7 +25,6 @@
 <s:set var="viewTXT" value="%{getText('general.header.view')}" />
 <s:set var="resubmitTXT" value="%{getText('general.header.resubmit')}" />
 <s:set var="processingTXT" value="1" />
-<script src="js/grading.js"></script>
 <!-- Some explanation text about submissions -->
 <div id="submissionInstructions">
   <div class="header_field">
@@ -407,7 +406,8 @@
         for (var i = 0; i < boxes.length; i++) {
           boxes[i].checked = checked;
         }
-      }}
+      }
+    }
     );
   </script>
 </s:if>

@@ -213,12 +213,14 @@ public class UploadTask extends WetoTeacherAction
           Set<String> studentLoginSet, boolean allStudents)
           throws IOException, InvalidValueException, SQLException,
                  ObjectNotValidException, NoSuchItemException,
-                 WetoActionException, TooManyItemsException
+                 WetoActionException, TooManyItemsException,
+                 WetoTimeStampException
   {
     File file;
     try(CsvListReader students = new WetoCsvReader(file = new File(taskDir,
             "students.txt")))
     {
+      final Integer courseDbId = getDbId();
       List<String> row;
       UserGroup group = new UserGroup();
       group.setTaskId(task.getRootTaskId());
@@ -249,8 +251,8 @@ public class UploadTask extends WetoTeacherAction
               user.setEmail(row.get(5));
             }
             String studentNumber = row.get(4);
-            CourseMemberModel.addStudent(masterConn, courseConn, user,
-                    studentNumber, group, false, true);
+            CourseMemberModel.addStudent(masterConn, courseConn, courseDbId,
+                    user, studentNumber, group, false, true);
             user = UserAccount.select1ByLoginName(courseConn, loginName);
             loginIdMap.put(loginName, user.getId());
           }
@@ -502,7 +504,7 @@ public class UploadTask extends WetoTeacherAction
       List<String> row;
       while((row = permissions.read()) != null)
       {
-        if(row.size() == permissionCols)
+        if(row.size() >= permissionCols) // Will be >, if detail is present.
         {
           String login = row.get(0);
           if(!discardLoginSet.contains(login))
@@ -546,6 +548,14 @@ public class UploadTask extends WetoTeacherAction
             permission.setType(permissionType);
             permission.setStartDate(WetoTimeStamp.stringToStamp(row.get(3)));
             permission.setEndDate(WetoTimeStamp.stringToStamp(row.get(4)));
+            if(row.size() == (permissionCols + 1))
+            {
+              String permissionDetail = row.get(5);
+              if(permissionDetail != null)
+              {
+                permission.setDetail(permissionDetail);
+              }
+            }
             permission.insert(courseConn);
           }
         }

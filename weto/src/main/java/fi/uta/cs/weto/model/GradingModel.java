@@ -63,8 +63,7 @@ public class GradingModel
       review.delete(conn);
     }
     for(Tag message : Tag.selectByTaggedIdAndStatusAndType(conn, grade
-            .getTaskId(), grade.getId(),
-            TagType.GRADE_DISCUSSION.REVIEW.getValue()))
+            .getTaskId(), grade.getId(), TagType.GRADE_DISCUSSION.getValue()))
     {
       message.delete(conn);
     }
@@ -261,7 +260,7 @@ public class GradingModel
     // If studentId is not null, then only a specific student is processed.
     ArrayList<Grade> gradeList = (studentId != null) ? getStudentGrades(conn,
             taskId, studentId, ignoreGroups) : Grade
-            .selectByTaskId(conn, taskId);
+                    .selectByTaskId(conn, taskId);
     // Values as arrays to allow indirect references.
     Map<Integer, Integer[]> countMap = new HashMap<>();
     Map<Integer, Float[]> markMap = new HashMap<>();
@@ -374,8 +373,11 @@ public class GradingModel
         }
         else
         {
-          aggregateGrade.setMark(mark);
-          updateGrades.add(aggregateGrade);
+          if(!mark.equals(aggregateGrade.getMark()))
+          {
+            aggregateGrade.setMark(mark);
+            updateGrades.add(aggregateGrade);
+          }
           aggregateGradeMap.remove(receiverId);
         }
       }
@@ -479,8 +481,14 @@ public class GradingModel
         }
         else
         {
-          aggregateGrade.setMark(aggregateMark);
-          updateGrades.add(aggregateGrade);
+          Float existingMark = aggregateGrade.getMark();
+          if(((aggregateMark == null) && (existingMark != null))
+                  || ((aggregateMark != null) && !aggregateMark.equals(
+                          existingMark)))
+          {
+            aggregateGrade.setMark(aggregateMark);
+            updateGrades.add(aggregateGrade);
+          }
           aggregateGradeMap.remove(receiverId);
         }
       }
@@ -722,7 +730,7 @@ public class GradingModel
           {
             if(GradeStatus.AGGREGATE.getValue().equals(a.getStatus())
                     && !GradeStatus.AGGREGATE.getValue()
-                    .equals(b.getStatus()))
+                            .equals(b.getStatus()))
             {
               return -1;
             }

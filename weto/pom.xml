@@ -6,7 +6,7 @@
   <version>4.0</version>
 
   <organization>
-    <name>Tampereen yliopisto</name>
+    <name>Tampere University</name>
     <url>https://www.tuni.fi</url>
   </organization>
 
@@ -41,6 +41,7 @@
       <version>1.0</version>
     </dependency>
 
+
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -74,25 +75,25 @@
     <dependency>
       <groupId>org.apache.struts</groupId>
       <artifactId>struts2-core</artifactId>
-      <version>2.5.20</version>
+      <version>2.5.22</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.struts</groupId>
       <artifactId>struts2-tiles-plugin</artifactId>
-      <version>2.5.20</version>
+      <version>2.5.22</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.struts</groupId>
       <artifactId>struts2-config-browser-plugin</artifactId>
-      <version>2.5.20</version>
+      <version>2.5.22</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.struts</groupId>
       <artifactId>struts2-json-plugin</artifactId>
-      <version>2.5.20</version>
+      <version>2.5.22</version>
     </dependency>
 
     <dependency>
@@ -164,7 +165,7 @@
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
-      <version>1.17</version>
+      <version>1.22</version>
     </dependency>
 
     <dependency>
@@ -191,6 +192,22 @@
       <groupId>javax.servlet</groupId>
       <artifactId>jstl</artifactId>
       <version>1.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.3.0</version>
     </dependency>
 
     <dependency>
@@ -223,24 +240,6 @@
       <artifactId>poi-ooxml</artifactId>
       <version>3.17</version>
     </dependency>
-
-    <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-core</artifactId>
-      <version>2.3.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <version>2.3.0</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -255,9 +254,32 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>nl.geodienstencentrum.maven</groupId>
+        <artifactId>sass-maven-plugin</artifactId>
+        <version>3.7.2</version>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>update-stylesheets</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <resources>
+            <resource>
+              <source>
+                <directory>${project.basedir}/src/main/webapp/scss</directory>
+              </source>
+              <destination>${project.basedir}/src/main/webapp/css</destination>
+            </resource>
+          </resources>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
-
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>

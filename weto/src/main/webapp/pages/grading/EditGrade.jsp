@@ -28,8 +28,6 @@
 <s:set var="challengeGradeTXT" value="getText('grading.header.challengeGrade')" />
 <s:set var="discussGradeTXT" value="getText('grading.header.discussGrade')" />
 <s:set var="acceptGradeTXT" value="getText('grading.header.acceptGrade')" />
-<script src="js/tinymce4/tinymce.min.js"></script>
-<script src="js/grading.js"></script>
 <h2><s:text name="grading.header.editGrade" /></h2>
 <%-- GRADE EDITOR  --%>
 <form action="<s:url action="saveReviewAndGrade" />" method="post">

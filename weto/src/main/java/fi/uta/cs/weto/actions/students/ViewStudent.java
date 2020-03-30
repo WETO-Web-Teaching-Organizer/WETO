@@ -105,8 +105,9 @@ public class ViewStudent extends WetoCourseAction
       throw new WetoActionException(getText("general.error.accessDenied"));
     }
     final boolean isTeacher = getNavigator().isTeacher();
+    final String userIP = getNavigator().getUserIP();
     WetoTimeStamp[] withdrawLimits = PermissionModel.getTimeStampLimits(conn,
-            userId, courseTaskId, PermissionType.WITHDRAW, isTeacher);
+            userIP, userId, courseTaskId, PermissionType.WITHDRAW, isTeacher);
     int withdrawValue = PermissionModel.checkTimeStampLimits(withdrawLimits);
     // Is the current user allowed to withdraw the viewed student?
     canWithdraw = (withdrawValue == PermissionModel.CURRENT) && (isTeacher
@@ -294,7 +295,7 @@ public class ViewStudent extends WetoCourseAction
         }
         ArrayList<String[]> receivedGrades = new ArrayList<>();
         WetoTimeStamp[] resultsPeriod = PermissionModel.getTimeStampLimits(conn,
-                userId, dfsTaskId, PermissionType.RESULTS);
+                userIP, userId, dfsTaskId, PermissionType.RESULTS);
         if(PermissionModel.checkTimeStampLimits(resultsPeriod)
                 == PermissionModel.CURRENT)
         {

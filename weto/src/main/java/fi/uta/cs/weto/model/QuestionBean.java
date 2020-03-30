@@ -20,10 +20,12 @@ public class QuestionBean extends ContentElementBean
   private String[][] userAnswers;
   private String userAnswerDate;
   private Float resultMark;
-  private String resultFeedback;
+  private Float[] resultScores;
+  private Integer[] resultTestNos;
+  private String[] resultFeedbacks;
+  private Integer[] resultFullFeedbacks;
   private String resultError;
-  private Integer resultTest;
-  private Integer resultFullFeedback;
+  private Integer resultFullError;
 
   public QuestionBean(Integer contentElementType, Integer taskId,
           Integer questionId)
@@ -63,7 +65,7 @@ public class QuestionBean extends ContentElementBean
 
   public void setQuestionName(String questionName)
   {
-    this.questionName = questionName;
+    this.questionName = WetoUtilities.escapeHtml(questionName);
   }
 
   public String[] getQuestionTexts()
@@ -111,44 +113,68 @@ public class QuestionBean extends ContentElementBean
     this.resultMark = resultMark;
   }
 
-  public String getResultFeedback()
+  public Float[] getResultScores()
   {
-    return WetoUtilities.escapeHtml(resultFeedback);
+    return resultScores;
   }
 
-  public void setResultFeedback(String resultFeedback)
+  public void setResultScores(Float[] resultScores)
   {
-    this.resultFeedback = resultFeedback;
+    this.resultScores = resultScores;
+  }
+
+  public Integer[] getResultTestNos()
+  {
+    return resultTestNos;
+  }
+
+  public void setResultTestNos(Integer[] resultTestNos)
+  {
+    this.resultTestNos = resultTestNos;
+  }
+
+  public String[] getResultFeedbacks()
+  {
+    return resultFeedbacks;
+  }
+
+  public void setResultFeedbacks(String[] resultFeedbacks)
+  {
+    this.resultFeedbacks = new String[resultFeedbacks.length];
+    for(int i = 0; i < resultFeedbacks.length; ++i)
+    {
+      this.resultFeedbacks[i] = WetoUtilities.escapeHtml(resultFeedbacks[i]);
+    }
   }
 
   public String getResultError()
   {
-    return WetoUtilities.escapeHtml(resultError);
+    return resultError;
   }
 
   public void setResultError(String resultError)
   {
-    this.resultError = resultError;
+    this.resultError = WetoUtilities.escapeHtml(resultError);
   }
 
-  public Integer getResultTest()
+  public Integer getResultFullError()
   {
-    return resultTest;
+    return resultFullError;
   }
 
-  public void setResultTest(Integer resultTest)
+  public void setResultFullError(Integer resultFullError)
   {
-    this.resultTest = resultTest;
+    this.resultFullError = resultFullError;
   }
 
-  public Integer getResultFullFeedback()
+  public Integer[] getResultFullFeedbacks()
   {
-    return resultFullFeedback;
+    return resultFullFeedbacks;
   }
 
-  public void setResultFullFeedback(Integer resultFullFeedback)
+  public void setResultFullFeedbacks(Integer[] resultFullFeedbacks)
   {
-    this.resultFullFeedback = resultFullFeedback;
+    this.resultFullFeedbacks = resultFullFeedbacks;
   }
 
   public void setFeedbacks(String[] feedbacks)

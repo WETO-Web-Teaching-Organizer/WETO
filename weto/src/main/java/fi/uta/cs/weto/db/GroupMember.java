@@ -3,6 +3,7 @@ package fi.uta.cs.weto.db;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.ObjectNotValidException;
+import fi.uta.cs.sqldatamodel.SqlSelectionIterator;
 import static fi.uta.cs.weto.db.DbGroupMember.selectionIterator;
 import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.model.WetoTimeStampException;
@@ -64,6 +65,28 @@ public class GroupMember extends BeanGroupMember
     while(iter.hasNext())
     {
       result.add((GroupMember) iter.next());
+    }
+    return result;
+  }
+
+  public static GroupMember select1ByTaskIdAndGroupIdAndUserId(Connection conn,
+          Integer taskId, Integer groupId, Integer userId) throws SQLException,
+                                                                  InvalidValueException,
+                                                                  NoSuchItemException
+  {
+
+    GroupMember result = null;
+    SqlSelectionIterator iter = (SqlSelectionIterator) selectionIterator(conn,
+            "taskid=" + taskId + " and groupid=" + groupId + " and userid="
+            + userId);
+    if(iter.hasNext())
+    {
+      result = (GroupMember) iter.next();
+      iter.close();
+    }
+    else
+    {
+      throw new NoSuchItemException();
     }
     return result;
   }

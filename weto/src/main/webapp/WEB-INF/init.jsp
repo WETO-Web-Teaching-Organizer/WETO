@@ -6,15 +6,3 @@
 <s:set var="submissionsTabId" value="4" />
 <s:set var="groupsTabId" value="6" />
 <s:url action="relogin" var="reloginUrl" escapeAmp="false" />
-
-<script>
-  function reloginPopup(tinymceInstance)
-  {
-    tinymceInstance.windowManager.open({
-      file: '${reloginUrl}',
-      title: '<s:text name="general.header.relogin" />',
-      width: window.innerWidth * 0.8,
-      height: window.innerHeight * 0.8
-    });
-  }
-</script>

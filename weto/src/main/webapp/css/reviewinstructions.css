@@ -1,31 +1,39 @@
 #instructionsList {
-  padding: 0px; }
-  #instructionsList .instruction {
-    min-height: 80px;
-    position: relative; }
-    #instructionsList .instruction .left {
-      float: left;
-      padding-right: 20px;
-      min-width: 9%;
-      margin-bottom: 15px; }
-    #instructionsList .instruction .right {
-      max-width: 87%;
-      float: left;
-      padding: 0px 20px 0px 20px;
-      border-left: 1px solid rgba(2, 0, 0, 0.25); }
-      #instructionsList .instruction .right .instructionName {
-        display: inline-block;
-        font-weight: bold;
-        margin: 0px 0px 15px 0px; }
-      #instructionsList .instruction .right .points {
-        color: #009933; }
-  #instructionsList .closebuttonContainer {
-    float: right;
-    position: absolute;
-    right: 2px;
-    top: 2px;
-    z-index: 900; }
-  #instructionsList .clearer {
-    clear: both; }
+  padding: 0px;
+}
+#instructionsList .instruction {
+  min-height: 80px;
+  position: relative;
+}
+#instructionsList .instruction .left {
+  float: left;
+  padding-right: 20px;
+  min-width: 9%;
+  margin-bottom: 15px;
+}
+#instructionsList .instruction .right {
+  max-width: 87%;
+  float: left;
+  padding: 0px 20px 0px 20px;
+  border-left: 1px solid rgba(2, 0, 0, 0.25);
+}
+#instructionsList .instruction .right .instructionName {
+  display: inline-block;
+  font-weight: bold;
+  margin: 0px 0px 15px 0px;
+}
+#instructionsList .instruction .right .points {
+  color: #009933;
+}
+#instructionsList .closebuttonContainer {
+  float: right;
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 900;
+}
+#instructionsList .clearer {
+  clear: both;
+}
 
 /*# sourceMappingURL=reviewinstructions.css.map */

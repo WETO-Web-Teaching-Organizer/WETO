@@ -1,6 +1,12 @@
 package fi.uta.cs.weto.actions.grading;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
+import fi.uta.cs.weto.db.DatabasePool;
 import fi.uta.cs.weto.db.Document;
 import fi.uta.cs.weto.db.Grade;
 import fi.uta.cs.weto.db.GroupMember;
@@ -9,6 +15,7 @@ import fi.uta.cs.weto.db.Log;
 import fi.uta.cs.weto.db.Scoring;
 import fi.uta.cs.weto.db.StudentView;
 import fi.uta.cs.weto.db.Submission;
+import fi.uta.cs.weto.db.Tag;
 import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.db.UserGroup;
 import fi.uta.cs.weto.db.UserTaskView;
@@ -23,6 +30,7 @@ import fi.uta.cs.weto.model.PermissionModel;
 import fi.uta.cs.weto.model.PermissionType;
 import fi.uta.cs.weto.model.SubmissionModel;
 import fi.uta.cs.weto.model.Tab;
+import fi.uta.cs.weto.model.TagType;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
 import fi.uta.cs.weto.model.WetoTimeStamp;
@@ -78,7 +86,6 @@ public class ViewGradesActions
     private boolean gradingPeriodActive;
     private String[] resultsPeriod;
     private boolean resultsPeriodActive;
-    private ArrayList<Boolean> resultsPeriods;
     private ArrayList<StudentView> students;
     private ArrayList<String[]> gradeTable;
     private ArrayList<ArrayList<Float>> grades;
@@ -100,29 +107,36 @@ public class ViewGradesActions
       Connection conn = getCourseConnection();
       Integer userId = getCourseUserId();
       Integer taskId = getTaskId();
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] gradingLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADING);
-      gradingPeriodActive = (PermissionModel
-              .checkTimeStampLimits(gradingLimits)
+              userIP, userId, taskId, PermissionType.GRADING);
+      gradingPeriodActive = (PermissionModel.checkTimeStampLimits(gradingLimits)
               == PermissionModel.CURRENT);
       gradingPeriod = WetoTimeStamp.limitsToStrings(gradingLimits);
       WetoTimeStamp[] resultsLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.RESULTS);
-      resultsPeriodActive = (PermissionModel
-              .checkTimeStampLimits(resultsLimits)
+              userIP, userId, taskId, PermissionType.RESULTS);
+      resultsPeriodActive = (PermissionModel.checkTimeStampLimits(resultsLimits)
               == PermissionModel.CURRENT);
       resultsPeriod = WetoTimeStamp.limitsToStrings(resultsLimits);
       tasks = new ArrayList<>();
       tasks.add(getTask());
-      tasks.addAll(GradingModel.getGradableSubtasks(conn, tasks.get(0)));
-      resultsPeriods = new ArrayList<>();
-      for(Task gradeTask : tasks)
+      for(Task gradeTask : GradingModel.getGradableSubtasks(conn, tasks.get(0)))
       {
-        WetoTimeStamp[] descResultsPeriod = PermissionModel.getTimeStampLimits(
-                conn, userId, gradeTask.getId(), PermissionType.RESULTS);
-        resultsPeriods.add(PermissionModel
-                .checkTimeStampLimits(descResultsPeriod)
-                == PermissionModel.CURRENT);
+        if(!gradeTask.getIsHidden())
+        {
+          Integer subtaskId = gradeTask.getId();
+          WetoTimeStamp[] viewLimits = PermissionModel.getTimeStampLimits(conn,
+                  userIP, userId, subtaskId, PermissionType.VIEW);
+          resultsLimits = PermissionModel.getTimeStampLimits(conn, userIP,
+                  userId, subtaskId, PermissionType.RESULTS);
+          if((PermissionModel.checkTimeStampLimits(viewLimits)
+                  == PermissionModel.CURRENT) && (PermissionModel
+                          .checkTimeStampLimits(resultsLimits)
+                  == PermissionModel.CURRENT))
+          {
+            tasks.add(gradeTask);
+          }
+        }
       }
       if(haveViewRights(Tab.GRADING.getBit(), false, true))
       {
@@ -240,11 +254,6 @@ public class ViewGradesActions
       return resultsPeriodActive;
     }
 
-    public ArrayList<Boolean> getResultsPeriods()
-    {
-      return resultsPeriods;
-    }
-
     public ArrayList<StudentView> getStudents()
     {
       return students;
@@ -342,20 +351,19 @@ public class ViewGradesActions
       Connection conn = getCourseConnection();
       Integer userId = getCourseUserId();
       Integer taskId = getTaskId();
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] gradingLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADING);
-      gradingPeriodActive = (PermissionModel
-              .checkTimeStampLimits(gradingLimits)
+              userIP, userId, taskId, PermissionType.GRADING);
+      gradingPeriodActive = (PermissionModel.checkTimeStampLimits(gradingLimits)
               == PermissionModel.CURRENT);
       gradingPeriod = WetoTimeStamp.limitsToStrings(gradingLimits);
       WetoTimeStamp[] resultsLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.RESULTS);
-      resultsPeriodActive = (PermissionModel
-              .checkTimeStampLimits(resultsLimits)
+              userIP, userId, taskId, PermissionType.RESULTS);
+      resultsPeriodActive = (PermissionModel.checkTimeStampLimits(resultsLimits)
               == PermissionModel.CURRENT);
       resultsPeriod = WetoTimeStamp.limitsToStrings(resultsLimits);
       WetoTimeStamp[] challengeLimits = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.GRADE_CHALLENGE);
+              userIP, userId, taskId, PermissionType.GRADE_CHALLENGE);
       challengePeriodActive = (PermissionModel.checkTimeStampLimits(
               challengeLimits) == PermissionModel.CURRENT);
       challengePeriod = WetoTimeStamp.limitsToStrings(challengeLimits);

@@ -218,9 +218,10 @@ public class Login extends WetoMasterAction
           throws Exception
   {
     ShibbolethLogin sl = new ShibbolethLogin(username, password, logger);
-    String loginWithDomain = username;
+    String slUser = sl.getLoginName();
     // Verify that Shibboleth returned the same username
-    if(!loginWithDomain.equals(sl.getLoginName()))
+    if(slUser == null || !(slUser.startsWith(username + "@") || slUser.equals(
+            username)))
     {
       throw new WetoActionException(getText("login.error.credentials"),
               ACCESS_DENIED);
@@ -235,7 +236,17 @@ public class Login extends WetoMasterAction
     String lastName = sl.getLastName();
     String email = sl.getEmail();
     String studentNumber = sl.getStudentNumber();
-    return syncDatabaseUser(user, loginWithDomain, firstName, lastName, email,
+    if(!slUser.equals(username))
+    {
+      try
+      {
+        user = UserAccount.select1ByLoginName(masterConn, slUser);
+      }
+      catch(NoSuchItemException e)
+      {
+      }
+    }
+    return syncDatabaseUser(user, slUser, firstName, lastName, email,
             studentNumber, masterConn, databases);
   }
 
@@ -252,9 +263,7 @@ public class Login extends WetoMasterAction
     }
     try
     {
-      String userWithDomain = username.endsWith("@tuni.fi") ? username
-                                      : username + "@tuni.fi";
-      user = UserAccount.select1ByLoginName(masterConn, userWithDomain);
+      user = UserAccount.select1ByLoginName(masterConn, username);
     }
     catch(NoSuchItemException e)
     {

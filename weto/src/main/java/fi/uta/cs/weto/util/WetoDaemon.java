@@ -1,5 +1,7 @@
 package fi.uta.cs.weto.util;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
@@ -89,8 +91,6 @@ public class WetoDaemon extends Thread
   private Integer jobCounter = 0;
 
   private String errors;
-  private int firstTest;
-  private int lastTest;
   private int nextPhase;
 
   public static void main(String args[]) throws IOException
@@ -336,6 +336,15 @@ public class WetoDaemon extends Thread
                   agjq.getTaskId(), quizAnswerTag.getId(), quizAnswerTag
                   .getAuthorId(), TagType.QUIZ_SCORE.getValue());
           quizScoreTag.setStatus(SubmissionStatus.PROCESSING.getValue());
+          try
+          {
+            quizScoreJson = new JsonParser().parse(quizScoreTag.getText())
+                    .getAsJsonObject();
+          }
+          catch(Exception e)
+          {
+            quizScoreJson = new JsonObject();
+          }
           quizScoreTag.setText(null);
           quizScoreTag.update(conn);
         }
@@ -348,8 +357,8 @@ public class WetoDaemon extends Thread
           quizScoreTag.setAuthorId(quizAnswerTag.getAuthorId());
           quizScoreTag.setStatus(SubmissionStatus.PROCESSING.getValue());
           quizScoreTag.insert(conn);
+          quizScoreJson = new JsonObject();
         }
-        quizScoreJson = new JsonObject();
       }
       boolean runTest = true;
       int phase = agjq.getQueuePhase();
@@ -427,6 +436,17 @@ public class WetoDaemon extends Thread
     }
   }
 
+  private void initClientSocket(Float timeLimit, int firstTest, int lastTest)
+          throws IOException
+  {
+    clientSocket = serverSocket.accept();
+    clientSocket.setSoTimeout(timeout + (int) ((lastTest - firstTest + 1)
+            * timeLimit * 1000));
+    clientObjectOut = new ObjectOutputStream(clientSocket.getOutputStream());
+    clientReader = new BufferedReader(new InputStreamReader(clientSocket
+            .getInputStream()));
+  }
+
   public boolean process(Connection conn, AutoGradeJobQueue agjq,
           Submission submission, Tag quizQuestionTag, Tag quizAnswerTag,
           JsonObject quizScoreJson, int phase, final boolean isQuizJob,
@@ -493,7 +513,7 @@ public class WetoDaemon extends Thread
         }
         taskSubDir = Integer.toString(connId) + "_" + agjq.getDbId() + "_"
                 + taskId + "_" + quizQuestionId + "_" + quizQuestionTag
-                .getTimeStamp();
+                        .getTimeStamp();
         pckgFileDir = new File(pathToTasksDir, taskSubDir);
         File propFile = new File(pckgFileDir, "properties.txt");
         //Get autograde documents only once
@@ -714,6 +734,8 @@ public class WetoDaemon extends Thread
         }
         else if(!zeroTests)
         { // Compile was ok: now run the test
+          int firstTest = 0;
+          int lastTest = 0;
           if(testRunTestNumber != null)
           {
             int highTest = imm_public + imm_private + fin_public + fin_private;
@@ -747,13 +769,11 @@ public class WetoDaemon extends Thread
               lastTest += fin_private;
             }
           }
-          properties.setProperty("firstTest", new Integer(firstTest)
-                  .toString());
-          properties.setProperty("lastTest", new Integer(lastTest).toString());
-          properties.setProperty("taskId", new Integer(taskId).toString());
-          properties.setProperty("isTestRun", new Boolean(isTestRun)
-                  .toString());
-          properties.setProperty("failFast", new Boolean(failFast).toString());
+          properties.setProperty("firstTest", String.valueOf(firstTest));
+          properties.setProperty("lastTest", String.valueOf(lastTest));
+          properties.setProperty("taskId", String.valueOf(taskId));
+          properties.setProperty("isTestRun", String.valueOf(isTestRun));
+          properties.setProperty("failFast", String.valueOf(failFast));
           properties.setProperty("jobCounter", jobCounter.toString());
           Float timeLimit = Float
                   .parseFloat(properties.getProperty("timeLimit"));
@@ -764,13 +784,7 @@ public class WetoDaemon extends Thread
           // Writing the properties file to clientSocket triggers the test run
           if(clientSocket == null)
           {
-            clientSocket = serverSocket.accept();
-            clientSocket.setSoTimeout(timeout
-                    + (int) ((lastTest - firstTest + 1) * timeLimit * 1000));
-            clientObjectOut = new ObjectOutputStream(clientSocket
-                    .getOutputStream());
-            clientReader = new BufferedReader(new InputStreamReader(clientSocket
-                    .getInputStream()));
+            initClientSocket(timeLimit, firstTest, lastTest);
           }
           boolean readOk = false;
           String inputLine = null;
@@ -781,7 +795,7 @@ public class WetoDaemon extends Thread
             clientObjectOut.writeObject(properties);
             while(((inputLine = clientReader.readLine()) != null) && !(readOk
                                                                                = inputLine
-                    .startsWith(EOF)))
+                            .startsWith(EOF)))
             {
               resultLines.add(inputLine);
             }
@@ -798,18 +812,12 @@ public class WetoDaemon extends Thread
               catch(Exception e2)
               {
               }
-              clientSocket = serverSocket.accept();
-              clientSocket.setSoTimeout(timeout + (int) ((lastTest - firstTest
-                      + 1) * timeLimit * 1000));
-              clientObjectOut = new ObjectOutputStream(clientSocket
-                      .getOutputStream());
-              clientReader = new BufferedReader(new InputStreamReader(
-                      clientSocket.getInputStream()));
+              initClientSocket(timeLimit, firstTest, lastTest);
               clientObjectOut.reset();
               clientObjectOut.writeObject(properties);
               while(((inputLine = clientReader.readLine()) != null) && !(readOk
                                                                                  = inputLine
-                      .startsWith(EOF)))
+                              .startsWith(EOF)))
               {
                 resultLines.add(inputLine);
               }
@@ -842,9 +850,9 @@ public class WetoDaemon extends Thread
             if(jobCounter.equals(readyJobCounter))
             {
               // The results were received ok: fill test scores.
-              fillTestScores(conn, taskId, phase, minScore, isTestRun, isQuizJob,
-                      qb, quizAnswerTag, properties, submission, quizScoreJson,
-                      resultLines);
+              fillTestScores(conn, taskId, phase, firstTest, lastTest, minScore,
+                      isTestRun, isQuizJob, qb, quizAnswerTag, properties,
+                      submission, quizScoreJson, resultLines);
             }
           }
           else
@@ -887,8 +895,7 @@ public class WetoDaemon extends Thread
     {
       error(submission, quizScoreJson, conn, e);
     }
-    return (chainImmediate && (nextPhase
-            == AutoGradeJobQueue.IMMEDIATE_PRIVATE));
+    return (chainImmediate && (nextPhase == AutoGradeJobQueue.IMMEDIATE_PRIVATE));
   }
 
   /**
@@ -905,9 +912,9 @@ public class WetoDaemon extends Thread
    * @throws NoSuchItemException
    */
   private void fillTestScores(Connection conn, Integer taskId, int phase,
-          final float minScore, boolean isTestRun, boolean isQuizJob,
-          QuestionBean qb, Tag quizAnswerTag, Properties properties,
-          Submission submission, JsonObject quizScoreJson,
+          int firstTest, int lastTest, final float minScore, boolean isTestRun,
+          boolean isQuizJob, QuestionBean qb, Tag quizAnswerTag,
+          Properties properties, Submission submission, JsonObject quizScoreJson,
           ArrayList<String> resultLines)
           throws IOException, InvalidValueException, SQLException,
                  ObjectNotValidException, NoSuchItemException,
@@ -930,19 +937,45 @@ public class WetoDaemon extends Thread
     float score = 0;
     float totalPhaseScore = 0;
     Integer testNo = firstTest - 1;
-    String singleResult = null;
     boolean addedFullFeedback = false;
-    // Try to get previous score from database
-    if(!isQuizJob)
+    JsonArray casesJson = null;
+    if(isQuizJob)
     {
-      try
+      casesJson = quizScoreJson.getAsJsonArray("cases");
+      if(casesJson == null)
       {
-        score = submission.getAutoGradeMark();
+        casesJson = new JsonArray();
+        quizScoreJson.add("cases", casesJson);
       }
-      catch(Exception e)
+    }
+    // Try to get previous score from database
+    if((phase != AutoGradeJobQueue.IMMEDIATE_PUBLIC) && (phase
+            != AutoGradeJobQueue.TEST_RUN))
+    {
+      if(!isQuizJob)
       {
-        //No submission score for previous tests
+        try
+        {
+          score = submission.getAutoGradeMark();
+        }
+        catch(Exception e)
+        {
+          //No submission score for previous tests
+        }
       }
+      else
+      {
+        JsonElement markEl = quizScoreJson.get("mark");
+        if(markEl != null)
+        {
+          score = markEl.getAsFloat();
+        }
+      }
+    }
+    else if(isQuizJob)
+    {
+      casesJson = new JsonArray();
+      quizScoreJson.add("cases", casesJson);
     }
     if(resultLines.size() > (lastTest - firstTest + 1))
     {
@@ -1007,7 +1040,12 @@ public class WetoDaemon extends Thread
             newResult.setTaggedId(submissionRef);
             newResult.setRank(rankRef);
             newResult.setStatus(result.length());
-            newResult.setText(WetoUtilities.stringToGzippedBase64(result));
+            JsonObject fullFeedbackJson = new JsonObject();
+            fullFeedbackJson.addProperty("phase", phase);
+            fullFeedbackJson.addProperty("test", testNo);
+            fullFeedbackJson.addProperty("data", WetoUtilities
+                    .stringToGzippedBase64(result));
+            newResult.setText(fullFeedbackJson.toString());
             newResult.insert(conn);
             addedFullFeedback = true;
           }
@@ -1028,12 +1066,13 @@ public class WetoDaemon extends Thread
       }
       else
       {
-        singleResult = result;
-        if(testScore == 0)
-        {
-          totalPhaseScore = 0;
-          break;
-        }
+        JsonObject caseJson = new JsonObject();
+        caseJson.addProperty("test", testNo);
+        caseJson.addProperty("phase", phase);
+        caseJson.addProperty("score", testScore);
+        caseJson.addProperty("time", processingTime);
+        caseJson.addProperty("feedback", result);
+        casesJson.add(caseJson);
       }
     }
     if(!addedFullFeedback)
@@ -1070,10 +1109,12 @@ public class WetoDaemon extends Thread
                             : (phase
               == AutoGradeJobQueue.IMMEDIATE_PRIVATE)
                                       ? SubmissionError.IMMEDIATEPRIVATE_TEST
-                      .getValue() : (phase == AutoGradeJobQueue.FINAL_PUBLIC)
-                                            ? SubmissionError.FINALPUBLIC_TEST
-                              .getValue() : SubmissionError.FINALPRIVATE_TEST
-                              .getValue();
+                              .getValue() : (phase
+                      == AutoGradeJobQueue.FINAL_PUBLIC)
+                                                    ? SubmissionError.FINALPUBLIC_TEST
+                                      .getValue()
+                                                    : SubmissionError.FINALPRIVATE_TEST
+                                      .getValue();
       if(totalPhaseScore < minScore)
       { // Too few points from this test phase: not accepted.
         if(!isQuizJob)
@@ -1248,15 +1289,7 @@ public class WetoDaemon extends Thread
       else
       {
         quizScoreJson.addProperty("mark", score);
-        quizScoreJson.addProperty("feedback", singleResult);
-        quizScoreJson.addProperty("test", testNo);
-        quizScoreJson.addProperty("phase", phase);
       }
-    }
-    else if(isQuizJob)
-    {
-      quizScoreJson.addProperty("feedback", singleResult);
-      quizScoreJson.addProperty("test", testNo);
     }
   }
 

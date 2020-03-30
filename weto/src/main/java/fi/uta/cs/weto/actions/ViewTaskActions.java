@@ -1,11 +1,16 @@
 package fi.uta.cs.weto.actions;
 
 import static com.opensymphony.xwork2.Action.ERROR;
-
-import com.google.gson.Gson;
 import com.opensymphony.xwork2.ActionSupport;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
-import fi.uta.cs.weto.db.*;
+import fi.uta.cs.weto.db.CourseImplementation;
+import fi.uta.cs.weto.db.DatabasePool;
+import fi.uta.cs.weto.db.Log;
+import fi.uta.cs.weto.db.Property;
+import fi.uta.cs.weto.db.SubtaskLink;
+import fi.uta.cs.weto.db.SubtaskView;
+import fi.uta.cs.weto.db.Tag;
+import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.model.ContentElementBean;
 import fi.uta.cs.weto.model.ContentElementType;
 import fi.uta.cs.weto.model.HtmlBean;
@@ -26,7 +31,11 @@ import fi.uta.cs.weto.util.WetoUtilities;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.sql.Connection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import javax.security.auth.login.FailedLoginException;
 import javax.servlet.http.HttpServletRequest;
@@ -211,6 +220,7 @@ public class ViewTaskActions
       final boolean isTeacher = getNavigator().isTeacher();
       Task task = getTask();
       final boolean isQuiz = task.getIsQuiz();
+      final String userIP = getNavigator().getUserIP();
       if(answererId == null)
       {
         answererId = userId;
@@ -230,7 +240,7 @@ public class ViewTaskActions
       {
         Integer subtaskId = subtask.getId();
         if(isTeacher || (!subtask.getIsHidden() && PermissionModel
-                .viewPermissionActive(conn, subtaskId, userId, false)))
+                .viewPermissionActive(conn, userIP, subtaskId, userId, false)))
         {
           subtasks.add(subtask);
           if(isQuiz && subtask.getIsQuiz())
@@ -241,7 +251,7 @@ public class ViewTaskActions
             QuestionBean q;
             ArrayList<Tag> answers = Tag.selectByTaggedIdAndAuthorIdAndType(
                     conn, subtaskId, answererId, TagType.QUIZ_ANSWER
-                    .getValue());
+                            .getValue());
             if(!answers.isEmpty())
             {
               Tag answer = answers.get(0);
@@ -282,7 +292,7 @@ public class ViewTaskActions
                       .select1ByTaggedIdAndRankAndAuthorIdAndType(conn,
                               taskId, q.getQuestionId(), answererId,
                               TagType.QUIZ_ANSWER
-                              .getValue());
+                                      .getValue());
               QuizModel.populateAnswers(q, answer);
               QuizModel.populateResults(conn, q, answer, this);
 
@@ -294,7 +304,7 @@ public class ViewTaskActions
           }
         }
         WetoTimeStamp[] timeLimits = PermissionModel.getTimeStampLimits(conn,
-                userId, taskId, PermissionType.SUBMISSION, isTeacher);
+                userIP, userId, taskId, PermissionType.SUBMISSION, isTeacher);
         submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
         quizOpen = (PermissionModel.checkTimeStampLimits(timeLimits)
                 == PermissionModel.CURRENT) && answererId.equals(userId);
@@ -366,7 +376,7 @@ public class ViewTaskActions
           else
           {
             WetoTimeStamp[] timeLimits = PermissionModel
-                    .getTimeStampLimits(conn, userId, taskId,
+                    .getTimeStampLimits(conn, userIP, userId, taskId,
                             PermissionType.SUBMISSION, isTeacher);
             submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
             quizOpen = (PermissionModel.checkTimeStampLimits(timeLimits)
@@ -475,11 +485,12 @@ public class ViewTaskActions
               taskId);
       subtasksQuizzes = false;
       final boolean isQuiz = task.getIsQuiz();
+      final String userIP = getNavigator().getUserIP();
       for(SubtaskView subtask : allSubtasks)
       {
         Integer subtaskId = subtask.getId();
         if(subtask.getIsPublic() && PermissionModel.viewPermissionActive(conn,
-                subtaskId, null, false))
+                userIP, subtaskId, null, false))
         {
           subtasks.add(subtask);
           if(isQuiz && subtask.getIsQuiz())
@@ -503,7 +514,7 @@ public class ViewTaskActions
           }
         }
         WetoTimeStamp[] timeLimits = PermissionModel.getTimeStampLimits(conn,
-                null, taskId, PermissionType.SUBMISSION, false);
+                userIP, null, taskId, PermissionType.SUBMISSION, false);
         submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
       }
       else
@@ -560,7 +571,7 @@ public class ViewTaskActions
           else
           {
             WetoTimeStamp[] timeLimits = PermissionModel
-                    .getTimeStampLimits(conn, null, taskId,
+                    .getTimeStampLimits(conn, userIP, null, taskId,
                             PermissionType.SUBMISSION, false);
             submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
           }
@@ -645,7 +656,8 @@ public class ViewTaskActions
           }
         }
         WetoTimeStamp[] viewPeriod = PermissionModel.getTimeStampLimits(
-                courseConnection, null, taskId, PermissionType.VIEW);
+                courseConnection, navigator.getUserIP(), null, taskId,
+                PermissionType.VIEW);
         if(isHidden || (PermissionModel.checkTimeStampLimits(viewPeriod)
                 != PermissionModel.CURRENT))
         {

@@ -241,7 +241,8 @@ public abstract class WetoCourseAction extends ActionSupport
         if(ClusterType.STUDENTS.getValue().equals(clusterType))
         {
           WetoTimeStamp[] viewPeriod = PermissionModel.getTimeStampLimits(
-                  courseConnection, courseUserId, taskId, PermissionType.VIEW);
+                  courseConnection, navigator.getUserIP(), courseUserId, taskId,
+                  PermissionType.VIEW);
           if(isHidden || (PermissionModel.checkTimeStampLimits(viewPeriod)
                   != PermissionModel.CURRENT))
           {

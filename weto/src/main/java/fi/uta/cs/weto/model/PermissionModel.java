@@ -4,11 +4,13 @@ import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.ObjectNotValidException;
 import fi.uta.cs.sqldatamodel.TooManyItemsException;
+import fi.uta.cs.weto.db.CourseImplementation;
 import fi.uta.cs.weto.db.Grade;
 import fi.uta.cs.weto.db.Permission;
 import fi.uta.cs.weto.db.PermissionIdReplication;
 import fi.uta.cs.weto.db.SubtaskLink;
 import fi.uta.cs.weto.db.SubtaskView;
+import fi.uta.cs.weto.db.UserIdReplication;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayDeque;
@@ -21,21 +23,63 @@ public class PermissionModel
   public static final int FUTURE = -1;
   public static final int CURRENT = 0;
   public static final int PAST = 1;
+  public static final String ALLOWED_IPS = "ip";
+  public static final String REQUIRED_TASK = "task";
+  public static final String DURATION = "duration"; // Duration in minutes
+  public static final String COND_SEP = ";";
+  public static final String OR_SEP = "\\|";
 
-  private static boolean permissionConditionOk(Connection conn,
+  private static boolean permissionConditionOk(Connection conn, String userIP,
           Permission permission, Integer userId)
           throws SQLException
   {
-    Integer conditionTaskId = Integer.parseInt(permission.getDetail());
-    return Grade.hasValidAggregateGrade(conn, conditionTaskId, userId);
+    String[] conditions = permission.getDetail().split(COND_SEP);
+    int conditionsOk = 0;
+    for(String condition : conditions)
+    {
+      String[] keyVal = condition.split("=");
+      if((keyVal.length == 1) || REQUIRED_TASK.equals(keyVal[0].toLowerCase()))
+      {
+        String[] tasks = (keyVal.length == 1) ? keyVal[0].split(OR_SEP)
+                                 : keyVal[1].split(OR_SEP);
+        for(String task : tasks)
+        {
+          if(Grade.hasValidAggregateGrade(conn, Integer.parseInt(task), userId))
+          {
+            conditionsOk += 1;
+            break;
+          }
+        }
+      }
+      else if(ALLOWED_IPS.equals(keyVal[0].toLowerCase()))
+      {
+        String[] ips = keyVal[1].split(OR_SEP);
+        for(String ip : ips)
+        {
+          int star = ip.indexOf('*');
+          if(((star >= 0) && userIP.startsWith(ip.substring(0, star))) || ((star
+                  < 0) && userIP.equals(ip)))
+          {
+            conditionsOk += 1;
+            break;
+          }
+        }
+      }
+      else if(DURATION.equals(keyVal[0].toLowerCase()))
+      {
+        conditionsOk += 1;
+      }
+    }
+    return (conditionsOk == conditions.length);
   }
 
-  private static void setWetoTimeStamps(Connection conn, Permission permission,
+  private static void setWetoTimeStamps(Connection conn, String userIP,
+          Permission permission,
           Integer userId, WetoTimeStamp[] timeLimits)
           throws SQLException, WetoTimeStampException
   {
     if((permission == null) || ((permission.getDetail() != null)
-            && !permissionConditionOk(conn, permission, userId)))
+            && !permissionConditionOk(conn, userIP, permission, userId)))
     { // No permission found or condition not ok: set to empty time interval
       timeLimits[1] = new WetoTimeStamp(WetoTimeStamp.STAMP_MIN);
     }
@@ -53,7 +97,8 @@ public class PermissionModel
   }
 
   public static WetoTimeStamp[] getTaskTimeStampLimits(Connection conn,
-          Integer userId, Integer taskId, PermissionType type, boolean isTeacher)
+          String userIP, Integer userId, Integer taskId, PermissionType type,
+          boolean isTeacher)
           throws SQLException, WetoTimeStampException
   {
     Permission permission = null;
@@ -80,17 +125,17 @@ public class PermissionModel
           }
         }
       }
-      setWetoTimeStamps(conn, permission, userId, timeLimits);
+      setWetoTimeStamps(conn, userIP, permission, userId, timeLimits);
     }
     return timeLimits;
   }
 
   // A version that does not give special privileges for teachers
   public static WetoTimeStamp[] getTaskTimeStampLimits(Connection conn,
-          Integer userId, Integer taskId, PermissionType type)
+          String userIP, Integer userId, Integer taskId, PermissionType type)
           throws SQLException, WetoTimeStampException
   {
-    return getTaskTimeStampLimits(conn, userId, taskId, type, false);
+    return getTaskTimeStampLimits(conn, userIP, userId, taskId, type, false);
   }
 
   /**
@@ -107,7 +152,8 @@ public class PermissionModel
    * @throws fi.uta.cs.weto.model.WetoTimeStampException
    */
   public static WetoTimeStamp[] getTimeStampLimits(Connection conn,
-          Integer userId, Integer taskId, PermissionType type, boolean isTeacher)
+          String userIP, Integer userId, Integer taskId, PermissionType type,
+          boolean isTeacher)
           throws SQLException, WetoTimeStampException
   {
     Permission permission = null;
@@ -148,17 +194,17 @@ public class PermissionModel
           }
         }
       }
-      setWetoTimeStamps(conn, permission, userId, timeLimits);
+      setWetoTimeStamps(conn, userIP, permission, userId, timeLimits);
     }
     return timeLimits;
   }
 
   // A version that does not give special privileges for teachers
   public static WetoTimeStamp[] getTimeStampLimits(Connection conn,
-          Integer userId, Integer taskId, PermissionType type)
+          String userIP, Integer userId, Integer taskId, PermissionType type)
           throws SQLException, WetoTimeStampException
   {
-    return getTimeStampLimits(conn, userId, taskId, type, false);
+    return getTimeStampLimits(conn, userIP, userId, taskId, type, false);
   }
 
   public static int checkTimeStampLimits(WetoTimeStamp[] limits)
@@ -197,22 +243,23 @@ public class PermissionModel
     }
   }
 
-  public static boolean viewPermissionActive(Connection conn, Integer taskId,
-          Integer userId, boolean isTeacher)
+  public static boolean viewPermissionActive(Connection conn, String userIP,
+          Integer taskId, Integer userId,
+          boolean isTeacher)
           throws SQLException, WetoTimeStampException
   {
     boolean isActive = true;
     if(!isTeacher)
     {
-      WetoTimeStamp[] viewPeriod = getTimeStampLimits(conn, userId, taskId,
-              PermissionType.VIEW, false);
+      WetoTimeStamp[] viewPeriod = getTimeStampLimits(conn, userIP, userId,
+              taskId, PermissionType.VIEW, false);
       isActive = (checkTimeStampLimits(viewPeriod) == PermissionModel.CURRENT);
     }
     return isActive;
   }
 
   public static HashSet<Integer> getViewableCourseSubtasks(Connection conn,
-          Integer courseTaskId, final boolean isTeacher,
+          String userIP, Integer courseTaskId, final boolean isTeacher,
           HashMap<Integer, ArrayList<SubtaskView>> subtaskListMap,
           Integer userId)
           throws SQLException, InvalidValueException, WetoTimeStampException
@@ -242,7 +289,7 @@ public class PermissionModel
         WetoTimeStamp[] timeLimits = new WetoTimeStamp[2];
         if(permission != null)
         {
-          setWetoTimeStamps(conn, permission, userId, timeLimits);
+          setWetoTimeStamps(conn, userIP, permission, userId, timeLimits);
         }
         if(checkTimeStampLimits(now, timeLimits) == PermissionModel.CURRENT)
         {
@@ -301,6 +348,63 @@ public class PermissionModel
     for(Permission permission : permissions)
     {
       deleteCoursePermission(courseConn, masterConn, permission);
+    }
+  }
+
+  public static void replicateRootPermission(Connection masterConn,
+          Connection courseConn, Integer dbId, Permission permission)
+          throws SQLException, InvalidValueException, ObjectNotValidException
+  {
+    final Integer courseTaskId = permission.getTaskId();
+    try
+    {
+      final Integer masterTaskId = CourseImplementation
+              .select1ByDatabaseIdAndCourseTaskId(masterConn, dbId, courseTaskId)
+              .getMasterTaskId();
+      final Integer coursePermissionId = permission.getId();
+      final Integer userRefId = permission.getUserRefId();
+      boolean doUpdate = false;
+      try
+      { // Reuse possibly existing previous replication in master database.
+        PermissionIdReplication oldRir = PermissionIdReplication
+                .select1ByCourseDbPermissionId(courseConn, coursePermissionId);
+        Permission masterPermission = Permission.select1ById(masterConn, oldRir
+                .getMasterDbPermissionId());
+        masterPermission.setUserRefId(userRefId);
+        masterPermission.setUserRefType(permission.getUserRefType());
+        masterPermission.setType(permission.getType());
+        masterPermission.setStartDate(permission.getStartDate());
+        masterPermission.setEndDate(permission.getEndDate());
+        masterPermission.setDetail(permission.getDetail());
+        permission = masterPermission;
+        doUpdate = true;
+      }
+      catch(NoSuchItemException e)
+      {
+      }
+      permission.setTaskId(masterTaskId);
+      if(userRefId != null)
+      {
+        UserIdReplication uidr = UserIdReplication.select1ByCourseDbUserId(
+                courseConn, userRefId);
+        permission.setUserRefId(uidr.getMasterDbUserId());
+      }
+      if(doUpdate)
+      {
+        permission.update(masterConn);
+      }
+      else
+      {
+        permission.insert(masterConn);
+        Integer masterPermissionId = permission.getId();
+        PermissionIdReplication rir = new PermissionIdReplication();
+        rir.setCourseDbPermissionId(coursePermissionId);
+        rir.setMasterDbPermissionId(masterPermissionId);
+        rir.insert(courseConn);
+      }
+    }
+    catch(NoSuchItemException e)
+    { // This is not a course root task: do nothing!
     }
   }
 

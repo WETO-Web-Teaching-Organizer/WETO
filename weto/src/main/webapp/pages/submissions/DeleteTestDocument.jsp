@@ -26,7 +26,7 @@
 <s:if test="textType != null">
   <s:textarea id="textArea" name="documentText" disabled="disabled"/>
   <div id="editorDiv"></div>
-  <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/ace/ace.js"></script>
   <script>
     var textarea = $('#textArea');
     textarea.hide();

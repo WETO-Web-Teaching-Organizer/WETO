@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/init.jsp"%>
-<script src="js/tinymce4/tinymce.min.js"></script>
 <s:url action="viewTask" var="viewGradingUrl">
   <s:param name="taskId" value="%{taskId}" />
   <s:param name="tabId" value="%{gradingTabId}" />

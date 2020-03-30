@@ -48,7 +48,7 @@ public class ViewSubmissions extends WetoCourseAction
           .values();
   private static final Integer notSubmittedState
                                        = SubmissionStatus.NOT_SUBMITTED
-          .getValue();
+                  .getValue();
   private static final Integer acceptedState = SubmissionStatus.ACCEPTED
           .getValue();
   private static final Integer notAcceptedState = SubmissionStatus.NOT_ACCEPTED
@@ -134,14 +134,15 @@ public class ViewSubmissions extends WetoCourseAction
           Integer userId)
           throws SQLException, WetoTimeStampException
   {
+    final String userIP = getNavigator().getUserIP();
     WetoTimeStamp[] timeLimits = PermissionModel
-            .getTimeStampLimits(conn, userId, taskId, PermissionType.SUBMISSION,
-                    getNavigator().isTeacher());
+            .getTimeStampLimits(conn, userIP, userId, taskId,
+                    PermissionType.SUBMISSION, getNavigator().isTeacher());
     submissionPeriodActive = (PermissionModel.checkTimeStampLimits(timeLimits)
             == PermissionModel.CURRENT);
     submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
     WetoTimeStamp[] generalTimeLimits = PermissionModel.getTimeStampLimits(conn,
-            null, taskId, PermissionType.SUBMISSION);
+            userIP, null, taskId, PermissionType.SUBMISSION);
     generalSubmissionPeriod = WetoTimeStamp.limitsToStrings(generalTimeLimits);
     createRights = haveCreateRights(Tab.SUBMISSIONS.getBit(), false, true);
     updateRights = haveUpdateRights(Tab.SUBMISSIONS.getBit(), false, true);
@@ -240,14 +241,15 @@ public class ViewSubmissions extends WetoCourseAction
           throws SQLException, WetoTimeStampException, NoSuchItemException,
                  IOException, InvalidValueException, ObjectNotValidException
   {
+    final String userIP = getNavigator().getUserIP();
     WetoTimeStamp[] timeLimits = PermissionModel
-            .getTimeStampLimits(conn, userId, taskId, PermissionType.SUBMISSION,
-                    false);
+            .getTimeStampLimits(conn, userIP, userId, taskId,
+                    PermissionType.SUBMISSION, false);
     submissionPeriodActive = (PermissionModel.checkTimeStampLimits(timeLimits)
             == PermissionModel.CURRENT);
     submissionPeriod = WetoTimeStamp.limitsToStrings(timeLimits);
     WetoTimeStamp[] generalTimeLimits = PermissionModel.getTimeStampLimits(conn,
-            null, taskId, PermissionType.SUBMISSION);
+            userIP, null, taskId, PermissionType.SUBMISSION);
     generalSubmissionPeriod = WetoTimeStamp.limitsToStrings(generalTimeLimits);
     createRights = haveCreateRights(Tab.SUBMISSIONS.getBit(), true, false);
     updateRights = haveUpdateRights(Tab.SUBMISSIONS.getBit(), true, false);
@@ -724,7 +726,7 @@ public class ViewSubmissions extends WetoCourseAction
         {
           submissionStates.put(substatus.getValue().toString(), getText(
                   substatus
-                  .getProperty()));
+                          .getProperty()));
         }
         submissionErrors = new HashMap<>();
         for(SubmissionError suberror : SubmissionError.values())

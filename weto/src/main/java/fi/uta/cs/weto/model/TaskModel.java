@@ -9,6 +9,7 @@ import fi.uta.cs.weto.db.Document;
 import fi.uta.cs.weto.db.Grade;
 import fi.uta.cs.weto.db.GroupMember;
 import fi.uta.cs.weto.db.Log;
+import fi.uta.cs.weto.db.Permission;
 import fi.uta.cs.weto.db.Property;
 import fi.uta.cs.weto.db.Scoring;
 import fi.uta.cs.weto.db.Submission;
@@ -23,9 +24,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.struts2.ServletActionContext;
@@ -144,7 +149,7 @@ public class TaskModel
     group.delete(conn);
   }
 
-  private static void deleteTaskGroups(Connection conn, Integer taskId)
+  public static void deleteTaskGroups(Connection conn, Integer taskId)
           throws SQLException, InvalidValueException, NoSuchItemException,
                  TooManyItemsException, ObjectNotValidException
   {
@@ -337,6 +342,176 @@ public class TaskModel
   {
     return new File(ServletActionContext.getServletContext().getRealPath("/css/"
             + cssFilename));
+  }
+
+  public static void selectRandomTasks(Connection masterConn,
+          Connection courseConn, Integer dbId, Integer courseTaskId,
+          Integer userId)
+          throws SQLException, WetoTimeStampException, NoSuchItemException,
+                 InvalidValueException, ObjectNotValidException
+  {
+    Permission regPermission = null;
+    try
+    {
+      regPermission = Permission.select1ByTaskIdAndUserIdAndType(courseConn,
+              courseTaskId, userId, PermissionType.REGISTER.getValue());
+    }
+    catch(NoSuchItemException e)
+    {
+      try
+      {
+        regPermission = Permission.select1ByTaskIdAndUserIdAndType(courseConn,
+                courseTaskId, null, PermissionType.REGISTER.getValue());
+      }
+      catch(NoSuchItemException e2)
+      {
+      }
+    }
+    Calendar now = new GregorianCalendar();
+    Integer startTimeStamp = new WetoTimeStamp(now).getTimeStamp();
+    Integer endTimeStamp = null;
+    final int extraMinutes = 15;
+    Integer extraEndTimeStamp = null;
+    String conditionString = null;
+    if((regPermission != null) && (regPermission.getDetail() != null))
+    {
+      conditionString = regPermission.getDetail();
+      String[] conditions = conditionString.split(PermissionModel.COND_SEP);
+      for(String condition : conditions)
+      {
+        String[] keyVal = condition.split("=");
+        if(PermissionModel.DURATION.equals(keyVal[0].toLowerCase()))
+        {
+          try
+          {
+            Integer minutes = Integer.parseInt(keyVal[1]);
+            now.add(Calendar.MINUTE, minutes);
+            endTimeStamp = new WetoTimeStamp(now).getTimeStamp();
+            now.add(Calendar.MINUTE, extraMinutes);
+            extraEndTimeStamp = new WetoTimeStamp(now).getTimeStamp();
+          }
+          catch(NumberFormatException e)
+          {
+          }
+          break;
+        }
+      }
+    }
+    // If registration had an expiration value, limit course view rights.
+    if(endTimeStamp != null)
+    {
+      final Integer[] coursePermissionTypes =
+      {
+        PermissionType.VIEW.getValue(), PermissionType.SUBMISSION.getValue(),
+        PermissionType.RESULTS.getValue()
+      };
+      for(Integer permissionType : coursePermissionTypes)
+      {
+        Permission permission = null;
+        boolean doUpdate = false;
+        try
+        {
+          permission = Permission.select1ByTaskIdAndUserIdAndType(courseConn,
+                  courseTaskId, userId, permissionType);
+          doUpdate = true;
+        }
+        catch(NoSuchItemException e)
+        {
+          permission = new Permission();
+          permission.setTaskId(courseTaskId);
+          permission.setType(permissionType);
+          permission.setUserRefType(PermissionRefType.USER.getValue());
+          permission.setUserRefId(userId);
+        }
+        permission.setStartDate(startTimeStamp);
+        // Submission limit is strict; the rest have some extra slack.
+        if(permissionType.equals(PermissionType.SUBMISSION.getValue()))
+        {
+          permission.setEndDate(endTimeStamp);
+        }
+        else
+        {
+          permission.setEndDate(extraEndTimeStamp);
+        }
+        permission.setDetail(conditionString);
+        if(doUpdate)
+        {
+          permission.update(courseConn);
+        }
+        else
+        {
+          permission.insert(courseConn);
+        }
+        if(permissionType.equals(PermissionType.VIEW.getValue()))
+        {
+          // Reflect course root view permission to master database.
+          PermissionModel
+                  .replicateRootPermission(masterConn, courseConn, userId,
+                          permission);
+        }
+      }
+    }
+    Stack<Task> taskStack = new Stack<>();
+    taskStack.push(Task.select1ById(courseConn, courseTaskId));
+    final Integer[] taskPermissionTypes =
+    {
+      PermissionType.VIEW.getValue()
+    };
+    while(!taskStack.empty())
+    {
+      Task parent = taskStack.pop();
+      ArrayList<Task> children = Task.selectSubtasks(courseConn, parent.getId());
+      HashMap<String, ArrayList<Task>> taskGroups = new HashMap<>();
+      for(Task child : children)
+      {
+        if(child.getIsRandomTask())
+        {
+          String token = child.getName().split("\\s", 2)[0];
+          ArrayList<Task> group = taskGroups.get(token);
+          if(group == null)
+          {
+            group = new ArrayList<>();
+            taskGroups.put(token, group);
+          }
+          group.add(child);
+        }
+        taskStack.push(child);
+      }
+      for(ArrayList<Task> group : taskGroups.values())
+      {
+        Integer selectedId = group.get(new Random().nextInt(group.size()))
+                .getId();
+        for(Integer permissionType : taskPermissionTypes)
+        {
+          Permission permission = null;
+          boolean doUpdate = false;
+          try
+          {
+            permission = Permission.select1ByTaskIdAndUserIdAndType(courseConn,
+                    selectedId, userId, permissionType);
+            doUpdate = true;
+          }
+          catch(NoSuchItemException e)
+          {
+            permission = new Permission();
+            permission.setTaskId(selectedId);
+            permission.setType(permissionType);
+            permission.setUserRefType(PermissionRefType.USER.getValue());
+            permission.setUserRefId(userId);
+          }
+          // Set only start time: course-level permissions limit the end time.
+          permission.setStartDate(startTimeStamp);
+          if(doUpdate)
+          {
+            permission.update(courseConn);
+          }
+          else
+          {
+            permission.insert(courseConn);
+          }
+        }
+      }
+    }
   }
 
 }

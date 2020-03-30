@@ -331,6 +331,7 @@ public abstract class DownloadTaskActions
             }
             row.add(wtstoa(permission.getStartDate()));
             row.add(wtstoa(permission.getEndDate()));
+            row.add(permission.getDetail());
             wcw.writeStrings(row);
           }
         }

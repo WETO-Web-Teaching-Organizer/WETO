@@ -27,8 +27,6 @@
 <s:set var="challengeGradeTXT" value="getText('grading.header.challengeGrade')" />
 <s:set var="discussGradeTXT" value="getText('grading.header.discussGrade')" />
 <s:set var="acceptGradeTXT" value="getText('grading.header.acceptGrade')" />
-<script src="js/tinymce4/tinymce.min.js"></script>
-<script src="js/grading.js"></script>
 <div class="content-wrapper">
   <div class="header_field">
     <h2 class="grading_header-text">

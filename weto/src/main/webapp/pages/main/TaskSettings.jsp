@@ -128,20 +128,21 @@
   </div>
   <s:text name="general.header.otherOptions" />:
   <div class="form-group">
-    <label><input type="checkbox" name="quiz" value="true"
-                  <s:if test="quiz">checked="checked"</s:if> />
-      <s:text name="general.header.quiz" /></label><br />
-
     <label><input type="checkbox" name="showTextInParent" value="true"
                   <s:if test="showTextInParent">checked="checked"</s:if> />
       <s:text name="editTask.header.showTextInParent" /></label><br />
-
     <label><input type="checkbox" name="hidden" value="true"
                   <s:if test="hidden">checked="checked"</s:if> />
       <s:text name="general.header.hidden" /></label><br />
     <label><input type="checkbox" name="publicTask" value="true"
                   <s:if test="publicTask">checked="checked"</s:if> />
       <s:text name="general.header.public" /></label><br />
+    <label><input type="checkbox" name="quiz" value="true"
+                  <s:if test="quiz">checked="checked"</s:if> />
+      <s:text name="general.header.quiz" /></label><br />
+    <label><input type="checkbox" name="randomTask" value="true"
+                  <s:if test="randomTask">checked="checked"</s:if> />
+      <s:text name="general.header.randomTask" /></label><br />
   </div>
   <div class="form-group">
     <s:text name="taskSettings.header.saveSettingsFor" />:

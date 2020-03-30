@@ -93,6 +93,7 @@ public class PendingStudentsActions
     {
       Connection masterConn = getMasterConnection();
       Connection courseConn = getCourseConnection();
+      Integer courseDbId = getDbId();
       Integer courseTaskId = getCourseTaskId();
       for(String idPair : acceptIds)
       {
@@ -105,8 +106,9 @@ public class PendingStudentsActions
         {
           addGroup.setId(Integer.parseInt(parts[1]));
         }
-        CourseMemberModel.addStudent(masterConn, courseConn, addUser, null,
-                addGroup, false, false);
+        CourseMemberModel
+                .addStudent(masterConn, courseConn, courseDbId, addUser, null,
+                        addGroup, false, false);
       }
       addActionMessage(getText("pendingstudents.message.accepted"));
       return SUCCESS;

@@ -139,9 +139,10 @@ public class ForumActions
       Integer taskId = getTaskId();
       Task task = getTask();
       Integer userId = getCourseUserId();
+      final String userIP = getNavigator().getUserIP();
       // Check rights for adding a forum topic
       WetoTimeStamp[] addPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.FORUM_TOPIC, getNavigator()
+              userIP, userId, taskId, PermissionType.FORUM_TOPIC, getNavigator()
               .isTeacher());
       canAddTopic = (PermissionModel.checkTimeStampLimits(addPeriod)
               == PermissionModel.CURRENT);
@@ -216,9 +217,10 @@ public class ForumActions
       TagView topicTag = TagView.select1ByIdAndType(conn, topicId,
               TagType.FORUM_TOPIC.getValue());
       validateCourseSubtaskId(topicTag.getTaggedId());
+      final String userIP = getNavigator().getUserIP();
       // Check rights for adding a forum topic
       WetoTimeStamp[] replyPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
+              userIP, userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
               .isTeacher());
       canAddReply = (PermissionModel.checkTimeStampLimits(replyPeriod)
               == PermissionModel.CURRENT);
@@ -321,9 +323,10 @@ public class ForumActions
       Connection conn = getCourseConnection();
       Integer taskId = getTaskId();
       Integer userId = getCourseUserId();
+      final String userIP = getNavigator().getUserIP();
       // Check rights for adding a forum topic
       WetoTimeStamp[] addPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.FORUM_TOPIC, getNavigator()
+              userIP, userId, taskId, PermissionType.FORUM_TOPIC, getNavigator()
               .isTeacher());
       if(PermissionModel.checkTimeStampLimits(addPeriod)
               != PermissionModel.CURRENT)
@@ -389,9 +392,10 @@ public class ForumActions
       {
         throw new WetoActionException(getText("forum.error.nonexistingTopic"));
       }
+      final String userIP = getNavigator().getUserIP();
       // Check rights for adding a forum topic
       WetoTimeStamp[] replyPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
+              userIP, userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
               .isTeacher());
       if(PermissionModel.checkTimeStampLimits(replyPeriod)
               != PermissionModel.CURRENT)
@@ -415,8 +419,7 @@ public class ForumActions
       if(!getNavigator().isStudentRole())
       {
         new Log(getCourseTaskId(), taskId, userId, LogEvent.UPDATE_FORUM_MESSAGE
-                .getValue(), tag.getId(), null, getRequest().getRemoteAddr())
-                .insert(conn);
+                .getValue(), tag.getId(), null, userIP).insert(conn);
       }
       addActionMessage(getText("forum.message.messageAdded"));
       createNotifications(messageText);
@@ -524,8 +527,9 @@ public class ForumActions
       {
         throw new WetoActionException(getText("ACCESS_DENIED"));
       }
+      final String userIP = getNavigator().getUserIP();
       WetoTimeStamp[] replyPeriod = PermissionModel.getTimeStampLimits(conn,
-              userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
+              userIP, userId, taskId, PermissionType.FORUM_REPLY, getNavigator()
               .isTeacher());
       if(PermissionModel.checkTimeStampLimits(replyPeriod)
               != PermissionModel.CURRENT)
@@ -537,7 +541,6 @@ public class ForumActions
               .getAsJsonObject();
       if(commitSave)
       {
-        messageJson.remove("text");
         messageJson.addProperty("text", messageText);
         messageTag.setText(messageJson.toString());
         messageTag.update(conn);
@@ -546,7 +549,7 @@ public class ForumActions
         {
           new Log(getCourseTaskId(), taskId, userId,
                   LogEvent.UPDATE_FORUM_MESSAGE.getValue(), messageTag.getId(),
-                  null, getRequest().getRemoteAddr()).insert(conn);
+                  null, userIP).insert(conn);
         }
         result = SUCCESS;
       }

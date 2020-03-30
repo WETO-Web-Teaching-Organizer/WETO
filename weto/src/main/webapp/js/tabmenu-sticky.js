@@ -52,11 +52,11 @@ $(document).ready(function () {
       var scrollTop = $(window).scrollTop();
       // Tabnav gets hidden when scrolling towards bottom
       if ((scrollTop > (stickyNavTop + tabHeight)) && (lastScrollTop < scrollTop)) {
-        $('#tabnav').hide('slide', {direction: 'up', easing: 'easeOutQuint'}, 800);
+        $('#tabnav').hide();
       } else if (lastScrollTop > scrollTop) {
-        $('#tabnav').show('slide', {direction: 'up', easing: 'easeOutQuint'}, 800);
+        $('#tabnav').show();
       }
-      lastScrollTop = scrollTop;
+      lastScrollTop = $(window).scrollTop();
     }
   };
 

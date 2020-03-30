@@ -1,11 +1,11 @@
 package fi.uta.cs.weto.util;
 
+import fi.uta.cs.weto.util.NetUtils.LocationAndResult;
 import java.net.URLEncoder;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
@@ -31,14 +31,15 @@ public class ShibbolethLogin
   public ShibbolethLogin(String user, String pass, Logger logger)
   {
     String loginHtml = "EMPTYLOGINHTML";
-    String continueHtml = "EMPTYCONTINUEHTML";
     String infoHtml = "EMPTYINFOHTML";
-    try(CloseableHttpClient httpClient = HttpClients.custom()
-            .setRedirectStrategy(new LaxRedirectStrategy()).build())
+    try( CloseableHttpClient httpClient = HttpClientBuilder.create()
+            .disableRedirectHandling().build())
     {
       HttpClientContext httpContext = HttpClientContext.create();
       httpContext.setCookieStore(new BasicCookieStore());
-      loginHtml = WetoUtilities.getPageContent(httpClient, httpContext, infoUrl);
+      LocationAndResult loginRes = NetUtils.httpGet(httpClient, httpContext,
+              infoUrl);
+      loginHtml = loginRes.result;
       Document loginPage = Jsoup.parse(loginHtml);
       Element loginForm = loginPage.getElementsByTag("form").first();
       String url = StringUtil.resolve(shibbolethUrl, loginForm.attr("action"));
@@ -62,34 +63,35 @@ public class ShibbolethLogin
         parSB.append(name + "=" + URLEncoder.encode(value, "UTF-8"));
       }
       parSB.append("&_eventId_proceed=Accept");
-      continueHtml = WetoUtilities.submitForm(httpClient, httpContext, url,
-              parSB
-              .toString());
-      Document continuePage = Jsoup.parse(continueHtml);
-      Element continueForm = continuePage.getElementsByTag("form").first();
+      LocationAndResult authRes = NetUtils
+              .httpPost(httpClient, httpContext, url, parSB
+                      .toString());
+      String authLoc = authRes.location;
+      String authHtml = authRes.result;
+      Document authPage = Jsoup.parse(authHtml);
+      Element authForm = authPage.getElementsByTag("form").first();
+      String authUrl = StringUtil.resolve(authLoc, authForm.attr("action"));
       parSB = new StringBuilder();
-      for(Element inputEl : continueForm.getElementsByTag("input"))
+      for(Element inputEl : authForm.getElementsByTag("input"))
       {
-        String name = inputEl.attr("name");
-        String value = inputEl.attr("value");
+        String name = inputEl.attr("name").trim();
+        String value = inputEl.attr("value").trim();
         if(parSB.length() > 0)
         {
           parSB.append("&");
         }
         parSB.append(name + "=" + URLEncoder.encode(value, "UTF-8"));
       }
-      String continueUrl
-                     = "https://wetodev.sis.uta.fi/Shibboleth.sso/SAML2/POST";
-      infoHtml = WetoUtilities.submitForm(httpClient, httpContext, continueUrl,
-              parSB
-              .toString());
+      LocationAndResult infoRes = NetUtils.httpPost(httpClient, httpContext,
+              authUrl, parSB.toString());
+      infoHtml = infoRes.result;
       Document infoPage = Jsoup.parse(infoHtml);
       boolean authenticationOk = false;
       try
       {
         String userNameString = infoPage.select("td:matchesOwn(Username)")
                 .first().nextElementSibling().ownText().trim();
-        if(userNameString.startsWith(user))
+        if(userNameString.startsWith(user + "@") || user.equals(userNameString))
         {
           authenticationOk = true;
           this.loginName = userNameString;

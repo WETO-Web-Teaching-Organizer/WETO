@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<%@ include file="/WEB-INF/init.jsp"%>
+<%@ include file="/WEB-INF/taglibs.jsp"%>
 <div id="logoutContainer" class="logoutBoxContainer" style="display: none">
   <div class="logoutBox" onclick="$('#logoutContainer').hide()">
     <h1><s:text name="general.header.logout"/>?</h1>

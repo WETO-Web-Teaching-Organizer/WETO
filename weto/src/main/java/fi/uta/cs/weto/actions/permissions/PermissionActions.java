@@ -3,10 +3,8 @@ package fi.uta.cs.weto.actions.permissions;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.weto.db.CourseImplementation;
 import fi.uta.cs.weto.db.Permission;
-import fi.uta.cs.weto.db.PermissionIdReplication;
 import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.db.UserAccount;
-import fi.uta.cs.weto.db.UserIdReplication;
 import fi.uta.cs.weto.db.UserTaskView;
 import fi.uta.cs.weto.model.PermissionModel;
 import fi.uta.cs.weto.model.PermissionRefType;
@@ -387,10 +385,11 @@ public class PermissionActions
         throw new WetoActionException(errorMessage, INPUT);
       }
       CourseImplementation ci = null;
+      final Integer dbId = getDbId();
       try
       {
         ci = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConn,
-                getDbId(), taskId);
+                dbId, taskId);
       }
       catch(NoSuchItemException e)
       { // OK: this is not a course root task.
@@ -449,45 +448,8 @@ public class PermissionActions
           }
           if(ci != null) // A course root task? If yes, update also master database.
           {
-            final Integer coursePermissionId = permission.getId();
-            doUpdate = false;
-            try
-            { // Reuse possibly existing previous replication in master database.
-              PermissionIdReplication oldRir = PermissionIdReplication
-                      .select1ByCourseDbPermissionId(conn, coursePermissionId);
-              Permission masterPermission = Permission.select1ById(masterConn,
-                      oldRir.getMasterDbPermissionId());
-              masterPermission.setUserRefId(userRefId);
-              masterPermission.setUserRefType(PermissionRefType.USER.getValue());
-              masterPermission.setType(permissionType);
-              masterPermission.setStartDate(startTimeStamp);
-              masterPermission.setEndDate(endTimeStamp);
-              permission = masterPermission;
-              doUpdate = true;
-            }
-            catch(NoSuchItemException e)
-            {
-            }
-            permission.setTaskId(ci.getMasterTaskId());
-            if(userRefId != null)
-            {
-              UserIdReplication uidr = UserIdReplication
-                      .select1ByCourseDbUserId(conn, userRefId);
-              permission.setUserRefId(uidr.getMasterDbUserId());
-            }
-            if(doUpdate)
-            {
-              permission.update(masterConn);
-            }
-            else
-            {
-              permission.insert(masterConn);
-              Integer masterPermissionId = permission.getId();
-              PermissionIdReplication rir = new PermissionIdReplication();
-              rir.setCourseDbPermissionId(coursePermissionId);
-              rir.setMasterDbPermissionId(masterPermissionId);
-              rir.insert(conn);
-            }
+            PermissionModel.replicateRootPermission(masterConn, conn, dbId,
+                    permission);
           }
           permission = null;
         }
