@@ -52,7 +52,7 @@ public class NotificationTemplate extends SqlAssignableObject implements Cloneab
             rs = ps.executeQuery();
             if (rs.next()) {
                 NotificationTemplate template = new NotificationTemplate();
-                template.setFromResultSet(rs,0);
+                template.setFromResultSet(rs);
                 return template;
             } else {
                 throw new NoSuchItemException();
@@ -64,10 +64,17 @@ public class NotificationTemplate extends SqlAssignableObject implements Cloneab
         }
     }
 
+    @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         id = resultSet.getInt(baseIndex+1);
         type = resultSet.getString(baseIndex+2);
         template = resultSet.getString(baseIndex+3);
+    }
+
+    public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
+        id = resultSet.getInt("id");
+        type = resultSet.getString("type");
+        template = resultSet.getString("template");
     }
 
     public Object clone() throws CloneNotSupportedException {

@@ -9,10 +9,21 @@ import fi.uta.cs.weto.util.Email;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
+
+    // Create a list of the different types
+    public static final List<String> notificationTypes;
+    static {
+        List<String> typeList = new ArrayList<>();
+        typeList.add(FORUM_POST);
+        notificationTypes = Collections.unmodifiableList(typeList);
+    }
 
     private static final Logger logger = Logger.getLogger(Notification.class);
 
@@ -117,15 +128,24 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.message = template;
     }
 
-    public void createNotification(Connection connection) {
+    public void createNotification(Connection masterConnection, Connection courseConnection) {
         try {
-            this.createdAt = new WetoTimeStamp().getTimeStamp();
-            insert(connection);
+            // Check the user notification settings
+            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, userId, courseId, type);
+            if(!userSettings.isNotifications()) {
+                return;
+            }
 
-            UserAccount user = UserAccount.select1ById(connection, userId);
-            Email.scheduleEmail(user.getLoginName(), String.valueOf(getId()), user.getEmail(), "WETO Notification", getMessage());
-            this.sentByEmail = true;
-            update(connection);
+            this.createdAt = new WetoTimeStamp().getTimeStamp();
+            insert(masterConnection);
+
+            // Schedule email
+            if(userSettings.isEmailNotifications()) {
+                UserAccount user = UserAccount.select1ById(masterConnection, userId);
+                Email.scheduleEmail(user.getLoginName(), String.valueOf(getId()), user.getEmail(), "WETO Notification", getMessage());
+                this.sentByEmail = true;
+                update(masterConnection);
+            }
         }
         catch (Exception e) {
             logger.error("Failed to create notification", e);
@@ -174,12 +194,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             rows = ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if(rs.next()) {
-                setFromResultSet(rs, 0);
+                setFromResultSet(rs);
             }
             rs.close();
         }
 
-        if( rows != 1 ) throw new SQLException("Insert did not return a row");
+        if( rows != 1 ) throw new SQLException("Update did not return a row");
     }
 
     public void select(Connection con) throws SQLException, InvalidValueException, NoSuchItemException {
@@ -187,10 +207,10 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
         ResultSet rs = null;
         try (PreparedStatement ps = con.prepareStatement(prepareString)) {
-            ps.setObject(1, id);
+            ps.setInt(1, id);
             rs = ps.executeQuery();
             if (rs.next()) {
-                setFromResultSet(rs,0);
+                setFromResultSet(rs);
             } else {
                 throw new NoSuchItemException();
             }
@@ -201,6 +221,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         id = resultSet.getInt(baseIndex+1);
         userId = resultSet.getInt(baseIndex+2);
@@ -210,6 +231,17 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         createdAt = resultSet.getInt(baseIndex+6);
         readByUser = resultSet.getBoolean(baseIndex+7);
         sentByEmail = resultSet.getBoolean(baseIndex+8);
+    }
+
+    public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
+        id = resultSet.getInt("id");
+        userId = resultSet.getInt("userId");
+        courseId = resultSet.getInt("courseId");
+        type = resultSet.getString("type");
+        message = resultSet.getString("message");
+        createdAt = resultSet.getInt("createdAt");
+        readByUser = resultSet.getBoolean("readByUser");
+        sentByEmail = resultSet.getBoolean("sentByEmail");
     }
 
     public Object clone() throws CloneNotSupportedException {
