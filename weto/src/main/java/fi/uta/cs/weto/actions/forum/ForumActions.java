@@ -472,7 +472,7 @@ public class ForumActions
 
           Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST);
           notification.setMessageFromTemplate(masterConnection, valueMap);
-          notification.createNotification(masterConnection);
+          notification.createNotification(masterConnection, courseConnection);
         }
       } catch (Exception ignored) {
       }

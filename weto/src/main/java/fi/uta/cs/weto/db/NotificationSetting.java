@@ -155,6 +155,28 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         return settings;
     }
 
+    public static NotificationSetting select1ByUserCourseAndType(Connection connection, int userId, int courseId, String type) throws SQLException, NoSuchItemException {
+        String prepareString = "SELECT id, userId, courseId, type, notifications, emailNotifications FROM NotificationSetting WHERE userId = ? AND courseId = ? AND type = ?";
+
+        ResultSet rs = null;
+        try (PreparedStatement ps = connection.prepareStatement(prepareString)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, courseId);
+            ps.setString(3, type);
+
+            rs = ps.executeQuery();
+            if(rs.next()) {
+                return initFromResultSet(rs);
+            } else {
+                throw new NoSuchItemException();
+            }
+        } finally {
+            if(rs != null) {
+                rs.close();
+            }
+        }
+    }
+
     @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         this.id = resultSet.getInt(baseIndex + 1);
