@@ -23,9 +23,9 @@ sudo apt-get -y -q install openjdk-8-jdk
 ## Install tomcat
 sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
 sudo usermod -a -G tomcat vagrant
-wget -nv https://www.nic.funet.fi/pub/mirrors/apache.org/tomcat/tomcat-9/v9.0.31/bin/apache-tomcat-9.0.31.tar.gz -P /tmp
+wget -nv https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.33/bin/apache-tomcat-9.0.33.tar.gz -P /tmp
 sudo tar -xf /tmp/apache-tomcat-9.*.tar.gz -C /opt/tomcat
-sudo ln -s /opt/tomcat/apache-tomcat-9.0.31 /opt/tomcat/latest
+sudo ln -s /opt/tomcat/apache-tomcat-9.0.33 /opt/tomcat/latest
 sudo chown -RH tomcat: /opt/tomcat/latest
 sudo chmod -R 775 /opt/tomcat/latest
 sudo sh -c 'chmod +x /opt/tomcat/latest/bin/*.sh'
