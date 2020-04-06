@@ -1,5 +1,5 @@
 # Default ignored files
-#target/
+target/
 node_modules/
 .DS_Store
 /dist
@@ -12,6 +12,7 @@ node_modules/
 *.njsproj
 *.sln
 *.sw?
+*.iml
 
 # local env files
 .env.local
