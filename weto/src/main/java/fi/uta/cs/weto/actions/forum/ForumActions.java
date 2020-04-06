@@ -3,11 +3,7 @@ package fi.uta.cs.weto.actions.forum;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
-import fi.uta.cs.weto.db.Log;
-import fi.uta.cs.weto.db.Tag;
-import fi.uta.cs.weto.db.TagView;
-import fi.uta.cs.weto.db.Task;
-import fi.uta.cs.weto.db.UserTaskView;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.ClusterType;
 import fi.uta.cs.weto.model.LogEvent;
 import fi.uta.cs.weto.model.PermissionModel;
@@ -426,7 +422,63 @@ public class ForumActions
                 .getValue(), tag.getId(), null, userIP).insert(conn);
       }
       addActionMessage(getText("forum.message.messageAdded"));
+      createNotifications(messageText);
       return SUCCESS;
+    }
+
+    private void createNotifications(String messageText) {
+      Connection masterConnection = getMasterConnection();
+      Connection courseConnection = getCourseConnection();
+
+      try {
+        ArrayList<Tag> messages = new ArrayList<>();
+        Tag topic = Tag.select1ById(courseConnection, topicId);
+        messages.add(topic);
+        messages.addAll(Tag.selectByTaggedIdAndStatusAndType(courseConnection, getTaskId(), topicId, TagType.FORUM_MESSAGE.getValue()));
+
+        HashSet<Integer> messageAuthors = new HashSet<>();
+        for(Tag message : messages) {
+          if(!message.getAuthorId().equals(getCourseUserId())) {
+            messageAuthors.add(message.getAuthorId());
+          }
+        }
+
+        // Get the teachers for the course
+        HashSet<Integer> teacherIdSet = new HashSet<>();
+        for(UserTaskView teacher : UserTaskView.selectByTaskIdAndClusterType(courseConnection,
+                getTaskId(), ClusterType.TEACHERS.getValue()))
+        {
+          teacherIdSet.add(teacher.getUserId());
+        }
+
+        // Map values that will be put to the notification template
+        UserAccount author = UserAccount.select1ById(courseConnection, getCourseUserId());
+        HashMap<String, String> valueMap = new HashMap<>();
+        // User name
+        if(teacherIdSet.contains(author.getId())) {
+          valueMap.put("&user;", author.getFirstName() + " " + author.getLastName());
+        } else {
+          valueMap.put("&user;", anonymousName);
+        }
+        // Forum topic
+        JsonObject topicJson = new JsonParser().parse(topic.getText()).getAsJsonObject();
+        valueMap.put("&forumTitle;", topicJson.get("title").toString());
+        // Message
+        valueMap.put("&message;", messageText);
+
+        CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
+        // Send to all participants
+        for(Integer authorId : messageAuthors) {
+          UserAccount user = UserAccount.select1ById(courseConnection, authorId);
+          UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
+
+
+          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST);
+          notification.setMessageFromTemplate(masterConnection, valueMap);
+          notification.createNotification(masterConnection, courseConnection);
+        }
+      } catch (Exception ignored) {
+      }
     }
 
     public Integer getTopicId()

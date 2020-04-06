@@ -62,4 +62,9 @@
   <definition name="questionAnswers.page" extends="course.page">
     <put-attribute name="body" value="/pages/main/QuestionAnswers.jsp" />
   </definition>
+
+  <!-- Notification settings page -->
+  <definition name="notificationSettings.page" extends="course.page">
+    <put-attribute name="body" value="/pages/main/NotificationSettings.jsp" />
+  </definition>
 </tiles-definitions>

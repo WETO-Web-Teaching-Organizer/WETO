@@ -53,3 +53,10 @@ sudo ln -s `pwd`/flyway /usr/local/bin
 ## Initialize the database
 flyway -configFiles=/weto/database/flyway-weto5_master.conf baseline
 flyway -configFiles=/weto/database/flyway-weto5_course.conf baseline
+
+## Install a SMTP server
+debconf-set-selections <<< "postfix postfix/mailname string sis.uta.fi"
+debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
+sudo apt-get -y -q install mailutils
+sudo cp /vagrant/postfix.cf /etc/postfix/main.cf
+sudo service postfix restart
