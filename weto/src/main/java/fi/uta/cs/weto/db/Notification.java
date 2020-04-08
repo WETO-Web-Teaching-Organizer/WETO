@@ -160,6 +160,22 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    public static ArrayList<Notification> getNotificationsNotSentByEmail(Connection connection) throws SQLException {
+        ArrayList<Notification> notifications = new ArrayList<>();
+
+        String sqlStatement = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE sentByEmail = false";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement)) {
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while(rs.next()) {
+                notifications.add(initFromResultSet(rs));
+            }
+            rs.close();
+        }
+
+        return notifications;
+    }
+
     public void insert(Connection con) throws SQLException, WetoTimeStampException {
         int rows = 0;
 
@@ -259,6 +275,18 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         timestamp = resultSet.getInt("timestamp");
         readByUser = resultSet.getBoolean("readByUser");
         sentByEmail = resultSet.getBoolean("sentByEmail");
+    }
+
+    public static Notification initFromResultSet(ResultSet resultSet) throws SQLException {
+        try {
+            Notification result = new Notification();
+
+            result.setFromResultSet(resultSet);
+
+            return result;
+        } catch (InvalidValueException e) {
+            throw new SQLException(e);
+        }
     }
 
     public Object clone() throws CloneNotSupportedException {
