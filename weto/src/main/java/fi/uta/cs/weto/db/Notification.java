@@ -3,6 +3,7 @@ package fi.uta.cs.weto.db;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.SqlAssignableObject;
+import fi.uta.cs.weto.model.NotificationTemplate;
 import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.model.WetoTimeStampException;
 import fi.uta.cs.weto.util.Email;
@@ -118,18 +119,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.sentByEmail = sentByEmail;
     }
 
-    public void setMessageFromTemplate(Connection connection, HashMap<String, String> valueMap) throws InvalidValueException, SQLException, NoSuchItemException {
-        String template = NotificationTemplate.selectByType(connection, getType()).getTemplate();
-
-        for(String key : valueMap.keySet()) {
-            template = template.replaceAll(key, valueMap.get(key));
-        }
-
-        this.message = template;
+    public void setMessageFromTemplate(HashMap<String, String> valueMap) throws NoSuchItemException {
+        this.message = getMessageFromTemplate(this.type, valueMap);
     }
 
-    public static String getMessageFromTemplate(Connection connection, String notificationType, HashMap<String, String> valueMap) throws InvalidValueException, SQLException, NoSuchItemException {
-        String template = NotificationTemplate.selectByType(connection, notificationType).getTemplate();
+    public static String getMessageFromTemplate(String notificationType, HashMap<String, String> valueMap) throws NoSuchItemException {
+        String template = NotificationTemplate.getTemplateFromResource(notificationType).getTemplate();
 
         for(String key : valueMap.keySet()) {
             template = template.replaceAll(key, valueMap.get(key));
