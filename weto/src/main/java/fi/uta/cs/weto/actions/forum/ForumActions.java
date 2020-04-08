@@ -463,8 +463,8 @@ public class ForumActions
         // Forum topic
         JsonObject topicJson = new JsonParser().parse(topic.getText()).getAsJsonObject();
         valueMap.put("&forumTitle;", topicJson.get("title").toString());
-        // Message
-        valueMap.put("&message;", messageText);
+
+        String notificationMessage = Notification.getMessageFromTemplate(Notification.FORUM_POST, valueMap);
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
         // Send to all participants
@@ -474,7 +474,7 @@ public class ForumActions
 
 
           Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST);
-          notification.setMessageFromTemplate(masterConnection, valueMap);
+          notification.setMessage(notificationMessage);
           notification.createNotification(masterConnection, courseConnection);
         }
       } catch (Exception ignored) {

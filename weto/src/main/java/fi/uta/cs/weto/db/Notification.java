@@ -3,6 +3,7 @@ package fi.uta.cs.weto.db;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.SqlAssignableObject;
+import fi.uta.cs.weto.model.NotificationTemplate;
 import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.model.WetoTimeStampException;
 import fi.uta.cs.weto.util.Email;
@@ -32,7 +33,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     private int courseId;
     private String type;
     private String message;
-    private int createdAt;
+    private int timestamp;
     private boolean readByUser;
     private boolean sentByEmail;
 
@@ -94,12 +95,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.message = message;
     }
 
-    public int getCreatedAt() {
-        return createdAt;
+    public int getTimestamp() {
+        return timestamp;
     }
 
-    public void setCreatedAt(int createdAt) {
-        this.createdAt = createdAt;
+    public void setTimestamp(int timestamp) {
+        this.timestamp = timestamp;
     }
 
     public boolean isReadByUser() {
@@ -118,14 +119,18 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.sentByEmail = sentByEmail;
     }
 
-    public void setMessageFromTemplate(Connection connection, HashMap<String, String> valueMap) throws InvalidValueException, SQLException, NoSuchItemException {
-        String template = NotificationTemplate.selectByType(connection, getType()).getTemplate();
+    public void setMessageFromTemplate(HashMap<String, String> valueMap) throws NoSuchItemException {
+        this.message = getMessageFromTemplate(this.type, valueMap);
+    }
+
+    public static String getMessageFromTemplate(String notificationType, HashMap<String, String> valueMap) throws NoSuchItemException {
+        String template = NotificationTemplate.getTemplateFromResource(notificationType).getTemplate();
 
         for(String key : valueMap.keySet()) {
             template = template.replaceAll(key, valueMap.get(key));
         }
 
-        this.message = template;
+        return template;
     }
 
     public void createNotification(Connection masterConnection, Connection courseConnection) {
@@ -136,7 +141,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 return;
             }
 
-            this.createdAt = new WetoTimeStamp().getTimeStamp();
+            this.timestamp = new WetoTimeStamp().getTimeStamp();
             insert(masterConnection);
 
             // Schedule email
@@ -155,13 +160,13 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     public void insert(Connection con) throws SQLException, WetoTimeStampException {
         int rows = 0;
 
-        String sqlStatement = "INSERT INTO Notification (userId, courseId, type, message, createdAt, readByUser, sentByEmail) values (?, ?, ?, ?, ?, ?, ?);";
+        String sqlStatement = "INSERT INTO Notification (userId, courseId, type, message, timestamp, readByUser, sentByEmail) values (?, ?, ?, ?, ?, ?, ?);";
         try (PreparedStatement ps = con.prepareStatement(sqlStatement, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, userId);
             ps.setInt(2, courseId);
             ps.setString(3, type);
             ps.setString(4, message);
-            ps.setInt(5, createdAt);
+            ps.setInt(5, timestamp);
             ps.setBoolean(6, readByUser);
             ps.setBoolean(7, sentByEmail);
 
@@ -203,7 +208,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     }
 
     public void select(Connection con) throws SQLException, InvalidValueException, NoSuchItemException {
-        String prepareString = "SELECT id, userId, courseId, type, message, createdAt, readByUser, sentByEmail FROM Notification WHERE id = ?";
+        String prepareString = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE id = ?";
 
         ResultSet rs = null;
         try (PreparedStatement ps = con.prepareStatement(prepareString)) {
@@ -228,7 +233,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         courseId = resultSet.getInt(baseIndex+3);
         type = resultSet.getString(baseIndex+4);
         message = resultSet.getString(baseIndex+5);
-        createdAt = resultSet.getInt(baseIndex+6);
+        timestamp = resultSet.getInt(baseIndex+6);
         readByUser = resultSet.getBoolean(baseIndex+7);
         sentByEmail = resultSet.getBoolean(baseIndex+8);
     }
@@ -239,7 +244,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         courseId = resultSet.getInt("courseId");
         type = resultSet.getString("type");
         message = resultSet.getString("message");
-        createdAt = resultSet.getInt("createdAt");
+        timestamp = resultSet.getInt("timestamp");
         readByUser = resultSet.getBoolean("readByUser");
         sentByEmail = resultSet.getBoolean("sentByEmail");
     }
@@ -255,7 +260,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 "courseId:" + courseId + "\n" +
                 "type: " + type + "\n" +
                 "message:" + message + "\n" +
-                "createdAt:" + createdAt + "\n" +
+                "timestamp:" + timestamp + "\n" +
                 "readByUser:" + readByUser + "\n" +
                 "sentByEmail:" + sentByEmail + "\n" +
                 "\n");
