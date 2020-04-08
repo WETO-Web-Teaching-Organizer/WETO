@@ -128,6 +128,16 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.message = template;
     }
 
+    public static String getMessageFromTemplate(Connection connection, String notificationType, HashMap<String, String> valueMap) throws InvalidValueException, SQLException, NoSuchItemException {
+        String template = NotificationTemplate.selectByType(connection, notificationType).getTemplate();
+
+        for(String key : valueMap.keySet()) {
+            template = template.replaceAll(key, valueMap.get(key));
+        }
+
+        return template;
+    }
+
     public void createNotification(Connection masterConnection, Connection courseConnection) {
         try {
             // Check the user notification settings
