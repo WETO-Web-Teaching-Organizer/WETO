@@ -229,6 +229,38 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    public static ArrayList<Notification> selectNotificationsByUser(Connection connection, int userId) throws SQLException, InvalidValueException, NoSuchItemException {
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT SELECT id, userId, courseId, type, message, createdAt, readByUser, sentByEmail FROM NOTIFICATION WHERE userId = ?");
+        ResultSet resultSet = null;
+        ArrayList<Notification> notifications = new ArrayList<>();
+
+        try {
+            preparedStatement.setInt(1, userId);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                Notification notification = new Notification ();
+                notification.setFromResultSet(resultSet, 0);
+                notifications.add(notification);
+            }
+            else {
+                throw new NoSuchItemException();
+            }
+        }
+        // Tämä pois.
+        catch(SQLException e) {
+            return notifications;
+        }
+
+        finally {
+            if(resultSet != null) {
+                resultSet.close();
+            }
+        }
+
+        return notifications;
+    }
+
     public static void deleteByCourseId(Connection connection, int courseId) throws SQLException {
         String prepareString = "DELETE FROM Notification WHERE courseId = ?";
 
