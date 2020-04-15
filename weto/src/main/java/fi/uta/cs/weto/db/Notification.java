@@ -144,16 +144,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 return;
             }
 
+            if(!userSettings.isEmailNotifications()) {
+                this.setSentByEmail(true);
+            }
+
             this.timestamp = new WetoTimeStamp().getTimeStamp();
             insert(masterConnection);
-
-            // Schedule email
-            if(userSettings.isEmailNotifications()) {
-                UserAccount user = UserAccount.select1ById(masterConnection, userId);
-                Email.scheduleEmail(user.getLoginName(), String.valueOf(getId()), user.getEmail(), "WETO Notification", getMessage());
-                this.sentByEmail = true;
-                update(masterConnection);
-            }
         }
         catch (Exception e) {
             logger.error("Failed to create notification", e);
