@@ -42,12 +42,10 @@ public class NotificationManager implements ServletContextListener {
     private class NotificationEmailTask implements Runnable {
         @Override
         public void run() {
-            logger.debug("This is a test");
             Connection masterConnection = connectionManager.getConnection("master");
 
-            HashMap<Integer, ArrayList<Notification>> notificationMap = new HashMap<>();
-
             // Map notifications by user id into lists
+            HashMap<Integer, ArrayList<Notification>> notificationMap = new HashMap<>();
             ArrayList<Notification> unsentNotifications;
             try {
                 unsentNotifications = Notification.getNotificationsNotSentByEmail(masterConnection);
@@ -88,6 +86,15 @@ public class NotificationManager implements ServletContextListener {
                 } catch (MessagingException e) {
                     logger.error("Failed to send automated notification email", e);
                     break;
+                }
+
+                for(Notification notification : notifications) {
+                    try {
+                        notification.setSentByEmail(true);
+                        notification.update(masterConnection);
+                    } catch (Exception e) {
+                        logger.error("Failed to save notification state during automated emailing", e);
+                    }
                 }
             }
         }
