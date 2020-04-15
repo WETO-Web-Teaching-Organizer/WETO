@@ -7,6 +7,7 @@ import fi.uta.cs.weto.model.NotificationTemplate;
 import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.model.WetoTimeStampException;
 import fi.uta.cs.weto.util.Email;
+import fi.uta.cs.weto.util.WetoUtilities;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -97,6 +98,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
     public int getTimestamp() {
         return timestamp;
+    }
+
+    public WetoTimeStamp getTimestampAsObject() {
+        try {
+            return new WetoTimeStamp(timestamp);
+        } catch (WetoTimeStampException e) {
+            return null;
+        }
     }
 
     public void setTimestamp(int timestamp) {
@@ -197,26 +206,21 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     }
 
     public void update(Connection con) throws SQLException, InvalidValueException {
-        int rows = 0;
+        int rows;
 
-        String sqlStatement = "UPDATE Notification SET id = ?, userId = ?, courseId = ?, type = ?, message = ?, readByUser = ?, sentByEmail = ? WHERE id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sqlStatement, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, id);
-            ps.setInt(2, userId);
-            ps.setInt(3, courseId);
-            ps.setString(4, type);
-            ps.setString(5, message);
+        String sqlStatement = "UPDATE Notification SET userId = ?, courseId = ?, type = ?, message = ?, timestamp = ?, readByUser = ?, sentByEmail = ? WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sqlStatement)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, courseId);
+            ps.setString(3, type);
+            ps.setString(4, message);
+            ps.setInt(5, timestamp);
             ps.setBoolean(6, readByUser);
             ps.setBoolean(7, sentByEmail);
 
             ps.setInt(8, id);
 
             rows = ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if(rs.next()) {
-                setFromResultSet(rs);
-            }
-            rs.close();
         }
 
         if( rows != 1 ) throw new SQLException("Update did not return a row");
@@ -283,6 +287,20 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         } catch (InvalidValueException e) {
             throw new SQLException(e);
         }
+    }
+
+    /**
+     * Maps the list of notification types to displayable strings specified in the message resources
+     * @return Map with the notification type being the key and displayable string being the value.
+     */
+    public static HashMap<String, String> getTypeDisplayMap() {
+        HashMap<String, String> typeMap = new HashMap<>();
+
+        for(String type : notificationTypes) {
+            typeMap.put(type, WetoUtilities.getMessageResource("notification." + type));
+        }
+
+        return typeMap;
     }
 
     public Object clone() throws CloneNotSupportedException {

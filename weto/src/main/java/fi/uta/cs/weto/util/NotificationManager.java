@@ -1,14 +1,22 @@
 package fi.uta.cs.weto.util;
 
 import fi.uta.cs.weto.db.Notification;
+import fi.uta.cs.weto.db.Task;
 import fi.uta.cs.weto.db.UserAccount;
 import org.apache.log4j.Logger;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
 import javax.mail.MessagingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
@@ -62,6 +70,26 @@ public class NotificationManager implements ServletContextListener {
                 notificationMap.get(userId).add(notification);
             }
 
+            // Setup Velocity templates for the email
+            final String templateName = "NotificationEmailTemplate.vm";
+
+            VelocityEngine velocityEngine = new VelocityEngine();
+            velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+            velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+            velocityEngine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
+            velocityEngine.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
+            velocityEngine.setProperty("runtime.log.logsystem.log4j.category", "velocity");
+            velocityEngine.setProperty("runtime.log.logsystem.log4j.logger", "velocity");
+
+            Template template;
+            try {
+                velocityEngine.init();
+                template = velocityEngine.getTemplate(templateName, "UTF-8");
+            } catch (Exception e) {
+                logger.error("Failed to initialize velocity engine", e);
+                return;
+            }
+
             // Form emails for each user
             for (int userId : notificationMap.keySet()) {
                 ArrayList<Notification> notifications = notificationMap.get(userId);
@@ -74,20 +102,43 @@ public class NotificationManager implements ServletContextListener {
                     break;
                 }
 
-                String emailSubject = String.format("WETO: %s new notifications", notifications.size());
-                StringBuilder emailMessage = new StringBuilder(String.format("New notifications (%s):%n", notifications.size()));
-                for(Notification notification : notifications) {
-                    emailMessage.append(notification.getMessage())
-                            .append("\n");
+                HashMap<Integer, String> courseNameMap = new HashMap<>();
+                try {
+                    for(Notification notification : notifications) {
+                        int courseId = notification.getCourseId();
+                        courseNameMap.put(courseId, Task.select1ById(masterConnection, courseId).getName());
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to fetch course name", e);
+                    break;
                 }
 
-                try {
-                    Email.sendMail(userAccount.getEmail(), emailSubject, emailMessage.toString());
+                try (StringWriter stringWriter = new StringWriter()) {
+                    String emailSubject = String.format("WETO: %s new notification(s)", notifications.size());
+                    String emailMessage;
+
+                    // Set up the context for velocity and evaluate the template
+                    VelocityContext velocityContext = new VelocityContext();
+                    velocityContext.put("emailTitle", emailSubject);
+                    velocityContext.put("courseNames", courseNameMap);
+                    velocityContext.put("notifications", notifications);
+                    velocityContext.put("notificationTypeMap", Notification.getTypeDisplayMap());
+
+                    template.merge(velocityContext, stringWriter);
+
+                    stringWriter.flush();
+                    emailMessage = stringWriter.toString();
+
+                    Email.sendMail(userAccount.getEmail(), emailSubject, emailMessage);
+                } catch (IOException e) {
+                    logger.error("Failed to create a html from the email template", e);
+                    break;
                 } catch (MessagingException e) {
                     logger.error("Failed to send automated notification email", e);
                     break;
                 }
 
+                // Save the notifications as sent
                 for(Notification notification : notifications) {
                     try {
                         notification.setSentByEmail(true);
@@ -97,6 +148,17 @@ public class NotificationManager implements ServletContextListener {
                     }
                 }
             }
+
+            try {
+                masterConnection.commit();
+            } catch (Exception e) {
+                try {
+                    masterConnection.rollback();
+                } catch (SQLException ignored) {
+                }
+            }
+
+            connectionManager.freeConnection(masterConnection);
         }
     }
 }

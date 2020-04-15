@@ -1,0 +1,44 @@
+<html lang="en">
+    <head>
+        <title>$emailTitle</title>
+        <style>
+
+        </style>
+    </head>
+    <body>
+    <h1>$emailTitle</h1>
+    <table>
+        <thead>
+        <tr>
+            <td>Course</td>
+            <td>Type</td>
+            <td>Message</td>
+            <td>Link</td>
+            <td>Date</td>
+        </tr>
+        </thead>
+        <tbody>
+        #foreach( $notification in $notifications )
+        <tr>
+            <td>
+                $courseNames.get($notification.getCourseId())
+            </td>
+            <td>
+                $notificationTypeMap.get($notification.getType())
+            </td>
+            <td>
+                $notification.getMessage()
+            </td>
+            <td></td>
+            <td>
+                #set($timestamp = $notification.getTimestampAsObject())
+                #if($timestamp)
+                    $timestamp.toString()
+                #end
+            </td>
+        </tr>
+        #end
+        </tbody>
+    </table>
+    </body>
+</html>
