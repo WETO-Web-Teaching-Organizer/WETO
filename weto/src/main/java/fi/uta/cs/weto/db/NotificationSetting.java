@@ -177,6 +177,15 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         }
     }
 
+    public static void deleteByCourseId(Connection connection, int courseId) throws SQLException {
+        String prepareString = "DELETE FROM NotificationSetting WHERE courseId = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(prepareString)) {
+            ps.setInt(1, courseId);
+            ps.executeUpdate();
+        }
+    }
+
     @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         this.id = resultSet.getInt(baseIndex + 1);
