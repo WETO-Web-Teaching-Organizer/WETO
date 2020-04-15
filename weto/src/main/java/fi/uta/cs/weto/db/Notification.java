@@ -136,7 +136,10 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     public void createNotification(Connection masterConnection, Connection courseConnection) {
         try {
             // Check the user notification settings
-            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, userId, courseId, type);
+            int courseDbTaskId = CourseImplementation.select1ByMasterTaskId(masterConnection, courseId).getCourseTaskId();
+            int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId).getCourseDbUserId();
+
+            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, courseDbUserId, courseDbTaskId, type);
             if(!userSettings.isNotifications()) {
                 return;
             }
