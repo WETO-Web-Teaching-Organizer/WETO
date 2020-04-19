@@ -137,7 +137,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         try {
             // Check the user notification settings
             NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, userId, courseId, type);
-            if(!userSettings.isNotifications()) {
+            if (!userSettings.isNotifications()) {
                 return;
             }
 
@@ -145,15 +145,22 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             insert(masterConnection);
 
             // Schedule email
-            if(userSettings.isEmailNotifications()) {
+            if (userSettings.isEmailNotifications()) {
                 UserAccount user = UserAccount.select1ById(masterConnection, userId);
                 Email.scheduleEmail(user.getLoginName(), String.valueOf(getId()), user.getEmail(), "WETO Notification", getMessage());
                 this.sentByEmail = true;
                 update(masterConnection);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to create notification", e);
+        }
+    }
+    // try catch inside loop or outside? depends if you want to keep rolling or exit on error.
+    public void createMassNotification(Connection masterConnection, Connection courseConnection, int[] userIDs) {
+        int i;
+        for(i = 0; i < userIDs.length; i++) {
+            int recipient = userIDs[i];
+            createNotification(masterConnection, courseConnection);
         }
     }
 

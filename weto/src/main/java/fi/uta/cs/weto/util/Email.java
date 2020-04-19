@@ -150,4 +150,15 @@ public class Email
     Transport.send(msg);
   }
 
+  // Parsing recipients for sendMail and calling it till array looped through.
+  public static void massEmail(String[] recipients, String subject, String message)
+          throws MessagingException
+  {
+    int i;
+    for(i = 0; i < recipients.length; i++){
+      String recipient = recipients[i];
+      sendMail(recipient, subject, message);
+    }
+  }
+
 }
