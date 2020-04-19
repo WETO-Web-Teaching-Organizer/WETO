@@ -1,12 +1,6 @@
 package fi.uta.cs.weto.actions.admin;
 
-import fi.uta.cs.weto.db.ClusterIdReplication;
-import fi.uta.cs.weto.db.ClusterMember;
-import fi.uta.cs.weto.db.CourseImplementation;
-import fi.uta.cs.weto.db.CourseView;
-import fi.uta.cs.weto.db.Permission;
-import fi.uta.cs.weto.db.RightsCluster;
-import fi.uta.cs.weto.db.Task;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.CourseMemberModel;
 import fi.uta.cs.weto.model.TaskModel;
 import fi.uta.cs.weto.model.WetoAdminAction;
@@ -146,6 +140,7 @@ public abstract class DeleteCourseActions
         }
         masterDbCluster.delete(masterConn);
       }
+      NotificationSetting.deleteByCourseId(courseConn, courseTaskId);
       TaskModel.deleteCourseDbTask(courseConn, masterConn, courseTaskId);
       // Finally delete permissions, permitted students and task from master db
       for(Permission permission : Permission.selectByTaskId(masterConn,
@@ -154,6 +149,7 @@ public abstract class DeleteCourseActions
         permission.delete(masterConn);
       }
       CourseMemberModel.emptyPermittedStudents(masterConn, masterCourseTaskId);
+      Notification.deleteByCourseId(masterConn, masterCourseTaskId);
       CourseImplementation.select1ByMasterTaskId(masterConn, masterCourseTaskId)
               .delete(masterConn);
       Task.select1ById(masterConn, masterCourseTaskId).delete(masterConn);

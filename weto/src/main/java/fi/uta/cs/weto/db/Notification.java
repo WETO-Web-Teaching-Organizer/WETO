@@ -136,8 +136,11 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     public void createNotification(Connection masterConnection, Connection courseConnection) {
         try {
             // Check the user notification settings
-            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, userId, courseId, type);
-            if (!userSettings.isNotifications()) {
+            int courseDbTaskId = CourseImplementation.select1ByMasterTaskId(masterConnection, courseId).getCourseTaskId();
+            int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId).getCourseDbUserId();
+
+            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, courseDbUserId, courseDbTaskId, type);
+            if(!userSettings.isNotifications()) {
                 return;
             }
 
@@ -230,6 +233,15 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             if(rs != null) {
                 rs.close();
             }
+        }
+    }
+
+    public static void deleteByCourseId(Connection connection, int courseId) throws SQLException {
+        String prepareString = "DELETE FROM Notification WHERE courseId = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(prepareString)) {
+            ps.setInt(1, courseId);
+            ps.executeUpdate();
         }
     }
 
