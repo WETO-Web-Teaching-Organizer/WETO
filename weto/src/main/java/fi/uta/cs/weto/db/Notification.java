@@ -230,7 +230,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     }
 
     public static ArrayList<Notification> selectNotificationsByUser(Connection connection, int userId) throws SQLException, InvalidValueException, NoSuchItemException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT SELECT id, userId, courseId, type, message, createdAt, readByUser, sentByEmail FROM NOTIFICATION WHERE userId = ?");
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM NOTIFICATION WHERE userId = ?");
         ResultSet resultSet = null;
         ArrayList<Notification> notifications = new ArrayList<>();
 
@@ -246,10 +246,6 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             else {
                 throw new NoSuchItemException();
             }
-        }
-        // Tämä pois.
-        catch(SQLException e) {
-            return notifications;
         }
 
         finally {

@@ -6,7 +6,7 @@
 
 <struts>
   <package name="weto-notifications" extends="weto-default">
-     <action name="viewNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$NotificationCenter">
+     <action name="viewNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$ViewNotificationCenter">
        <result type="tiles" name="success">notificationCenter.page</result>
      </action>
   </package>

@@ -1,6 +1,9 @@
 package fi.uta.cs.weto.actions.notifications;
 
+import fi.uta.cs.sqldatamodel.NoSuchItemException;
+import fi.uta.cs.weto.db.CourseView;
 import fi.uta.cs.weto.db.Notification;
+import fi.uta.cs.weto.db.UserTaskView;
 import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
@@ -11,20 +14,21 @@ import java.util.HashMap;
 import java.util.List;
 
 public class NotificationActions {
-    public static class NotificationCenter extends WetoCourseAction {
+    public static class ViewNotificationCenter extends WetoCourseAction {
         private ArrayList<Notification> notifications;
         private List<String> notificationTypes;
-        private HashMap<Integer, String> courseNames;
+        private HashMap<Integer, String> courseIdsNames;
 
         private String type;
         private Integer courseId;
         private String date;
 
         // Tarkista rakentaja.
-        public NotificationCenter() {
+        public ViewNotificationCenter() {
             super(Tab.MAIN.getBit(), 0, 0, 0);
             notifications = null;
             notificationTypes = null;
+            courseIdsNames = new HashMap<>();
         }
 
         public ArrayList<Notification> getNotifications() {
@@ -41,6 +45,14 @@ public class NotificationActions {
 
         public void setNotificationTypes(List<String> notificationTypes) {
             this.notificationTypes = notificationTypes;
+        }
+
+        public HashMap<Integer, String> getCourseIdsNames() {
+            return courseIdsNames;
+        }
+
+        public void setCourseIdsNames(HashMap<Integer, String> courseIdsNames) {
+            this.courseIdsNames = courseIdsNames;
         }
 
         public String getType() {
@@ -77,13 +89,37 @@ public class NotificationActions {
             } catch (Exception e) {
                 throw new WetoActionException("Failed to retrieve notifications");
             }*/
+
+            Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
-            notifications = new ArrayList<Notification>();
+
+            ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+
+            for (int i = 0; i < courseView.size(); i++) {
+               try {
+                   int masterTaskId = courseView.get(i).getMasterTaskId();
+                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, masterTaskId, userId);
+                   String name = courseView.get(i).getName();
+                   courseIdsNames.put(masterTaskId, name);
+                }
+                // User is not member of the course.
+               catch (NoSuchItemException e) {
+               }
+            }
+            try {
+                notifications = Notification.selectNotificationsByUser(masterConnection, userId);
+            }
+            catch (NoSuchItemException e) {
+            }
+
+
+
+            /*notifications = new ArrayList<Notification>();
             notificationTypes = Notification.notificationTypes;
             Notification noti = new Notification(userId, 1, "testi");
             Notification noti2 = new Notification(userId, 2, "testi2");
             notifications.add(noti);
-            notifications.add(noti2);
+            notifications.add(noti2);*/
 
             return SUCCESS;
         }

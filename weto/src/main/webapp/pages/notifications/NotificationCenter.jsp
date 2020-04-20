@@ -11,8 +11,9 @@
 <div class="filters">
     <select id = "courses">
         <option value="all">All</option>
-        <option value="course2">course2</option>
-        <option value="course3">course3</option>
+        <s:iterator value="%{courseIdsNames}" var="courseIdName">
+            <option value="${key}"> ${value} </option>
+        </s:iterator>
     </select>
     <select id = "types">
         <option value="all">All</option>
@@ -30,26 +31,31 @@
 <hr>
 
 <div class="notifications">
-    <table>
-        <thead>
-            <tr>
-                <td>Course</td>
-                <td>Type</td>
-                <td>Notification</td>
-                <td>Date</td>
-            </tr>
-        </thead>
-        <tbody>
-        <s:iterator value="%{notifications}" var="notification">
-            <tr>
-                <td><s:text name="%{#notification.courseId}" /></td>
-                <td><s:text name="%{#notification.type}" /></td>
-                <td>Testi</td>
-                <td>Testi</td>
-                <%--<td><s:text name="%{#notification.message}" /></td>
-                <td><s:text name="%{#notification.createdAt}" /></td>--%>
-            </tr>
-        </s:iterator>
+    <s:if test="%{!notifications.isEmpty()}">
+        <table>
+            <thead>
+                <tr>
+                    <td>Course</td>
+                    <td>Type</td>
+                    <td>Notification</td>
+                    <td>Date</td>
+                </tr>
+            </thead>
+            <tbody>
+            <s:iterator value="%{notifications}" var="notification">
+                <tr>
+                    <td><s:text name="%{#notification.courseId}" /></td>
+                    <td><s:text name="%{#notification.type}" /></td>
+                    <td>Testi</td>
+                    <td>Testi</td>
+                    <%--<td><s:text name="%{#notification.message}" /></td>
+                    <td><s:text name="%{#notification.timestamp}" /></td>--%>
+                </tr>
+            </s:iterator>
+        </s:if>
+        <s:else>
+            <p>You have not received any notifications.</p>
+        </s:else>
         </tbody>
     </table>
 </div>
