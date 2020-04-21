@@ -1,0 +1,75 @@
+<html lang="en">
+    <head>
+        <title>$emailTitle</title>
+        <style>
+            body {
+                font-size: 14px;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+            }
+
+            h1 {
+                font-size: 2.5em;
+                color: #19578A;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+                font-weight: bold;
+            }
+
+            table {
+                border-collapse: collapse;
+            }
+
+            tr {
+                border-bottom: 1px solid #19578A;
+            }
+
+            thead td {
+                font-size: 1.5em;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+                color: #19578A;
+                padding: 0.25em 0.5em;
+            }
+
+            tbody td {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 1.2em;
+                padding: 1em 0.5em;
+            }
+        </style>
+    </head>
+    <body>
+    <h1>$emailTitle</h1>
+    <table>
+        <thead>
+        <tr>
+            <td>Course</td>
+            <td>Type</td>
+            <td>Message</td>
+            <td>Link</td>
+            <td>Date</td>
+        </tr>
+        </thead>
+        <tbody>
+        #foreach( $notification in $notifications )
+        <tr>
+            <td>
+                $courseNames.get($notification.getCourseId())
+            </td>
+            <td>
+                $notificationTypeMap.get($notification.getType())
+            </td>
+            <td>
+                $notification.getMessage()
+            </td>
+            <td></td>
+            <td>
+                #set($timestamp = $notification.getTimestampAsObject())
+                #if($timestamp)
+                    $timestamp.toString()
+                #end
+            </td>
+        </tr>
+        #end
+        </tbody>
+    </table>
+    </body>
+</html>
