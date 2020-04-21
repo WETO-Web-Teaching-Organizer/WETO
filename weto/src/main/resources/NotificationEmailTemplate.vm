@@ -8,7 +8,7 @@
             }
 
             h1 {
-                font-size: 3em;
+                font-size: 2.5em;
                 color: #19578A;
                 font-family: "Trebuchet MS", Helvetica, sans-serif;
                 font-weight: bold;

@@ -71,7 +71,8 @@ public class NotificationManager implements ServletContextListener {
             }
 
             // Setup Velocity templates for the email
-            final String templateName = "NotificationEmailTemplate.vm";
+            final String htmlTemplateName = "NotificationEmailTemplate.vm";
+            final String textTemplateName = "NotificationEmailTemplateText.vm";
 
             VelocityEngine velocityEngine = new VelocityEngine();
             velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -81,10 +82,12 @@ public class NotificationManager implements ServletContextListener {
             velocityEngine.setProperty("runtime.log.logsystem.log4j.category", "velocity");
             velocityEngine.setProperty("runtime.log.logsystem.log4j.logger", "velocity");
 
-            Template template;
+            Template htmlTemplate;
+            Template textTemplate;
             try {
                 velocityEngine.init();
-                template = velocityEngine.getTemplate(templateName, "UTF-8");
+                htmlTemplate = velocityEngine.getTemplate(htmlTemplateName, "UTF-8");
+                textTemplate = velocityEngine.getTemplate(textTemplateName, "UTF-8");
             } catch (Exception e) {
                 logger.error("Failed to initialize velocity engine", e);
                 return;
@@ -113,9 +116,10 @@ public class NotificationManager implements ServletContextListener {
                     break;
                 }
 
-                try (StringWriter stringWriter = new StringWriter()) {
+                try (StringWriter htmlStringWriter = new StringWriter();
+                    StringWriter textStringWriter = new StringWriter()) {
                     String emailSubject = String.format("WETO: %s new notification(s)", notifications.size());
-                    String emailMessage;
+                    String htmlMessage, textMessage;
 
                     // Set up the context for velocity and evaluate the template
                     VelocityContext velocityContext = new VelocityContext();
@@ -124,12 +128,15 @@ public class NotificationManager implements ServletContextListener {
                     velocityContext.put("notifications", notifications);
                     velocityContext.put("notificationTypeMap", Notification.getTypeDisplayMap());
 
-                    template.merge(velocityContext, stringWriter);
+                    htmlTemplate.merge(velocityContext, htmlStringWriter);
+                    htmlStringWriter.flush();
+                    htmlMessage = htmlStringWriter.toString();
 
-                    stringWriter.flush();
-                    emailMessage = stringWriter.toString();
+                    textTemplate.merge(velocityContext, textStringWriter);
+                    textStringWriter.flush();
+                    textMessage = textStringWriter.toString();
 
-                    Email.sendMail(userAccount.getEmail(), emailSubject, emailMessage);
+                    Email.sendHtmlEmail(userAccount.getEmail(), emailSubject, htmlMessage, textMessage);
                 } catch (IOException e) {
                     logger.error("Failed to create a html from the email template", e);
                     break;
