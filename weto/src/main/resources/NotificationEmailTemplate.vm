@@ -2,7 +2,38 @@
     <head>
         <title>$emailTitle</title>
         <style>
+            body {
+                font-size: 14px;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+            }
 
+            h1 {
+                font-size: 3em;
+                color: #19578A;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+                font-weight: bold;
+            }
+
+            table {
+                border-collapse: collapse;
+            }
+
+            tr {
+                border-bottom: 1px solid #19578A;
+            }
+
+            thead td {
+                font-size: 1.5em;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+                color: #19578A;
+                padding: 0.25em 0.5em;
+            }
+
+            tbody td {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 1.2em;
+                padding: 1em 0.5em;
+            }
         </style>
     </head>
     <body>
