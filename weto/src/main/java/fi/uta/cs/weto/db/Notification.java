@@ -229,25 +229,59 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
-    public static ArrayList<Notification> selectNotificationsByUser(Connection connection, int userId) throws SQLException, InvalidValueException, NoSuchItemException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM NOTIFICATION WHERE userId = ?");
+    public static ArrayList<Notification> selectNotificationsAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
+        PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         ArrayList<Notification> notifications = new ArrayList<>();
+        String orderByDate;
+
+        if (dateDesc) {
+            orderByDate = "DESC";
+        }
+        else {
+            orderByDate = "ASC";
+        }
 
         try {
-            preparedStatement.setInt(1, userId);
+            if (courseId != null && notificationType != null) {
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND courseId = ? AND type = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement.setInt(1, userId);
+                preparedStatement.setInt(2, courseId);
+                preparedStatement.setString(3, notificationType);
+            }
+            else if (courseId != null && notificationType == null) {
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND courseId = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement.setInt(1, userId);
+                preparedStatement.setInt(2, courseId);
+            }
+            else if (courseId == null && notificationType != null) {
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND type = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement.setInt(1, userId);
+                preparedStatement.setString(2, notificationType);
+            }
+            else {
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement.setInt(1, userId);
+            }
             resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
-                Notification notification = new Notification ();
-                notification.setFromResultSet(resultSet, 0);
-                notifications.add(notification);
+                do {
+                    Notification notification = new Notification();
+                    notification.setFromResultSet(resultSet, 0);
+                    if (!notification.readByUser) {
+                        Notification notification2 = notification;
+                        notification = (Notification)notification.clone();
+                        notification2.setReadByUser(true);
+                        notification2.update(connection);
+                    }
+                    notifications.add(notification);
+                }
+                while(resultSet.next());
             }
             else {
                 throw new NoSuchItemException();
             }
         }
-
         finally {
             if(resultSet != null) {
                 resultSet.close();

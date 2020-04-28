@@ -7,28 +7,32 @@ import fi.uta.cs.weto.db.UserTaskView;
 import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
+import fi.uta.cs.weto.model.WetoMasterAction;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class NotificationActions {
-    public static class ViewNotificationCenter extends WetoCourseAction {
+    public static class ViewNotificationCenter extends WetoMasterAction {
         private ArrayList<Notification> notifications;
-        private List<String> notificationTypes;
+        private HashMap<Integer, String> notificationTypes;
         private HashMap<Integer, String> courseIdsNames;
 
-        private String type;
+        private Integer type;
         private Integer courseId;
-        private String date;
+        private boolean dateDesc;
+        private final String ALLCOURSESOPTION = "All courses";
+        private final String ALLTYPESOPTION = "allTypes";
 
-        // Tarkista rakentaja.
+        // Katso rakentaja vielä.
         public ViewNotificationCenter() {
-            super(Tab.MAIN.getBit(), 0, 0, 0);
-            notifications = null;
-            notificationTypes = null;
+            super();
+            notifications = new ArrayList<>();
             courseIdsNames = new HashMap<>();
+            notificationTypes = new HashMap<>();
         }
 
         public ArrayList<Notification> getNotifications() {
@@ -39,11 +43,11 @@ public class NotificationActions {
             this.notifications = notifications;
         }
 
-        public List<String> getNotificationTypes() {
+        public HashMap<Integer, String> getNotificationTypes() {
             return notificationTypes;
         }
 
-        public void setNotificationTypes(List<String> notificationTypes) {
+        public void setNotificationTypes(HashMap<Integer, String> notificationTypes) {
             this.notificationTypes = notificationTypes;
         }
 
@@ -55,11 +59,11 @@ public class NotificationActions {
             this.courseIdsNames = courseIdsNames;
         }
 
-        public String getType() {
+        public Integer getType() {
             return type;
         }
 
-        public void setType(String type) {
+        public void setType(Integer type) {
             this.type = type;
         }
 
@@ -71,55 +75,55 @@ public class NotificationActions {
             this.courseId = courseId;
         }
 
-        public String getDate() {
-            return date;
+        public boolean getDateDesc() {
+            return dateDesc;
         }
 
-        public void setDate(String date) {
-            this.date = date;
+        public void setDateDesc(boolean dateDesc) {
+            this.dateDesc = dateDesc;
         }
 
         @Override
         public String action() throws Exception {
-            /*Connection masterConnection = getMasterConnection();
-
-            try {
-                int userId = getMasterUserId();
-                notifications = Notification.selectNotificationsByUser(masterConnection, userId);
-            } catch (Exception e) {
-                throw new WetoActionException("Failed to retrieve notifications");
-            }*/
-
             Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
 
             ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
-
             for (int i = 0; i < courseView.size(); i++) {
                try {
                    int masterTaskId = courseView.get(i).getMasterTaskId();
                    UserTaskView.select1ByTaskIdAndUserId(masterConnection, masterTaskId, userId);
                    String name = courseView.get(i).getName();
+                   courseIdsNames.put(-1, ALLCOURSESOPTION);
                    courseIdsNames.put(masterTaskId, name);
                 }
                 // User is not member of the course.
                catch (NoSuchItemException e) {
                }
             }
+
+            notificationTypes.put(-1, ALLTYPESOPTION);
+            for  (int i = 0; i < Notification.notificationTypes.size(); i++) {
+                notificationTypes.put(i, Notification.notificationTypes.get(i));
+            }
+
+            if (courseId != null && courseId < 0) {
+                courseId = null;
+            }
+            if (type != null && type < 0) {
+                type = null;
+            }
+
             try {
-                notifications = Notification.selectNotificationsByUser(masterConnection, userId);
+                notifications = Notification.selectNotificationsAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
             }
+            //User haven't received any notifications.
             catch (NoSuchItemException e) {
+                return SUCCESS;
             }
-
-
-
-            /*notifications = new ArrayList<Notification>();
-            notificationTypes = Notification.notificationTypes;
-            Notification noti = new Notification(userId, 1, "testi");
-            Notification noti2 = new Notification(userId, 2, "testi2");
-            notifications.add(noti);
-            notifications.add(noti2);*/
+            catch (Exception e) {
+                throw new WetoActionException("Failed to retrieve notifications");
+            }
 
             return SUCCESS;
         }
