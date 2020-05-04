@@ -61,7 +61,7 @@
                 $notification.getMessage()
             </td>
             <td>
-                #if($notification.getLink())
+                #if($notification.getLink() && $notification.getLink().length() > 0)
                     <a href="$notification.getLink()">Link</a>
                 #end
             </td>
