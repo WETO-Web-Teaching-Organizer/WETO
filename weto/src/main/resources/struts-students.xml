@@ -138,5 +138,18 @@
         <param name="contentLength">${contentLength}</param>
       </result>
     </action>
+
+    <action name="massNotification" class="fi.uta.cs.weto.actions.students.MassNotification$ViewMassNotification">
+      <result type="tiles" name="success">massNotification.page</result>
+    </action>
+
+    <action name="sendMassNotifications" class="fi.uta.cs.weto.actions.students.MassNotification$SendMassNotification">
+      <result type="redirectAction" name="success">
+        <param name="actionName">massNotification</param>
+        <param name="taskId">${taskId}</param>
+        <param name="tabId">${tabId}</param>
+        <param name="dbId">${dbId}</param>
+      </result>
+    </action>
   </package>
 </struts>
