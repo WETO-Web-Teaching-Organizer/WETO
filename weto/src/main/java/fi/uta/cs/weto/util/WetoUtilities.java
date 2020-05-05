@@ -35,6 +35,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.HttpEntity;
@@ -1440,4 +1441,10 @@ public class WetoUtilities
     return new String(newByteArray, 0, newLen);
   }
 
+  public static String getAppBaseUrlFromServlet(HttpServletRequest request) {
+    return request.getScheme() + "://"
+            + request.getServerName()
+            + ((request.getServerPort() == 80) ? "" : ":" + request.getServerPort())
+            + request.getContextPath();
+  }
 }

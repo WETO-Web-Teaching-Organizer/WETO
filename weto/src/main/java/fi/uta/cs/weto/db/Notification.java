@@ -6,7 +6,7 @@ import fi.uta.cs.sqldatamodel.SqlAssignableObject;
 import fi.uta.cs.weto.model.NotificationTemplate;
 import fi.uta.cs.weto.model.WetoTimeStamp;
 import fi.uta.cs.weto.model.WetoTimeStampException;
-import fi.uta.cs.weto.util.Email;
+import fi.uta.cs.weto.util.WetoUtilities;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -36,15 +36,17 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     private int timestamp;
     private boolean readByUser;
     private boolean sentByEmail;
+    private String link;
 
     public Notification() {
         super();
         message = null;
         readByUser = false;
         sentByEmail = false;
+        link = null;
     }
 
-    public Notification(int userId, int courseId, String type) {
+    public Notification(int userId, int courseId, String type, String link) {
         super();
 
         this.userId = userId;
@@ -53,6 +55,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.message = null;
         this.readByUser = false;
         this.sentByEmail = false;
+        this.link = link;
     }
 
     public int getId() {
@@ -99,6 +102,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         return timestamp;
     }
 
+    public WetoTimeStamp getTimestampAsObject() {
+        try {
+            return new WetoTimeStamp(timestamp);
+        } catch (WetoTimeStampException e) {
+            return null;
+        }
+    }
+
     public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
@@ -117,6 +128,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
     public void setSentByEmail(boolean sentByEmail) {
         this.sentByEmail = sentByEmail;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
     }
 
     public void setMessageFromTemplate(HashMap<String, String> valueMap) throws NoSuchItemException {
@@ -144,17 +163,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 return;
             }
 
+            if(!userSettings.isEmailNotifications()) {
+                this.setSentByEmail(true);
+            }
+
             this.timestamp = new WetoTimeStamp().getTimeStamp();
             insert(masterConnection);
-
-            // Schedule email
-            if (userSettings.isEmailNotifications()) {
-                UserAccount user = UserAccount.select1ById(masterConnection, userId);
-                Email.scheduleEmail(user.getLoginName(), String.valueOf(getId()), user.getEmail(), "WETO Notification", getMessage());
-                this.sentByEmail = true;
-                update(masterConnection);
-            }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Failed to create notification", e);
         }
     }
@@ -167,10 +183,26 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    public static ArrayList<Notification> getNotificationsNotSentByEmail(Connection connection) throws SQLException {
+        ArrayList<Notification> notifications = new ArrayList<>();
+
+        String sqlStatement = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE sentByEmail = false";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement)) {
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while(rs.next()) {
+                notifications.add(initFromResultSet(rs));
+            }
+            rs.close();
+        }
+
+        return notifications;
+    }
+
     public void insert(Connection con) throws SQLException, WetoTimeStampException {
         int rows = 0;
 
-        String sqlStatement = "INSERT INTO Notification (userId, courseId, type, message, timestamp, readByUser, sentByEmail) values (?, ?, ?, ?, ?, ?, ?);";
+        String sqlStatement = "INSERT INTO Notification (userId, courseId, type, message, timestamp, readByUser, sentByEmail, link) values (?, ?, ?, ?, ?, ?, ?, ?);";
         try (PreparedStatement ps = con.prepareStatement(sqlStatement, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, userId);
             ps.setInt(2, courseId);
@@ -179,6 +211,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             ps.setInt(5, timestamp);
             ps.setBoolean(6, readByUser);
             ps.setBoolean(7, sentByEmail);
+            ps.setString(8, link);
 
             rows = ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -192,33 +225,29 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     }
 
     public void update(Connection con) throws SQLException, InvalidValueException {
-        int rows = 0;
+        int rows;
 
-        String sqlStatement = "UPDATE Notification SET id = ?, userId = ?, courseId = ?, type = ?, message = ?, readByUser = ?, sentByEmail = ? WHERE id = ?";
-        try (PreparedStatement ps = con.prepareStatement(sqlStatement, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, id);
-            ps.setInt(2, userId);
-            ps.setInt(3, courseId);
-            ps.setString(4, type);
-            ps.setString(5, message);
+        String sqlStatement = "UPDATE Notification SET userId = ?, courseId = ?, type = ?, message = ?, timestamp = ?, readByUser = ?, sentByEmail = ?, link = ? WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sqlStatement)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, courseId);
+            ps.setString(3, type);
+            ps.setString(4, message);
+            ps.setInt(5, timestamp);
             ps.setBoolean(6, readByUser);
             ps.setBoolean(7, sentByEmail);
+            ps.setString(8, link);
 
-            ps.setInt(8, id);
+            ps.setInt(9, id);
 
             rows = ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if(rs.next()) {
-                setFromResultSet(rs);
-            }
-            rs.close();
         }
 
         if( rows != 1 ) throw new SQLException("Update did not return a row");
     }
 
     public void select(Connection con) throws SQLException, InvalidValueException, NoSuchItemException {
-        String prepareString = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE id = ?";
+        String prepareString = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE id = ?";
 
         ResultSet rs = null;
         try (PreparedStatement ps = con.prepareStatement(prepareString)) {
@@ -255,6 +284,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         timestamp = resultSet.getInt(baseIndex+6);
         readByUser = resultSet.getBoolean(baseIndex+7);
         sentByEmail = resultSet.getBoolean(baseIndex+8);
+        link = resultSet.getString(baseIndex+9);
     }
 
     public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
@@ -266,6 +296,33 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         timestamp = resultSet.getInt("timestamp");
         readByUser = resultSet.getBoolean("readByUser");
         sentByEmail = resultSet.getBoolean("sentByEmail");
+        link = resultSet.getString("link");
+    }
+
+    public static Notification initFromResultSet(ResultSet resultSet) throws SQLException {
+        try {
+            Notification result = new Notification();
+
+            result.setFromResultSet(resultSet);
+
+            return result;
+        } catch (InvalidValueException e) {
+            throw new SQLException(e);
+        }
+    }
+
+    /**
+     * Maps the list of notification types to displayable strings specified in the message resources
+     * @return Map with the notification type being the key and displayable string being the value.
+     */
+    public static HashMap<String, String> getTypeDisplayMap() {
+        HashMap<String, String> typeMap = new HashMap<>();
+
+        for(String type : notificationTypes) {
+            typeMap.put(type, WetoUtilities.getMessageResource("notification." + type));
+        }
+
+        return typeMap;
     }
 
     public Object clone() throws CloneNotSupportedException {
@@ -282,6 +339,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 "timestamp:" + timestamp + "\n" +
                 "readByUser:" + readByUser + "\n" +
                 "sentByEmail:" + sentByEmail + "\n" +
+                "link:" + link + "\n" +
                 "\n");
     }
 }

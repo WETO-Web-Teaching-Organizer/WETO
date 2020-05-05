@@ -1,16 +1,18 @@
 package fi.uta.cs.weto.util;
 
 import fi.uta.cs.weto.model.WetoTimeStamp;
+
+import java.util.Date;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import org.apache.log4j.Logger;
 
 public class Email
@@ -150,15 +152,33 @@ public class Email
     Transport.send(msg);
   }
 
-  // Parsing recipients for sendMail and calling it till array looped through.
-  public static void massEmail(String[] recipients, String subject, String message)
+  public static void sendHtmlEmail(String recipient, String subject, String htmlMessage, String plainMessage)
           throws MessagingException
   {
-    int i;
-    for(i = 0; i < recipients.length; i++){
-      String recipient = recipients[i];
-      sendMail(recipient, subject, message);
-    }
+    logger.debug("Sending html mail to " + recipient);
+
+    Properties props = new Properties();
+    props.put("mail.smtp.host", smtpServer);
+    Session session = Session.getDefaultInstance(props, null);
+    session.setDebug(false);
+    Message msg = new MimeMessage(session);
+    Multipart multipart = new MimeMultipart("alternative");
+
+    MimeBodyPart textPart = new MimeBodyPart();
+    textPart.setText(plainMessage, "utf-8");
+    multipart.addBodyPart(textPart);
+
+    MimeBodyPart htmlPart = new MimeBodyPart();
+    htmlPart.setContent(htmlMessage, "text/html; charset=utf-8");
+    multipart.addBodyPart(htmlPart);
+
+    msg.setFrom(new InternetAddress(wetoEmailAddress));
+    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+    msg.setSubject(subject);
+    msg.setSentDate(new Date());
+    msg.setContent(multipart);
+
+    Transport.send(msg);
   }
 
 }
