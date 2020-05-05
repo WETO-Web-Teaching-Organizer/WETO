@@ -167,14 +167,6 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             logger.error("Failed to create notification", e);
         }
     }
-    // try catch inside loop or outside? depends if you want to keep rolling or exit on error.
-    public void createMassNotification(Connection masterConnection, Connection courseConnection, int[] userIDs) {
-        int i;
-        for(i = 0; i < userIDs.length; i++) {
-            int recipient = userIDs[i];
-            createNotification(masterConnection, courseConnection);
-        }
-    }
 
     public static ArrayList<Notification> getNotificationsNotSentByEmail(Connection connection) throws SQLException {
         ArrayList<Notification> notifications = new ArrayList<>();

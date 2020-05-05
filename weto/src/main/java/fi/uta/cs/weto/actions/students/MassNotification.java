@@ -44,6 +44,7 @@ public class MassNotification {
     public static class SendMassNotification extends WetoCourseAction {
 
         private String notificationMessage;
+        private List<String> studentIDs;
 
         public String getNotificationMessage() {
             return notificationMessage;
@@ -61,18 +62,15 @@ public class MassNotification {
             this.studentIDs = studentIDs;
         }
 
-        private List<String> studentIDs;
 
         @Override
         public String action() throws Exception {
             Connection courseConnection = getCourseConnection();
             Connection masterConnection = getMasterConnection();
-            List<Student> studentslist = new ArrayList<Student>();
             CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
             for(String studentID : studentIDs){
                 Student student = Student.select1ByStudentNumber(courseConnection, studentID);
-                UserAccount courseUserAccount = UserAccount.select1ById(courseConnection, student.getUserId());
-                UserAccount masterUserAccount = UserAccount.select1ByLoginName(masterConnection, courseUserAccount.getLoginName());
+                UserAccount masterUserAccount = UserAccount.select1ById(masterConnection, student.getUserId());
                 Notification newNotification = new Notification(masterUserAccount.getId(), masterCourse.getMasterTaskId(), Notification.MASS_NOTIFICATION, null);
                 newNotification.setMessage(notificationMessage);
                 newNotification.createNotification(masterConnection, courseConnection);
