@@ -84,28 +84,49 @@ public class NotificationManager implements ServletContextListener {
                         String databaseName = DatabasePool.select1ById(masterCon, databaseID).getName();
                         Connection courseCon = connectionManager.getConnection(databaseName);
 
-                        ArrayList<Permission> coursePermissions = new ArrayList<>();
+                        ArrayList<Permission> allActiveCoursePermissions = new ArrayList<>();
                         try {
-                            coursePermissions = Permission.selectActive(courseCon);
+                            allActiveCoursePermissions = Permission.selectActive(courseCon);
                         } catch (Exception e) {
                             logger.debug(e + "  with connection   " + courseCon);
                         }
-                         for (Permission taskpermission : coursePermissions) {
-                            //Check if permission is submission permission
-                            if (taskpermission.getType() == 1) {
-                                int hostTask = taskpermission.getTaskId();
+                         for (Permission permission : allActiveCoursePermissions) {
 
-                                boolean taskIsActive = taskpermission.isActive();
-                                if (taskIsActive) {
-                                    ArrayList<Submission> currentSubs = Submission.selectByTaskId(courseCon, hostTask);
+                            //Check if permission is submission permission
+                            if (permission.getType() == 1) {
+                                int assignmentTask = permission.getTaskId();
+                                
+                                
+                                
+                                if (permission.isActive()) {
+                                    ArrayList<Submission> currentSubs = Submission.selectByTaskId(courseCon, assignmentTask);
                                     for (Submission sub : currentSubs) {
+                                        
+                                        
                                         int status = sub.getStatus();
                                         //submission status 2 == accepted
                                         if (status != 2) {
                                             int userID = sub.getUserId();
-                                            int task = sub.getTaskId();
-                                            Notification notification = new Notification(userID, task, Notification.DEADLINE);
-                                            notification.setMessage("<h2>Et ole tehnyt tehtävää nro. " + task + "</h2>");
+
+                                            UserAccount user = UserAccount.select1ById(courseCon, userID);
+                                            UserAccount masterUser = UserAccount.select1ByLoginName(masterCon, user.getLoginName());
+
+
+
+                                            int taskID = sub.getTaskId();
+                                            Task temp = Task.select1ById(courseCon,taskID);
+                                            int courseID = temp.getRootTaskId();
+
+                                            //get courses ID in the master database
+                                            int masterTaskID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon,databaseID,courseID).getMasterTaskId();
+
+
+
+
+
+
+                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, "");
+                                            notification.setMessage("<h2>Et ole tehnyt tehtävää nro. " + courseID + "</h2>");
                                             notification.createNotification(masterCon, courseCon);
                                         }
                                     }

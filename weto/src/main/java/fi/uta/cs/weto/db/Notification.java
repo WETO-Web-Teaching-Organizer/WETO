@@ -18,7 +18,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
 
     // Create a list of the different types
-    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST));
+    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, DEADLINE));
 
     private static final Logger logger = Logger.getLogger(Notification.class);
 
