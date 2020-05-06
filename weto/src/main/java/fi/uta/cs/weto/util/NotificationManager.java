@@ -118,7 +118,7 @@ public class NotificationManager implements ServletContextListener {
                         }
 
 
-                        courseCon.close();
+                        connectionManager.freeConnection(courseCon);
 
                     }
 
@@ -130,11 +130,9 @@ public class NotificationManager implements ServletContextListener {
                     logger.error(e);
                 }
             }
-            try {
-                masterCon.close();
-            } catch (Exception e) {
-                logger.debug(e);
-            }
+
+                connectionManager.freeConnection(masterCon);
+
         }
 
     }
