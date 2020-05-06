@@ -144,11 +144,13 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         return template;
     }
 
-    public void createNotification(Connection masterConnection, Connection courseConnection) {
+    public void createNotification(Connection masterConnection, Connection courseConnection) throws WetoTimeStampException, SQLException, NoSuchItemException {
         try {
             // Check the user notification settings
-            int courseDbTaskId = CourseImplementation.select1ByMasterTaskId(masterConnection, courseId).getCourseTaskId();
-            int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId).getCourseDbUserId();
+            int courseDbTaskId = CourseImplementation.select1ByMasterTaskId(masterConnection, courseId)
+                    .getCourseTaskId();
+            int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId)
+                    .getCourseDbUserId();
 
             NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, courseDbUserId, courseDbTaskId, type);
             if(!userSettings.isNotifications()) {
@@ -164,6 +166,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
         catch (Exception e) {
             logger.error("Failed to create notification", e);
+            throw e;
         }
     }
 

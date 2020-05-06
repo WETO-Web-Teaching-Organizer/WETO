@@ -477,7 +477,6 @@ public class ForumActions
           UserAccount user = UserAccount.select1ById(courseConnection, authorId);
           UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
 
-
           Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
           notification.setMessage(notificationMessage);
           notification.createNotification(masterConnection, courseConnection);
