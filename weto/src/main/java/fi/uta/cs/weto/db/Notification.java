@@ -18,6 +18,8 @@ import java.util.List;
 
 public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
+    public static final String DEADLINE = "deadline";
+
 
     // Create a list of the different types
     public static final List<String> notificationTypes;

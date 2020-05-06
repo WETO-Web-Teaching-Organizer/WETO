@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 public class Permission extends BeanPermission
@@ -63,7 +64,20 @@ public class Permission extends BeanPermission
     }
     return result;
   }
+  //Select all permissions which are still active
+  public static ArrayList<Permission> selectActive(Connection conn) throws SQLException, WetoTimeStampException {
+    ArrayList<Permission> result = new ArrayList<>();
 
+    int nowStamp = new WetoTimeStamp(new GregorianCalendar()).getTimeStamp();
+    Iterator<?> iter = selectionIterator(conn,
+            "(startdate IS NULL OR startdate <= " + nowStamp
+                    + ") AND (enddate IS NULL OR enddate >= " + nowStamp + ")");
+    while (iter.hasNext()) {
+      result.add((Permission) iter.next());
+    }
+    return result;
+
+  }
   public static ArrayList<Permission> selectByCourseTaskIdAndUserId(
           Connection conn, Integer courseTaskId, Integer userId)
           throws SQLException, InvalidValueException
@@ -96,6 +110,18 @@ public class Permission extends BeanPermission
    * @return permissions
    * @throws SQLException if the JDBC operation fails.
    */
+
+  public boolean isActive() throws WetoTimeStampException {
+    int nowStamp = new WetoTimeStamp(new GregorianCalendar()).getTimeStamp();
+
+    if (nowStamp >= this.getStartDate() && nowStamp <= this.getEndDate())  {
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
   public static ArrayList<Permission> selectByTaskId(Connection conn,
           Integer taskId)
           throws SQLException
