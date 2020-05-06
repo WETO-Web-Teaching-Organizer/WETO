@@ -465,6 +465,11 @@ public class ForumActions
         valueMap.put("&forumTitle;", topicJson.get("title").toString());
 
         String notificationMessage = Notification.getMessageFromTemplate(Notification.FORUM_POST, valueMap);
+        String notificationLink = WetoUtilities.getAppBaseUrlFromServlet(getRequest())
+                + "/viewForumTopic.action?taskId=" + getTaskId()
+                + "&tabId=" + getTabId()
+                + "&dbId=" + getDbId()
+                + "&topicId=" + getTopicId();
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
         // Send to all participants
@@ -472,8 +477,7 @@ public class ForumActions
           UserAccount user = UserAccount.select1ById(courseConnection, authorId);
           UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
 
-
-          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST);
+          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
           notification.setMessage(notificationMessage);
           notification.createNotification(masterConnection, courseConnection);
         }

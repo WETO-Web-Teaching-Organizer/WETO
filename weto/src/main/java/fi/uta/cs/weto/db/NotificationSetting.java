@@ -232,7 +232,7 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
                 }
             }
             if(alreadyExists) {
-                break;
+                continue;
             }
 
             NotificationSetting newSetting = new NotificationSetting();

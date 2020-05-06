@@ -60,7 +60,11 @@
             <td>
                 $notification.getMessage()
             </td>
-            <td></td>
+            <td>
+                #if($notification.getLink() && $notification.getLink().length() > 0)
+                    <a href="$notification.getLink()">Link</a>
+                #end
+            </td>
             <td>
                 #set($timestamp = $notification.getTimestampAsObject())
                 #if($timestamp)

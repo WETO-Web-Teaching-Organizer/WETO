@@ -985,7 +985,6 @@ body #main-page-link a:hover {
 .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
   font-family: "Opensans-light";
 }
-
 /*/Fonts*/
 /* Font-faces */
 @font-face {
@@ -1250,7 +1249,6 @@ body #main-page-link a:hover {
 .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
   font-family: "Opensans-light";
 }
-
 /*/Fonts*/
 /*Classes to editor auto styles*/
 .peerreview-border-box {
@@ -1613,7 +1611,6 @@ body #main-page-link a:hover {
 .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
   font-family: "Opensans-light";
 }
-
 /*/Fonts*/
 /*Grading view*/
 body .content-wrapper .content-col {
@@ -1670,9 +1667,9 @@ body .content-wrapper .content-col .collapsing {
   -webkit-transition-timing-function: ease;
   -o-transition-timing-function: ease;
   transition-timing-function: ease;
-  -webkit-transition-duration: .50s;
-  -o-transition-duration: .50s;
-  transition-duration: .50s;
+  -webkit-transition-duration: 0.5s;
+  -o-transition-duration: 0.5s;
+  transition-duration: 0.5s;
   -webkit-transition-property: height, visibility;
   -o-transition-property: height, visibility;
   transition-property: height, visibility;
@@ -2019,12 +2016,12 @@ h3.handle {
 form textarea {
   resize: vertical;
 }
-form input[type="number"] {
+form input[type=number] {
   max-width: 250px;
   overflow: visible;
 }
 
-input[type="radio"] {
+input[type=radio] {
   margin: 3px 6px;
 }
 
@@ -2336,8 +2333,7 @@ div.answerBox {
 .contentBox .form-group > * span {
   margin-left: 2em;
 }
-
-form input[type="radio"] {
+form input[type=radio] {
   margin-right: 0.6em;
 }
 form .addSurvey .btn-group .saveButton {
@@ -2868,7 +2864,7 @@ ol.quiz {
   color: white;
 }
 .dropzone .dz-preview .dz-error-message:after {
-  content: '';
+  content: "";
   position: absolute;
   top: -6px;
   left: 64px;
@@ -3142,7 +3138,6 @@ body #main-page-link a:hover {
 .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
   font-family: "Opensans-light";
 }
-
 /*/Fonts*/
 /* Submission */
 #submissionInstructions {
@@ -3158,7 +3153,7 @@ body #main-page-link a:hover {
     filter: alpha(opacity=20);
   }
   100% {
-    opacity: 1.0;
+    opacity: 1;
     filter: alpha(opacity=100);
   }
 }
@@ -3168,7 +3163,7 @@ body #main-page-link a:hover {
     filter: alpha(opacity=20);
   }
   100% {
-    opacity: 1.0;
+    opacity: 1;
     filter: alpha(opacity=100);
   }
 }
@@ -3294,7 +3289,7 @@ body #main-page-link a:hover {
     max-width: 100%;
   }
 }
-@media (max-width: 680px) and (min-width: 481px) {
+@media (max-width: 680px) and (min-width:481px) {
   .submissions-list .submission .submission-createFileForm .input-group {
     max-width: 80%;
   }
@@ -3307,7 +3302,7 @@ body #main-page-link a:hover {
 }
 .submissions-list .submission .submission-documentTable .documentTable-transition-enter-active {
   opacity: 1;
-  transition: opacity .5s ease-in;
+  transition: opacity 0.5s ease-in;
 }
 .submissions-list .submission .submission-scoreTable {
   margin: 20px 0px 20px 0px;
@@ -3605,7 +3600,6 @@ body #main-page-link a:hover {
 .content-tabs-actions-body .course-content-wrapper .content-col .showTextInParent a:link {
   font-family: "Opensans-light";
 }
-
 /*/Fonts*/
 /* infobar styles*/
 .infoBar {
@@ -3838,7 +3832,7 @@ a.hiddenFromStudents {
   background-size: cover;
   /*Resized backgroundimages to different screen widths */
 }
-@media only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 2) {
+@mediaonly screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 2) {
   #masterLayoutBody {
     background: #fff url(../images/4_1_mobile.jpg) no-repeat center fixed;
     -webkit-background-size: cover;
@@ -3847,7 +3841,7 @@ a.hiddenFromStudents {
     background-size: cover;
   }
 }
-@media only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 3) {
+@mediaonly screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 3) {
   #masterLayoutBody {
     background: #fff url(../images/4_1_mobile.jpg) no-repeat center fixed;
     -webkit-background-size: cover;
@@ -3856,7 +3850,7 @@ a.hiddenFromStudents {
     background-size: cover;
   }
 }
-@media (min-width: 1400px) {
+@media(min-width:1400px) {
   #masterLayoutBody {
     background: #fff url(../images/4_1.jpg) no-repeat center fixed;
     -webkit-background-size: cover;
