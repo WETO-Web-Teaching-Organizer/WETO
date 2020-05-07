@@ -90,7 +90,7 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
       - Click Restart IDE
     - Go to File > Settings > Tools > File Watchers
       - Add a new Watcher and select SCSS from the dropdown
-      - Click on the "..." button next to Scope and add a new scope "SCSS"
+      - Click on the "..." button next to Scope and add a new scope "SCSS" (local)
         - Set the file pattern as follows: file[weto]:src/main/webapp/scss//*
         - Hit OK
       - Set the arguments field to be as follows: $FileName$:$ProjectFileDir$\src\main\webapp\css\$FileNameWithoutExtension$.css
