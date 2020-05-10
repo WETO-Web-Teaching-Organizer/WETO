@@ -152,13 +152,25 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId)
                     .getCourseDbUserId();
 
-            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, courseDbUserId, courseDbTaskId, type);
-            if(!userSettings.isNotifications()) {
+            ArrayList<NotificationSetting> userSettings = NotificationSetting.createSettings(courseConnection, courseDbUserId, courseDbTaskId);
+            NotificationSetting userSetting = null;
+            for(NotificationSetting setting : userSettings) {
+                if(setting.getType().equals(type)) {
+                    userSetting = setting;
+                }
+            }
+
+            if(userSetting == null) {
+                throw new NoSuchItemException("User setting missing");
+            }
+
+
+            if(!userSetting.isNotifications()) {
                 return;
             }
 
-            if(!userSettings.isEmailNotifications()) {
-                this.setSentByEmail(true);
+            if(!userSetting.isEmailNotifications()) {
+                this.setSentByEmail(true); // Mark notification as sent to avoid sending it later
             }
 
             this.timestamp = new WetoTimeStamp().getTimeStamp();
