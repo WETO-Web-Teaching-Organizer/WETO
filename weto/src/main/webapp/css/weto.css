@@ -548,12 +548,24 @@ div .replyText {
 }
 #sidebar-wrapper #course-name {
   padding-top: 1em;
+  position: relative;
 }
 #sidebar-wrapper #course-name a {
   color: #fff;
 }
 #sidebar-wrapper #course-name a:hover {
   text-decoration: underline;
+}
+#sidebar-wrapper #course-name #notification-settings-button {
+  position: absolute;
+  top: 1em;
+  right: 0;
+  background: none;
+  border: none;
+  padding: 0 12px;
+}
+#sidebar-wrapper #course-name #notification-settings-button span {
+  color: #fff;
 }
 #sidebar-wrapper ul {
   list-style-type: none;
