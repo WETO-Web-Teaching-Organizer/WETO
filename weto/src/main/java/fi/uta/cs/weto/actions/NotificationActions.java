@@ -93,9 +93,9 @@ public class NotificationActions {
                         setting.setEmailNotifications(false);
                     }
 
-                    // Make sure that notifications are on if email notifications are checked
-                    if(setting.isEmailNotifications()) {
-                        setting.setNotifications(true);
+                    // Uncheck email notifications if notifications are off
+                    if(!setting.isNotifications()) {
+                        setting.setEmailNotifications(false);
                     }
 
                     setting.update(courseConnection);
