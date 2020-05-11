@@ -1,4 +1,4 @@
-package fi.uta.cs.weto.actions;
+package fi.uta.cs.weto.actions.notifications;
 
 import fi.uta.cs.weto.db.NotificationSetting;
 import fi.uta.cs.weto.db.Task;
