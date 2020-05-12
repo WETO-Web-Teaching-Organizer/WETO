@@ -93,8 +93,8 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
       - Click on the "..." button next to Scope and add a new scope "SCSS"
         - Set the file pattern as follows: file[weto]:src/main/webapp/scss//*
         - Hit OK
-      - Set the arguments field to be as follows: $FileName$:$ProjectFileDir$\src\main\webapp\css\$FileNameWithoutExtension$.css
+      - Set the arguments field to be as follows: $FileName$:$ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css
         - If you're not on Windows replace the backslashes with regular ones
-      - Set the "Output paths to refresh" as follows: $ProjectFileDir$\src\main\webapp\css\$FileNameWithoutExtension$.css:$ProjectFileDir$\src\main\webapp\css\$FileNameWithoutExtension$.css.map
+      - Set the "Output paths to refresh" as follows: $ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css:$ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css.map
       - Hit OK and then OK again on the Settings
 7. Done!
