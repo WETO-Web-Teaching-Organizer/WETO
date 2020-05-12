@@ -1,15 +1,7 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: Jipsu
-  Date: 29.3.2020
-  Time: 19.59
-  To change this template use File | Settings | File Templates.
---%>
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/cssweto.css" />
 
 <div class="notificationCenter">
-    <h1 id="testing"><s:text name="notificationCenter.header.notificationCenter" /></h1>
+    <h1><s:text name="notificationCenter.header.notificationCenter" /></h1>
     <form action="<s:url action="viewNotifications" />" method="post">
         <label for="courseId"><s:text name="notificationCenter.header.course" /></label>
         <select name="courseId">
@@ -49,8 +41,17 @@
                     <td><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></td>
                     <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
                     <td><s:text name="%{#notification.message}" /></td>
-                    <td>"Link"</td>
-                    <td><s:text name="%{#notification.timestamp}" /></td>
+                    <td>
+                        <s:if test="%{#notification.link != null && #notification.link.length() > 0}" >
+                        <a href="${notification.link}">Link</a>
+                        </s:if>
+                    </td>
+                    <td>
+                        <s:set var="timestampObject" value="%{#notification.getTimestampAsObject()}" />
+                        <s:if test="%{#timestampObject != null}">
+                            <s:text name="%{#timestampObject.toString()}" />
+                        </s:if>
+                    </td>
                 </tr>
             </s:iterator>
             </tbody>

@@ -187,12 +187,6 @@
         <param name="tabId">${tabId}</param>
         <param name="dbId">${dbId}</param>
       </result>
-      <result type="redirectAction" name="NOTIFICATIONS">
-        <param name="actionName">viewNotifications</param>
-        <param name="taskId">${taskId}</param>
-        <param name="tabId">${tabId}</param>
-        <param name="dbId">${dbId}</param>
-      </result>
     </action>
 
     <action name="viewCourseTask" class="fi.uta.cs.weto.actions.ViewTaskActions$CourseView">

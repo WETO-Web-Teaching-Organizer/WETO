@@ -118,8 +118,8 @@ public class NotificationActions {
         private boolean dateDesc;
         private final String ALLCOURSESOPTION = "All courses";
         private final String ALLTYPESOPTION = "allTypes";
+        private String pageTitle = "Notification center";
 
-        // Katso rakentaja vielä.
         public ViewNotificationCenter() {
             super();
             notifications = new ArrayList<>();
@@ -173,6 +173,10 @@ public class NotificationActions {
 
         public void setDateDesc(boolean dateDesc) {
             this.dateDesc = dateDesc;
+        }
+        
+        public String getPageTitle() {
+            return pageTitle;
         }
 
         @Override
