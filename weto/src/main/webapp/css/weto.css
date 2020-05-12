@@ -730,6 +730,19 @@ div .replyText {
 #sidebartoggle-wrapper .btn-sidebar img:hover {
   background-color: none;
 }
+#sidebartoggle-wrapper #notification-center-button {
+  position: relative;
+}
+#sidebartoggle-wrapper #notification-center-button span.unreadNotifications:after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+  background: #A52929;
+}
 #sidebartoggle-wrapper #teacherRole-status .tooltip-inner {
   width: 90px;
 }

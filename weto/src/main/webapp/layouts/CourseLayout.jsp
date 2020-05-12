@@ -34,6 +34,12 @@
           </div>
         </span>
       </s:if>
+      <!-- Notification settings button -->
+      <button id="notification-center-button" class="btn btn-default btn-sidebar" type="button"
+              aria-label="Notification center" title="Notification center"
+              onclick="window.location.href = '<s:url action="viewNotifications" />'">
+        <span class="glyphicon glyphicon-bell <s:if test="unreadNotifications > 0">unreadNotifications</s:if>"></span>
+      </button>
       <!-- Buttons only shown for teacher -->
       <s:if test="navigator.reallyTeacher">
         <s:url action="switchRole" var="switchRoleUrl">
@@ -169,7 +175,7 @@
               </s:url>
               <s:a href="%{taskUrl}" title = "Course mainpage">${courseName}</s:a>
               <!-- Notification settings button -->
-              <s:if test="navigator.masterUserId != null">
+              <s:if test="navigator.masterUserId != null && courseName != null">
                 <s:url action="viewNotificationSettings" var="notificationSettingsUrl">
                   <s:param name="taskId" value="%{taskId}" />
                   <s:param name="tabId" value="%{tabId}" />

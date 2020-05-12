@@ -38,7 +38,15 @@
             <s:iterator value="%{notifications}" var="notification">
                 <tr>
                     <td><s:if test="%{!#notification.readByUser}"><span>New</span></s:if></td>
-                    <td><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></td>
+                    <td>
+                        <s:set var="course" value="%{courseMap.get(#notification.courseId)}" />
+                        <s:url action="viewTask" var="courseUrl">
+                            <s:param name="taskId" value="%{#course.courseTaskId}" />
+                            <s:param name="tabId" value="0" />
+                            <s:param name="dbId" value="%{#course.databaseId}" />
+                        </s:url>
+                        <a href="${courseUrl}"><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></a>
+                    </td>
                     <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
                     <td><s:text name="%{#notification.message}" /></td>
                     <td>

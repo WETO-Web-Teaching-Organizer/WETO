@@ -8,7 +8,6 @@ import fi.uta.cs.weto.model.WetoCourseAction;
 import fi.uta.cs.weto.model.WetoMasterAction;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,6 +114,7 @@ public class NotificationActions {
         private ArrayList<Notification> notifications;
         private HashMap<Integer, String> notificationTypes;
         private HashMap<Integer, String> courseIdsNames;
+        private HashMap<Integer, CourseView> courseMap;
 
         private Integer type;
         private Integer courseId;
@@ -128,6 +128,7 @@ public class NotificationActions {
             notifications = new ArrayList<>();
             courseIdsNames = new HashMap<>();
             notificationTypes = new HashMap<>();
+            courseMap = new HashMap<>();
             dateDesc = true;
         }
 
@@ -183,19 +184,23 @@ public class NotificationActions {
             return pageTitle;
         }
 
+        public HashMap<Integer, CourseView> getCourseMap() {
+            return courseMap;
+        }
+
         @Override
         public String action() throws Exception {
             Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
 
             ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+            courseIdsNames.put(-1, ALLCOURSESOPTION);
             for (int i = 0; i < courseView.size(); i++) {
                try {
-                   int masterTaskId = courseView.get(i).getMasterTaskId();
-                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, masterTaskId, userId);
-                   String name = courseView.get(i).getName();
-                   courseIdsNames.put(-1, ALLCOURSESOPTION);
-                   courseIdsNames.put(masterTaskId, name);
+                   CourseView course = courseView.get(i);
+                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, course.getMasterTaskId(), userId);
+                   courseIdsNames.put(course.getMasterTaskId(), course.getName());
+                   courseMap.put(course.getMasterTaskId(), course);
                 }
                 // User is not member of the course.
                catch (NoSuchItemException e) {
@@ -215,7 +220,7 @@ public class NotificationActions {
             }
 
             try {
-                notifications = Notification.selectNotificationsAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
+                notifications = Notification.getNotificationsByFiltersAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
             }
             //User haven't received any notifications.
             catch (NoSuchItemException e) {
