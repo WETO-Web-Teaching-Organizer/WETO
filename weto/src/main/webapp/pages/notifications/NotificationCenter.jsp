@@ -56,7 +56,7 @@
                         <a href="${courseUrl}"><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></a>
                     </td>
                     <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
-                    <td><s:text name="%{#notification.message}" /></td>
+                    <td>${notification.message}</td>
                     <td>
                         <s:if test="%{#notification.link != null && #notification.link.length() > 0}" >
                         <a href="${notification.link}">View</a>
