@@ -17,8 +17,8 @@
         </select>
         <label for="dateDesc"><s:text name="notificationCenter.header.date" /></label>
         <select name="dateDesc">
-            <option value="false"><s:text name="notificationCenter.header.newestToOldest" /></option>
-            <option value="true" <s:if test="%{dateDesc}">selected="selected"</s:if>><s:text name="notificationCenter.header.oldestToNewest" /></option>
+            <option value="true"><s:text name="notificationCenter.header.newestToOldest" /></option>
+            <option value="false" <s:if test="%{!dateDesc}">selected="selected"</s:if>><s:text name="notificationCenter.header.oldestToNewest" /></option>
         </select>
         <input type="submit" value="<s:text name="notificationCenter.form.update" />" class="linkButton" />
     </form>

@@ -128,6 +128,7 @@ public class NotificationActions {
             notifications = new ArrayList<>();
             courseIdsNames = new HashMap<>();
             notificationTypes = new HashMap<>();
+            dateDesc = true;
         }
 
         public ArrayList<Notification> getNotifications() {
