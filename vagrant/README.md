@@ -82,4 +82,19 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
     chmod 777 deploy.sh
     ```
     - If you're still facing issues it might be because the file is encoded with Windows file endings (CRLF). Linux can only run scripts with Unix file endings (LF). You can convert the file using most modern text editors.
-6. Done!
+6. Set up SASS file watchers
+    - Separately: Install Node from [here](https://nodejs.org/) if you haven't already (or alternatively choco/homebrew)
+      - After Node installation install Sass globally with "npm install -g sass" in a command line console
+    - In IDEA: Open File > Settings > Plugins
+      - Go to marketplace and install the "File Watchers" plugin by JetBrains
+      - Click Restart IDE
+    - Go to File > Settings > Tools > File Watchers
+      - Add a new Watcher and select SCSS from the dropdown
+      - Click on the "..." button next to Scope and add a new scope "SCSS"
+        - Set the file pattern as follows: file[weto]:src/main/webapp/scss//*
+        - Hit OK
+      - Set the arguments field to be as follows: $FileName$:$ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css
+        - If you're not on Windows replace the backslashes with regular ones
+      - Set the "Output paths to refresh" as follows: $ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css:$ProjectFileDir$\src\main\webapp\css\\$FileNameWithoutExtension$.css.map
+      - Hit OK and then OK again on the Settings
+7. Done!

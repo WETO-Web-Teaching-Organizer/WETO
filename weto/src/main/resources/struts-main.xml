@@ -328,31 +328,5 @@
         <param name="dbId">${dbId}</param>
       </result>
     </action>
-
-    <action name="viewNotificationSettings" class="fi.uta.cs.weto.actions.NotificationActions$ViewNotificationSettings">
-      <result type="tiles" name="success">notificationSettings.page</result>
-      <result type="redirectAction" name="error">
-        <param name="actionName">viewTask</param>
-        <param name="taskId">${taskId}</param>
-        <param name="tabId">${tabId}</param>
-        <param name="dbId">${dbId}</param>
-      </result>
-    </action>
-
-    <action name="saveNotificationSettings" class="fi.uta.cs.weto.actions.NotificationActions$SaveNotificationSettings">
-      <result type="redirectAction" name="success">
-        <param name="actionName">viewNotificationSettings</param>
-        <param name="taskId">${taskId}</param>
-        <param name="tabId">${tabId}</param>
-        <param name="dbId">${dbId}</param>
-      </result>
-      <result type="redirectAction" name="error">
-        <param name="actionName">viewNotificationSettings</param>
-        <param name="taskId">${taskId}</param>
-        <param name="tabId">${tabId}</param>
-        <param name="dbId">${dbId}</param>
-        <param name="saveFailed">true</param>
-      </result>
-    </action>
   </package>
 </struts>

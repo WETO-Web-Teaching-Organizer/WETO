@@ -133,6 +133,14 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         }
     }
 
+    /**
+     * Retrieves a list of settings by user id and course id
+     * @param connection Connection to the course database
+     * @param userId The user id in the course database
+     * @param courseId The course id in the course database
+     * @return List of settings
+     * @throws SQLException In the case the retrieval fails
+     */
     public static ArrayList<NotificationSetting> selectByUserAndCourse(Connection connection, int userId, int courseId) throws SQLException {
         String prepareString = "SELECT id, userId, courseId, type, notifications, emailNotifications FROM NotificationSetting WHERE userId = ? AND courseId = ?";
 
@@ -155,6 +163,16 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         return settings;
     }
 
+    /**
+     * Retrieves a setting by user, course and type
+     * @param connection Connection to the course database
+     * @param userId The user id in the course database
+     * @param courseId The course id in the course database
+     * @param type Type of the setting
+     * @return Instance of the corresponding setting
+     * @throws SQLException In the case the retrieval fails
+     * @throws NoSuchItemException In the case no/too many corresponding database rows were found
+     */
     public static NotificationSetting select1ByUserCourseAndType(Connection connection, int userId, int courseId, String type) throws SQLException, NoSuchItemException {
         String prepareString = "SELECT id, userId, courseId, type, notifications, emailNotifications FROM NotificationSetting WHERE userId = ? AND courseId = ? AND type = ?";
 
@@ -177,6 +195,12 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         }
     }
 
+    /**
+     * Deletes notification settings by course id
+     * @param connection Connection to the course database
+     * @param courseId Id of the course in the course database
+     * @throws SQLException If the deletion fails
+     */
     public static void deleteByCourseId(Connection connection, int courseId) throws SQLException {
         String prepareString = "DELETE FROM NotificationSetting WHERE courseId = ?";
 
@@ -186,6 +210,13 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         }
     }
 
+    /**
+     * Populates the object instance with values in the ResultSet
+     * @param resultSet ResultSet of the SQL query
+     * @param baseIndex Integer offset used to retrieve columns
+     * @throws SQLException In the case that a value couldn't be retrieved from the ResultSet
+     * @throws InvalidValueException In the case that the value type didn't correspond to what it was supposed to be
+     */
     @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         this.id = resultSet.getInt(baseIndex + 1);
@@ -196,6 +227,12 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         this.emailNotifications = resultSet.getBoolean(baseIndex + 6);
     }
 
+    /**
+     * Populates the object instance with values in the ResultSet, utilizes column names in retrieval
+     * @param resultSet ResultSet of the SQL query
+     * @throws SQLException In the case that a value couldn't be retrieved from the ResultSet
+     * @throws InvalidValueException In the case that the value type didn't correspond to what it was supposed to be
+     */
     public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
         this.id = resultSet.getInt("id");
         this.userId = resultSet.getInt("userId");
@@ -205,6 +242,12 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         this.emailNotifications = resultSet.getBoolean("emailNotifications");
     }
 
+    /**
+     * Populates a new object instance from given ResultSet
+     * @param resultSet ResultSet of the SQL query
+     * @return Populated object instance
+     * @throws SQLException In the case the object couldn't be populated
+     */
     public static NotificationSetting initFromResultSet(ResultSet resultSet) throws SQLException {
         NotificationSetting result = new NotificationSetting();
 
@@ -217,6 +260,15 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         return result;
     }
 
+    /**
+     * Retrieves existing settings, and in the case a setting doesn't exist for a certain Notification type,
+     * it creates the missing settings
+     * @param connection Connection to the course database
+     * @param userId Id of the user (in the course database)
+     * @param courseId Id of the course  (in the course database)
+     * @return List of all settings for the user by given course
+     * @throws SQLException In the case retrieval or creation of the settings fail
+     */
     public static ArrayList<NotificationSetting> createSettings(Connection connection, int userId, int courseId) throws SQLException {
         ArrayList<NotificationSetting> settings = new ArrayList<>();
         ArrayList<NotificationSetting> existingSettings = selectByUserAndCourse(connection, userId, courseId);
@@ -232,7 +284,7 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
                 }
             }
             if(alreadyExists) {
-                break;
+                continue;
             }
 
             NotificationSetting newSetting = new NotificationSetting();

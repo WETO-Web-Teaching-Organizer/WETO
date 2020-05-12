@@ -13,12 +13,27 @@
   background: $wetodarker; /* Navbar background*/
 
   #course-name{
-    padding-top: 1em;
+    $top-padding: 1em;
+    padding-top: $top-padding;
+    position: relative;
     a{
       color: $white;
     }
     a:hover{
       text-decoration: underline;
+    }
+
+    #notification-settings-button {
+      position: absolute;
+      top: $top-padding;
+      right: 0;
+      background: none;
+      border: none;
+      padding: 0 12px;
+
+      span {
+        color: #fff;
+      }
     }
   }
 

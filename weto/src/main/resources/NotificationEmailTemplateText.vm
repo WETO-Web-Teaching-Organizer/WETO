@@ -3,6 +3,6 @@ $emailTitle
 Course  |  Type  |  Message  |  Link  |  Date
 #foreach( $notification in $notifications )
 #set($timestamp = $notification.getTimestampAsObject())
-$courseNames.get($notification.getCourseId())  |  $notificationTypeMap.get($notification.getType())  |  $notification.getMessage()  |  #if($timestamp)$timestamp.toString()#end
+$courseNames.get($notification.getCourseId())  |  $notificationTypeMap.get($notification.getType())  |  $notification.getMessage()  |  #if($notification.getLink() && $notification.getLink().length() > 0)$notification.getLink()#end  |  #if($timestamp)$timestamp.toString()#end
 
 #end
