@@ -547,9 +547,25 @@ table.tablesorter thead tr .headerSortUp {
   font-size: large;
 }
 
+#notification-center-filters {
+  .input-group {
+    margin-bottom: 0.3em;
+    display: inline-block;
+  }
+
+  .linkButton {
+    vertical-align: bottom;
+    height: 34px;
+  }
+}
+
+#notifications-header {
+  margin-top: 1em;
+}
+
 /*Style for notifications table*/
 table.notificationsTable {
-  margin: 50px 0px 0px 0px;
+  margin: 0;
   border-collapse: separate;
   width: 99%;
   table-layout: fixed;
@@ -571,17 +587,6 @@ table.notificationsTable {
   th:nth-child(6), td:nth-child(6) {
     width: 10%;
   }
-  thead {
-    tr {
-      border: none;
-      th {
-        background-color: $white;
-        color: $blue;
-        border: 1px hidden black;
-        border-bottom-style: solid;
-      }
-    }
-  }
   tbody {
     tr {
       border: none;
@@ -591,8 +596,8 @@ table.notificationsTable {
         span {
           padding: 5px;
           border-radius: 50%;
-          background-color: $darkergreen;
-          color: $white;
+          color: $darkergreen;
+          font-weight: bold;
         }
       }
     }
