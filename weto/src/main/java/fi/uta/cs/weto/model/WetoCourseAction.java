@@ -5,12 +5,7 @@ import com.opensymphony.xwork2.ActionSupport;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.weto.actions.Login;
-import fi.uta.cs.weto.db.RightsCluster;
-import fi.uta.cs.weto.db.SubtaskLink;
-import fi.uta.cs.weto.db.Tag;
-import fi.uta.cs.weto.db.Task;
-import fi.uta.cs.weto.db.UserIdReplication;
-import fi.uta.cs.weto.db.UserTaskView;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.util.DbTransactionContext;
 import fi.uta.cs.weto.util.WetoUtilities;
 import java.io.ByteArrayInputStream;
@@ -82,6 +77,7 @@ public abstract class WetoCourseAction extends ActionSupport
   private ArrayList<Tab> tabs;
   private boolean hasToolMenu;
   private String courseCssFilename;
+  private int unreadNotifications;
 
   private Integer taskId;
   private Integer tabId;
@@ -157,6 +153,7 @@ public abstract class WetoCourseAction extends ActionSupport
       courseName = courseTask.getName();
       pageTitle = Jsoup.clean(task.getName(), "", Whitelist.none(),
               new Document.OutputSettings().prettyPrint(false));
+      unreadNotifications = Notification.getCountOfUnreadNotificationsByUser(masterConnection, masterUserId);
       courseCssFilename = TaskModel.createCourseCssFilename(dbId, courseTaskId);
       File cssFile = TaskModel.createCourseCssFilePath(courseCssFilename);
       if(!cssFile.exists())
@@ -550,6 +547,10 @@ public abstract class WetoCourseAction extends ActionSupport
   public String getCourseCssFilename()
   {
     return courseCssFilename;
+  }
+
+  public int getUnreadNotifications() {
+    return unreadNotifications;
   }
 
   public boolean isEditTask()

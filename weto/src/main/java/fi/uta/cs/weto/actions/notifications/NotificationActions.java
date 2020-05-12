@@ -1,13 +1,15 @@
 package fi.uta.cs.weto.actions.notifications;
 
-import fi.uta.cs.weto.db.NotificationSetting;
-import fi.uta.cs.weto.db.Task;
+import fi.uta.cs.sqldatamodel.NoSuchItemException;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
+import fi.uta.cs.weto.model.WetoMasterAction;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -102,6 +104,130 @@ public class NotificationActions {
                 }
             } catch (Exception e) {
                 throw new WetoActionException("Failed to save settings");
+            }
+
+            return SUCCESS;
+        }
+    }
+
+    public static class ViewNotificationCenter extends WetoMasterAction {
+        private ArrayList<Notification> notifications;
+        private HashMap<Integer, String> notificationTypes;
+        private HashMap<Integer, String> courseIdsNames;
+        private HashMap<Integer, CourseView> courseMap;
+
+        private Integer type;
+        private Integer courseId;
+        private boolean dateDesc;
+        private final String ALLCOURSESOPTION = "All courses";
+        private final String ALLTYPESOPTION = "allTypes";
+        private String pageTitle = "Notification center";
+
+        public ViewNotificationCenter() {
+            super();
+            notifications = new ArrayList<>();
+            courseIdsNames = new HashMap<>();
+            notificationTypes = new HashMap<>();
+            courseMap = new HashMap<>();
+            dateDesc = true;
+        }
+
+        public ArrayList<Notification> getNotifications() {
+            return notifications;
+        }
+
+        public void setNotifications(ArrayList<Notification> notifications) {
+            this.notifications = notifications;
+        }
+
+        public HashMap<Integer, String> getNotificationTypes() {
+            return notificationTypes;
+        }
+
+        public void setNotificationTypes(HashMap<Integer, String> notificationTypes) {
+            this.notificationTypes = notificationTypes;
+        }
+
+        public HashMap<Integer, String> getCourseIdsNames() {
+            return courseIdsNames;
+        }
+
+        public void setCourseIdsNames(HashMap<Integer, String> courseIdsNames) {
+            this.courseIdsNames = courseIdsNames;
+        }
+
+        public Integer getType() {
+            return type;
+        }
+
+        public void setType(Integer type) {
+            this.type = type;
+        }
+
+        public Integer getCourseId() {
+            return courseId;
+        }
+
+        public void setCourseId(Integer courseId) {
+            this.courseId = courseId;
+        }
+
+        public boolean getDateDesc() {
+            return dateDesc;
+        }
+
+        public void setDateDesc(boolean dateDesc) {
+            this.dateDesc = dateDesc;
+        }
+        
+        public String getPageTitle() {
+            return pageTitle;
+        }
+
+        public HashMap<Integer, CourseView> getCourseMap() {
+            return courseMap;
+        }
+
+        @Override
+        public String action() throws Exception {
+            Connection masterConnection = getMasterConnection();
+            int userId = getMasterUserId();
+
+            ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+            courseIdsNames.put(-1, ALLCOURSESOPTION);
+            for (int i = 0; i < courseView.size(); i++) {
+               try {
+                   CourseView course = courseView.get(i);
+                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, course.getMasterTaskId(), userId);
+                   courseIdsNames.put(course.getMasterTaskId(), course.getName());
+                   courseMap.put(course.getMasterTaskId(), course);
+                }
+                // User is not member of the course.
+               catch (NoSuchItemException e) {
+               }
+            }
+
+            notificationTypes.put(-1, ALLTYPESOPTION);
+            for  (int i = 0; i < Notification.notificationTypes.size(); i++) {
+                notificationTypes.put(i, Notification.notificationTypes.get(i));
+            }
+
+            if (courseId != null && courseId < 0) {
+                courseId = null;
+            }
+            if (type != null && type < 0) {
+                type = null;
+            }
+
+            try {
+                notifications = Notification.getNotificationsByFiltersAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
+            }
+            //User haven't received any notifications.
+            catch (NoSuchItemException e) {
+                return SUCCESS;
+            }
+            catch (Exception e) {
+                throw new WetoActionException("Failed to retrieve notifications");
             }
 
             return SUCCESS;

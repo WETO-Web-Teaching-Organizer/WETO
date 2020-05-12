@@ -303,6 +303,77 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    public static int getCountOfUnreadNotificationsByUser(Connection connection, int userId) {
+        String query = "SELECT COUNT(*) AS count FROM Notification WHERE userId = ? AND readByUser = FALSE";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if(resultSet.next()) {
+                    return resultSet.getInt("count");
+                } else {
+                    return 0;
+                }
+            }
+        }
+        catch (SQLException e) {
+            return 0;
+        }
+    }
+
+    public static ArrayList<Notification> getNotificationsByFiltersAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
+        ArrayList<Notification> notifications = new ArrayList<>();
+        String orderByDate;
+
+        if (dateDesc) {
+            orderByDate = "DESC";
+        }
+        else {
+            orderByDate = "ASC";
+        }
+
+        // Build the query
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Notification WHERE userId = ?");
+        if(courseId != null)
+            queryBuilder.append(" AND courseId = ?");
+        if(notificationType != null)
+            queryBuilder.append(" AND type = ?");
+        queryBuilder.append(" ORDER BY timestamp ").append(orderByDate);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+            // Set values
+            preparedStatement.setInt(1, userId);
+            int statementIndex = 2;
+            if(courseId != null) {
+                preparedStatement.setInt(statementIndex, courseId);
+                statementIndex++;
+            }
+            if(notificationType != null) {
+                preparedStatement.setString(statementIndex, notificationType);
+            }
+
+            // Execute query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while(resultSet.next()) {
+                    Notification notification = Notification.initFromResultSet(resultSet);
+                    notifications.add(notification);
+                    if (!notification.readByUser) {
+                        // Save as read to the db
+                        notification.setReadByUser(true);
+                        notification.update(connection);
+                        notification.setReadByUser(false);
+                    }
+                }
+
+                if(notifications.size() == 0) {
+                    throw new NoSuchItemException();
+                }
+            }
+        }
+
+        return notifications;
+    }
+
     /**
      * Deletes all notifications by given course id
      * @param connection Connection to the master database

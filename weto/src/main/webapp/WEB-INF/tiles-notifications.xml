@@ -7,4 +7,7 @@
     <definition name="notificationSettings.page" extends="course.page">
         <put-attribute name="body" value="/pages/notifications/NotificationSettings.jsp" />
     </definition>
+    <definition name="notificationCenter.page" extends="course.page">
+        <put-attribute name="body" value="/pages/notifications/NotificationCenter.jsp" />
+    </definition>
 </tiles-definitions>

@@ -62,7 +62,7 @@
             </td>
             <td>
                 #if($notification.getLink() && $notification.getLink().length() > 0)
-                    <a href="$notification.getLink()">Link</a>
+                    <a href="$notification.getLink()">View</a>
                 #end
             </td>
             <td>
