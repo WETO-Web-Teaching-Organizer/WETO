@@ -1,13 +1,16 @@
 package fi.uta.cs.weto.actions.notifications;
 
-import fi.uta.cs.weto.db.NotificationSetting;
-import fi.uta.cs.weto.db.Task;
+import fi.uta.cs.sqldatamodel.NoSuchItemException;
+import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
+import fi.uta.cs.weto.model.WetoMasterAction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -224,5 +227,4 @@ public class NotificationActions {
             return SUCCESS;
         }
     }
-}
 }
