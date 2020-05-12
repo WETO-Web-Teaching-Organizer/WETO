@@ -6,9 +6,10 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<h1><s:text name="notificationCenter.header.notificationCenter" /></h1>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/cssweto.css" />
 
-<div class="filters">
+<div class="notificationCenter">
+    <h1 id="testing"><s:text name="notificationCenter.header.notificationCenter" /></h1>
     <form action="<s:url action="viewNotifications" />" method="post">
         <label for="courseId"><s:text name="notificationCenter.header.course" /></label>
         <select name="courseId">
@@ -29,34 +30,33 @@
         </select>
         <input type="submit" value="<s:text name="notificationCenter.form.update" />" class="linkButton" />
     </form>
-</div>
-
-<hr>
-
-<div class="notifications">
-<s:if test="%{!notifications.isEmpty()}">
-<table class="notificationsTable">
-    <thead>
-        <tr>
-            <td><s:text name="notificationCenter.header.course" /></td>
-            <td><s:text name="notificationCenter.header.type" /></td>
-            <td><s:text name="notificationCenter.header.notification" /></td>
-            <td><s:text name="notificationCenter.header.date" /></td>
-        </tr>
-    </thead>
-    <tbody>
-    <s:iterator value="%{notifications}" var="notification">
-        <tr <s:if test="%{!#notification.readByUser}">style="background-color:#eafeea"></s:if>>
-            <td><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></td>
-            <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
-            <td><s:text name="%{#notification.message}" /></td>
-            <td><s:text name="%{#notification.timestamp}" /></td>
-        </tr>
-    </s:iterator>
-</s:if>
-<s:else>
-    <p><s:text name="notificationCenter.header.notificationsIsEmpty" /></p>
-</s:else>
-</tbody>
-</table>
+    <s:if test="%{!notifications.isEmpty()}">
+        <table class="notificationsTable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th><s:text name="notificationCenter.header.course" /></th>
+                    <th><s:text name="notificationCenter.header.type" /></th>
+                    <th><s:text name="notificationCenter.header.notification" /></th>
+                    <th></th>
+                    <th><s:text name="notificationCenter.header.date" /></th>
+                </tr>
+            </thead>
+            <tbody>
+            <s:iterator value="%{notifications}" var="notification">
+                <tr>
+                    <td><s:if test="%{!#notification.readByUser}"><span>New</span></s:if></td>
+                    <td><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></td>
+                    <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
+                    <td><s:text name="%{#notification.message}" /></td>
+                    <td>"Link"</td>
+                    <td><s:text name="%{#notification.timestamp}" /></td>
+                </tr>
+            </s:iterator>
+            </tbody>
+        </table>
+    </s:if>
+    <s:else>
+        <p><s:text name="notificationCenter.header.notificationsIsEmpty" /></p>
+    </s:else>
 </div>

@@ -46,11 +46,9 @@ $togglerBtnHeight: 30px;
 //Mobile variables
 $onlyScreen: "only screen and (max-device-width: 480px)";
 
-$onlyScreenRatio2: "only screen and (max-device-width: 480px)
-and (-webkit-max-device-pixel-ratio: 2)";
+$onlyScreenRatio2: "only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 2)";
 
-$onlyScreenRatio3: "only screen and (max-device-width: 480px)
-and (-webkit-max-device-pixel-ratio: 3)";
+$onlyScreenRatio3: "only screen and (max-device-width: 480px) and (-webkit-max-device-pixel-ratio: 3)";
 $mobileWidth48: "(max-width: 480px)";
 $tabletWidth68: "(max-width: 680px)";
 $tabletMin48: "and (min-width:481px)";
