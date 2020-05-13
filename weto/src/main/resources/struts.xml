@@ -229,4 +229,5 @@
   <include file="struts-taskdocuments.xml" />
   <include file="struts-log.xml" />
   <include file="struts-json.xml" />
+  <include file="struts-notifications.xml" />
 </struts>

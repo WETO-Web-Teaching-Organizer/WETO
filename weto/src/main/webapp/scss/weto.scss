@@ -546,3 +546,63 @@ table.tablesorter thead tr .headerSortUp {
   font-weight: bold;
   font-size: large;
 }
+
+#notification-center-filters {
+  .input-group {
+    margin-bottom: 0.3em;
+    display: inline-block;
+  }
+
+  .linkButton {
+    vertical-align: bottom;
+    height: 34px;
+  }
+}
+
+#notifications-header {
+  margin-top: 1em;
+}
+
+/*Style for notifications table*/
+table.notificationsTable {
+  margin: 0;
+  border-collapse: separate;
+  width: 99%;
+  table-layout: fixed;
+  th:nth-child(1), td:nth-child(1) {
+    width: 5%;
+  }
+  th:nth-child(2), td:nth-child(2) {
+    width: 15%;
+  }
+  th:nth-child(3), td:nth-child(3) {
+    width: 10%;
+  }
+  th:nth-child(4), td:nth-child(4) {
+    width: 40%;
+  }
+  th:nth-child(5), td:nth-child(5) {
+    width: 10%;
+  }
+  th:nth-child(6), td:nth-child(6) {
+    width: 10%;
+  }
+  th:nth-child(7), td:nth-child(7) {
+    width: 10%;
+  }
+  tbody {
+    tr {
+      border: none;
+      td {
+        border: 1px hidden black;
+        border-bottom-style: solid;
+        span {
+          padding: 5px;
+          border-radius: 50%;
+          color: $darkergreen;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}

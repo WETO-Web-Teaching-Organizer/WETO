@@ -136,6 +136,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         this.message = getMessageFromTemplate(this.type, valueMap);
     }
 
+    /**
+     *
+     * @param notificationType String Type of the notification. Used to retrieve the correct template.
+     * @param valueMap Map of values to replace into the string. Key is the string that's searched from
+     *                 the message template.
+     * @return String Notification message in its final form
+     * @throws NoSuchItemException
+     */
     public static String getMessageFromTemplate(String notificationType, HashMap<String, String> valueMap) throws NoSuchItemException {
         String template = NotificationTemplate.getTemplateFromResource(notificationType).getTemplate();
 
@@ -146,6 +154,14 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         return template;
     }
 
+    /**
+     * Function used to create notifications (with the stored values of the object) and save them to the database.
+     * @param masterConnection Connection to the master database
+     * @param courseConnection Connection to the course database in question
+     * @throws WetoTimeStampException In the case something goes wrong with timestamp creation
+     * @throws SQLException In the case that the notification cannot be saved to the database
+     * @throws NoSuchItemException In the case that no notification settings could be created/found for the given type
+     */
     public void createNotification(Connection masterConnection, Connection courseConnection) throws WetoTimeStampException, SQLException, NoSuchItemException {
         try {
             // Check the user notification settings
@@ -154,13 +170,25 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             int courseDbUserId = UserIdReplication.select1ByMasterDbUserId(courseConnection, userId)
                     .getCourseDbUserId();
 
-            NotificationSetting userSettings = NotificationSetting.select1ByUserCourseAndType(courseConnection, courseDbUserId, courseDbTaskId, type);
-            if(!userSettings.isNotifications()) {
+            ArrayList<NotificationSetting> userSettings = NotificationSetting.createSettings(courseConnection, courseDbUserId, courseDbTaskId);
+            NotificationSetting userSetting = null;
+            for(NotificationSetting setting : userSettings) {
+                if(setting.getType().equals(type)) {
+                    userSetting = setting;
+                }
+            }
+
+            if(userSetting == null) {
+                throw new NoSuchItemException("User setting missing");
+            }
+
+
+            if(!userSetting.isNotifications()) {
                 return;
             }
 
-            if(!userSettings.isEmailNotifications()) {
-                this.setSentByEmail(true);
+            if(!userSetting.isEmailNotifications()) {
+                this.setSentByEmail(true); // Mark notification as sent to avoid sending it later
             }
 
             this.timestamp = new WetoTimeStamp().getTimeStamp();
@@ -172,11 +200,17 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
-    public static ArrayList<Notification> getNotificationsNotSentByEmail(Connection connection) throws SQLException {
+    /**
+     * Retrieves unsent notifications for all users
+     * @param masterConnection Connection to the master database
+     * @return List of unsent notifications
+     * @throws SQLException In the case something goes wrong with the SQL query
+     */
+    public static ArrayList<Notification> getNotificationsNotSentByEmail(Connection masterConnection) throws SQLException {
         ArrayList<Notification> notifications = new ArrayList<>();
 
         String sqlStatement = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE sentByEmail = false";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement)) {
+        try (PreparedStatement preparedStatement = masterConnection.prepareStatement(sqlStatement)) {
             ResultSet rs = preparedStatement.executeQuery();
 
             while(rs.next()) {
@@ -188,7 +222,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         return notifications;
     }
 
-    public void insert(Connection con) throws SQLException, WetoTimeStampException {
+    /**
+     * Inserts the values stored in the object instance to the SQL database
+     * @param con Connection to the master database
+     * @throws SQLException In the case the insertion could not be executed
+     */
+    public void insert(Connection con) throws SQLException {
         int rows = 0;
 
         String sqlStatement = "INSERT INTO Notification (userId, courseId, type, message, timestamp, readByUser, sentByEmail, link) values (?, ?, ?, ?, ?, ?, ?, ?);";
@@ -213,7 +252,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         if( rows != 1 ) throw new SQLException("Insert did not return a row");
     }
 
-    public void update(Connection con) throws SQLException, InvalidValueException {
+    /**
+     * Updates the values stored in the object instance to the database
+     * @param con Connection to the master database
+     * @throws SQLException In the case the update execution fails
+     */
+    public void update(Connection con) throws SQLException {
         int rows;
 
         String sqlStatement = "UPDATE Notification SET userId = ?, courseId = ?, type = ?, message = ?, timestamp = ?, readByUser = ?, sentByEmail = ?, link = ? WHERE id = ?";
@@ -235,6 +279,13 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         if( rows != 1 ) throw new SQLException("Update did not return a row");
     }
 
+    /**
+     * Retrieves values from the database by the id set in the object instance
+     * @param con Connection to the master database
+     * @throws SQLException In the case something goes wrong with the query execution
+     * @throws InvalidValueException In the case setting the object instance values fail
+     * @throws NoSuchItemException In the case a corresponding row could not be found from the database
+     */
     public void select(Connection con) throws SQLException, InvalidValueException, NoSuchItemException {
         String prepareString = "SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE id = ?";
 
@@ -254,6 +305,102 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    /**
+     * Deletes notification corresponding the object instance
+     * @param con Connection to the master database
+     * @throws SQLException In case query execution fails
+     * @throws NoSuchItemException In case a corresponding notification couldn't be found in the database
+     */
+    public void delete(Connection con) throws SQLException, NoSuchItemException {
+        int rows = 0;
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM Notification WHERE id = ?")) {
+            ps.setInt(1, id);
+
+            rows = ps.executeUpdate();
+
+            if(rows != 1) {
+                throw new NoSuchItemException("No notifications with specified id");
+            }
+        }
+    }
+
+    public static int getCountOfUnreadNotificationsByUser(Connection connection, int userId) {
+        String query = "SELECT COUNT(*) AS count FROM Notification WHERE userId = ? AND readByUser = FALSE";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if(resultSet.next()) {
+                    return resultSet.getInt("count");
+                } else {
+                    return 0;
+                }
+            }
+        }
+        catch (SQLException e) {
+            return 0;
+        }
+    }
+
+    public static ArrayList<Notification> getNotificationsByFiltersAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
+        ArrayList<Notification> notifications = new ArrayList<>();
+        String orderByDate;
+
+        if (dateDesc) {
+            orderByDate = "DESC";
+        }
+        else {
+            orderByDate = "ASC";
+        }
+
+        // Build the query
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Notification WHERE userId = ?");
+        if(courseId != null)
+            queryBuilder.append(" AND courseId = ?");
+        if(notificationType != null)
+            queryBuilder.append(" AND type = ?");
+        queryBuilder.append(" ORDER BY timestamp ").append(orderByDate);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+            // Set values
+            preparedStatement.setInt(1, userId);
+            int statementIndex = 2;
+            if(courseId != null) {
+                preparedStatement.setInt(statementIndex, courseId);
+                statementIndex++;
+            }
+            if(notificationType != null) {
+                preparedStatement.setString(statementIndex, notificationType);
+            }
+
+            // Execute query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while(resultSet.next()) {
+                    Notification notification = Notification.initFromResultSet(resultSet);
+                    notifications.add(notification);
+                    if (!notification.readByUser) {
+                        // Save as read to the db
+                        notification.setReadByUser(true);
+                        notification.update(connection);
+                        notification.setReadByUser(false);
+                    }
+                }
+
+                if(notifications.size() == 0) {
+                    throw new NoSuchItemException();
+                }
+            }
+        }
+
+        return notifications;
+    }
+
+    /**
+     * Deletes all notifications by given course id
+     * @param connection Connection to the master database
+     * @param courseId Integer id of the course
+     * @throws SQLException In the case the query execution fails
+     */
     public static void deleteByCourseId(Connection connection, int courseId) throws SQLException {
         String prepareString = "DELETE FROM Notification WHERE courseId = ?";
 
@@ -263,6 +410,13 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    /**
+     * Populates the object instance with values in the ResultSet
+     * @param resultSet ResultSet of the SQL query
+     * @param baseIndex Integer offset used to retrieve columns
+     * @throws SQLException In the case that a value couldn't be retrieved from the ResultSet
+     * @throws InvalidValueException In the case that the value type didn't correspond to what it was supposed to be
+     */
     @Override
     public void setFromResultSet(ResultSet resultSet, int baseIndex) throws SQLException, InvalidValueException {
         id = resultSet.getInt(baseIndex+1);
@@ -276,6 +430,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         link = resultSet.getString(baseIndex+9);
     }
 
+    /**
+     * Populates the object instance with values in the ResultSet, utilizes column names in retrieval
+     * @param resultSet ResultSet of the SQL query
+     * @throws SQLException In the case that a value couldn't be retrieved from the ResultSet
+     * @throws InvalidValueException In the case that the value type didn't correspond to what it was supposed to be
+     */
     public void setFromResultSet(ResultSet resultSet) throws SQLException, InvalidValueException {
         id = resultSet.getInt("id");
         userId = resultSet.getInt("userId");
@@ -288,6 +448,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         link = resultSet.getString("link");
     }
 
+    /**
+     * Populates a new object instance from given ResultSet
+     * @param resultSet ResultSet of the SQL query
+     * @return Populated object instance
+     * @throws SQLException In the case the object couldn't be populated
+     */
     public static Notification initFromResultSet(ResultSet resultSet) throws SQLException {
         try {
             Notification result = new Notification();
