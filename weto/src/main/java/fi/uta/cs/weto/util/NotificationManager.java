@@ -18,6 +18,7 @@
         import java.sql.SQLException;
         import java.util.ArrayList;
         import java.util.HashMap;
+        import java.util.HashSet;
         import java.util.concurrent.Executors;
         import java.util.concurrent.ScheduledExecutorService;
         import java.util.concurrent.TimeUnit;
@@ -61,101 +62,102 @@ public class NotificationManager implements ServletContextListener {
             try {
                 activeTasks = Permission.selectActive(masterCon);
                 logger.debug("loaded " + activeTasks.size() + " active courses");
-
             } catch (Exception e) {
                 logger.error(e);
             }
-
-
-
-
             //Lets find all currently active tasks and their databases
-
-
-
             ArrayList<Integer> databases = new ArrayList<>();
             for (Permission masterTask : activeTasks) {
                 try {
 
                     int databaseID = CourseImplementation.select1ByMasterTaskId(masterCon,masterTask.getId()).getDatabaseId();
 
-                    if (!databases.contains(databaseID)) { //checki toimii
+                    //iterate a course database only once
+                    if (!databases.contains(databaseID)) {
                         databases.add(databaseID);
                         String databaseName = DatabasePool.select1ById(masterCon, databaseID).getName();
                         Connection courseCon = connectionManager.getConnection(databaseName);
-
                         ArrayList<Permission> allActiveCoursePermissions = new ArrayList<>();
                         try {
                             allActiveCoursePermissions = Permission.selectActive(courseCon);
                         } catch (Exception e) {
                             logger.debug(e + "  with connection   " + courseCon);
                         }
+                        
                          for (Permission permission : allActiveCoursePermissions) {
+                             String asd = permission.getEndTimeStampString();
+                             //Implement check deadline time here
 
+
+                             //Implement teacher notifications here
                             //Check if permission is submission permission
                             if (permission.getType() == 1) {
+                                HashSet<Integer> notSubmittedStudents = new HashSet<>();
+                                boolean isAllUsersPermission = permission.getUserRefId() == null;
+                                if (isAllUsersPermission) {
+                                    try {
+                                        Task temp = Task.select1ById(courseCon, permission.getTaskId());
+                                        ArrayList<ClusterMember> memberList = ClusterMember.selectByClusterId(courseCon, temp.getRootTaskId());
+
+                                        for (ClusterMember member : memberList) {
+                                            notSubmittedStudents.add(member.getUserId());
+                                        }
+                                    } catch (Exception e) {
+                                        logger.error(e);
+                                    }
+                                }
                                 int assignmentTask = permission.getTaskId();
-                                
-                                
-                                
-                                if (permission.isActive()) {
-                                    ArrayList<Submission> currentSubs = Submission.selectByTaskId(courseCon, assignmentTask);
-                                    for (Submission sub : currentSubs) {
-                                        
-                                        
-                                        int status = sub.getStatus();
-                                        //submission status 2 == accepted
-                                        if (status != 2) {
-                                            int userID = sub.getUserId();
 
-                                            UserAccount user = UserAccount.select1ById(courseCon, userID);
-                                            UserAccount masterUser = UserAccount.select1ByLoginName(masterCon, user.getLoginName());
-
-
-
-                                            int taskID = sub.getTaskId();
-                                            Task temp = Task.select1ById(courseCon,taskID);
-                                            int courseID = temp.getRootTaskId();
-
-                                            //get courses ID in the master database
-                                            int masterTaskID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon,databaseID,courseID).getMasterTaskId();
-
-
-
-
-
-
-                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, "");
-                                            notification.setMessage("<h2>Et ole tehnyt tehtävää nro. " + courseID + "</h2>");
-                                            notification.createNotification(masterCon, courseCon);
+                                //one tasks submissions
+                                ArrayList<Submission> taskSubmissions = Submission.selectByTaskId(courseCon, assignmentTask);
+                                for (Submission sub : taskSubmissions) {
+                                    int status = sub.getStatus();
+                                    //submission status 2 == accepted
+                                    if (status == 2 && isAllUsersPermission) {
+                                        try {
+                                            notSubmittedStudents.remove(sub.getUserId());
+                                        } catch (Exception e) {
+                                            logger.debug("There was no id to remove");
                                         }
                                     }
-
+                                    if (status != 2 && !isAllUsersPermission) {
+                                        notSubmittedStudents.add(sub.getUserId());
+                                    }
                                 }
 
+                                    for (int student : notSubmittedStudents) {
+                                        UserAccount user = UserAccount.select1ById(courseCon, student);
+                                        UserAccount masterUser = UserAccount.select1ByLoginName(masterCon, user.getLoginName());
+                                        int taskID = permission.getTaskId();
+                                        Task temp = Task.select1ById(courseCon,taskID);
+                                        int courseID = temp.getRootTaskId();
+
+                                        //get courses ID in the master database
+                                        int masterTaskID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon,databaseID,courseID).getMasterTaskId();
+
+
+                                        try {
+                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, "");
+                                            notification.setMessage("<h2>Hei käyttäjä " + masterUser.getFirstName() +". Et ole tehnyt tehtävää nro. " + taskID + "</h2>");
+                                            notification.createNotification(masterCon, courseCon);
+                                        } catch (Exception e) {
+                                            logger.error(e);
+                                        }
+
+
+                                    }
+                                }
                             }
 
 
-                        }
-
-
                         connectionManager.freeConnection(courseCon);
-
                     }
-
-
-
-
-
                 } catch (Exception e) {
                     logger.error(e);
                 }
             }
-
                 connectionManager.freeConnection(masterCon);
-
         }
-
     }
 
     private class NotificationEmailTask implements Runnable {

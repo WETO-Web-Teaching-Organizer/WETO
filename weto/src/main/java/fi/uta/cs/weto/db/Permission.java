@@ -64,7 +64,7 @@ public class Permission extends BeanPermission
     }
     return result;
   }
-  //Select all permissions which are still active
+  //Select all permissions which are currently active
   public static ArrayList<Permission> selectActive(Connection conn) throws SQLException, WetoTimeStampException {
     ArrayList<Permission> result = new ArrayList<>();
 
@@ -102,14 +102,7 @@ public class Permission extends BeanPermission
     return result;
   }
 
-  /**
-   * Retrieve permissions for a given task.
-   *
-   * @param conn open database connection
-   * @param taskId task identifier
-   * @return permissions
-   * @throws SQLException if the JDBC operation fails.
-   */
+
 
   public boolean isActive() throws WetoTimeStampException {
     int nowStamp = new WetoTimeStamp(new GregorianCalendar()).getTimeStamp();
@@ -121,6 +114,17 @@ public class Permission extends BeanPermission
     }
 
   }
+
+  /**
+   * Retrieve permissions for a given task.
+   *
+   * @param conn open database connection
+   * @param taskId task identifier
+   * @return permissions
+   * @throws SQLException if the JDBC operation fails.
+   */
+
+
 
   public static ArrayList<Permission> selectByTaskId(Connection conn,
           Integer taskId)
