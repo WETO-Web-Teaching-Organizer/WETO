@@ -303,6 +303,25 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
+    /**
+     * Deletes notification corresponding the object instance
+     * @param con Connection to the master database
+     * @throws SQLException In case query execution fails
+     * @throws NoSuchItemException In case a corresponding notification couldn't be found in the database
+     */
+    public void delete(Connection con) throws SQLException, NoSuchItemException {
+        int rows = 0;
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM Notification WHERE id = ?")) {
+            ps.setInt(1, id);
+
+            rows = ps.executeUpdate();
+
+            if(rows != 1) {
+                throw new NoSuchItemException("No notifications with specified id");
+            }
+        }
+    }
+
     public static int getCountOfUnreadNotificationsByUser(Connection connection, int userId) {
         String query = "SELECT COUNT(*) AS count FROM Notification WHERE userId = ? AND readByUser = FALSE";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

@@ -4251,12 +4251,15 @@ table.notificationsTable th:nth-child(3), table.notificationsTable td:nth-child(
   width: 10%;
 }
 table.notificationsTable th:nth-child(4), table.notificationsTable td:nth-child(4) {
-  width: 50%;
+  width: 40%;
 }
 table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(5) {
   width: 10%;
 }
 table.notificationsTable th:nth-child(6), table.notificationsTable td:nth-child(6) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(7), table.notificationsTable td:nth-child(7) {
   width: 10%;
 }
 table.notificationsTable tbody tr {

@@ -40,6 +40,7 @@
                     <th><s:text name="notificationCenter.header.notification" /></th>
                     <th><s:text name="notificationCenter.header.link" /></th>
                     <th><s:text name="notificationCenter.header.date" /></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -67,6 +68,12 @@
                         <s:if test="%{#timestampObject != null}">
                             <s:text name="%{#timestampObject.toString()}" />
                         </s:if>
+                    </td>
+                    <td>
+                        <s:url action="deleteNotification" var="deleteUrl">
+                            <s:param name="notificationId" value="%{#notification.id}" />
+                        </s:url>
+                        <a href="${deleteUrl}"><s:text name="notificationCenter.header.delete" /></a>
                     </td>
                 </tr>
             </s:iterator>

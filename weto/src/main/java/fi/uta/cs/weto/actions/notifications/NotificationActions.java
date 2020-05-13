@@ -233,4 +233,50 @@ public class NotificationActions {
             return SUCCESS;
         }
     }
+
+    public static class DeleteNotification extends WetoMasterAction {
+        private int notificationId;
+
+        public int getNotificationId() {
+            return notificationId;
+        }
+
+        public void setNotificationId(int notificationId) {
+            this.notificationId = notificationId;
+        }
+
+        public DeleteNotification() {
+            super();
+            notificationId = -1;
+        }
+
+        @Override
+        public String action() throws WetoActionException {
+            Connection masterConnection = getMasterConnection();
+            int userId = getMasterUserId();
+
+            if(notificationId == -1) {
+                throw new WetoActionException("Notification id is missing");
+            }
+
+            try {
+                Notification notification = new Notification();
+                notification.setId(notificationId);
+                notification.select(masterConnection);
+
+                if(userId != notification.getUserId()) {
+                    throw new WetoActionException("Denied: Notification user id doesn't match the current user");
+                }
+
+                notification.delete(masterConnection);
+            } catch (WetoActionException e) {
+                throw e;
+            } catch (NoSuchItemException ignored) {
+            } catch (Exception e) {
+                throw new WetoActionException("Failed to retrieve or delete notification");
+            }
+
+            return SUCCESS;
+        }
+    }
 }

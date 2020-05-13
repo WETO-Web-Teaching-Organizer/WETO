@@ -40,8 +40,14 @@
                 <param name="saveFailed">true</param>
             </result>
         </action>
+
         <action name="viewNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$ViewNotificationCenter">
             <result type="tiles" name="success">notificationCenter.page</result>
+            <result type="tiles" name="error">generalError.page</result>
+        </action>
+
+        <action name="deleteNotification" class="fi.uta.cs.weto.actions.notifications.NotificationActions$DeleteNotification">
+            <result type="redirectAction" name="success">viewNotifications</result>
             <result type="tiles" name="error">generalError.page</result>
         </action>
     </package>
