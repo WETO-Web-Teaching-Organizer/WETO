@@ -115,19 +115,22 @@ public class NotificationActions {
         private ArrayList<Notification> notifications;
         private HashMap<Integer, String> notificationTypes;
         private HashMap<Integer, String> courseIdsNames;
+        private HashMap<Integer, CourseView> courseMap;
 
         private Integer type;
         private Integer courseId;
         private boolean dateDesc;
         private final String ALLCOURSESOPTION = "All courses";
         private final String ALLTYPESOPTION = "allTypes";
+        private String pageTitle = "Notification center";
 
-        // Katso rakentaja vielä.
         public ViewNotificationCenter() {
             super();
             notifications = new ArrayList<>();
             courseIdsNames = new HashMap<>();
             notificationTypes = new HashMap<>();
+            courseMap = new HashMap<>();
+            dateDesc = true;
         }
 
         public ArrayList<Notification> getNotifications() {
@@ -177,6 +180,14 @@ public class NotificationActions {
         public void setDateDesc(boolean dateDesc) {
             this.dateDesc = dateDesc;
         }
+        
+        public String getPageTitle() {
+            return pageTitle;
+        }
+
+        public HashMap<Integer, CourseView> getCourseMap() {
+            return courseMap;
+        }
 
         @Override
         public String action() throws Exception {
@@ -184,13 +195,13 @@ public class NotificationActions {
             int userId = getMasterUserId();
 
             ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+            courseIdsNames.put(-1, ALLCOURSESOPTION);
             for (int i = 0; i < courseView.size(); i++) {
                try {
-                   int masterTaskId = courseView.get(i).getMasterTaskId();
-                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, masterTaskId, userId);
-                   String name = courseView.get(i).getName();
-                   courseIdsNames.put(-1, ALLCOURSESOPTION);
-                   courseIdsNames.put(masterTaskId, name);
+                   CourseView course = courseView.get(i);
+                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, course.getMasterTaskId(), userId);
+                   courseIdsNames.put(course.getMasterTaskId(), course.getName());
+                   courseMap.put(course.getMasterTaskId(), course);
                 }
                 // User is not member of the course.
                catch (NoSuchItemException e) {
@@ -210,7 +221,7 @@ public class NotificationActions {
             }
 
             try {
-                notifications = Notification.selectNotificationsAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
+                notifications = Notification.getNotificationsByFiltersAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
             }
             //User haven't received any notifications.
             catch (NoSuchItemException e) {
@@ -218,6 +229,52 @@ public class NotificationActions {
             }
             catch (Exception e) {
                 throw new WetoActionException("Failed to retrieve notifications");
+            }
+
+            return SUCCESS;
+        }
+    }
+
+    public static class DeleteNotification extends WetoMasterAction {
+        private int notificationId;
+
+        public int getNotificationId() {
+            return notificationId;
+        }
+
+        public void setNotificationId(int notificationId) {
+            this.notificationId = notificationId;
+        }
+
+        public DeleteNotification() {
+            super();
+            notificationId = -1;
+        }
+
+        @Override
+        public String action() throws WetoActionException {
+            Connection masterConnection = getMasterConnection();
+            int userId = getMasterUserId();
+
+            if(notificationId == -1) {
+                throw new WetoActionException("Notification id is missing");
+            }
+
+            try {
+                Notification notification = new Notification();
+                notification.setId(notificationId);
+                notification.select(masterConnection);
+
+                if(userId != notification.getUserId()) {
+                    throw new WetoActionException("Denied: Notification user id doesn't match the current user");
+                }
+
+                notification.delete(masterConnection);
+            } catch (WetoActionException e) {
+                throw e;
+            } catch (NoSuchItemException ignored) {
+            } catch (Exception e) {
+                throw new WetoActionException("Failed to retrieve or delete notification");
             }
 
             return SUCCESS;

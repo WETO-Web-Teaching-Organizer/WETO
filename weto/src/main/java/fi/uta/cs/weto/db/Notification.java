@@ -304,9 +304,44 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
-    public static ArrayList<Notification> selectNotificationsAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
+    /**
+     * Deletes notification corresponding the object instance
+     * @param con Connection to the master database
+     * @throws SQLException In case query execution fails
+     * @throws NoSuchItemException In case a corresponding notification couldn't be found in the database
+     */
+    public void delete(Connection con) throws SQLException, NoSuchItemException {
+        int rows = 0;
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM Notification WHERE id = ?")) {
+            ps.setInt(1, id);
+
+            rows = ps.executeUpdate();
+
+            if(rows != 1) {
+                throw new NoSuchItemException("No notifications with specified id");
+            }
+        }
+    }
+
+    public static int getCountOfUnreadNotificationsByUser(Connection connection, int userId) {
+        String query = "SELECT COUNT(*) AS count FROM Notification WHERE userId = ? AND readByUser = FALSE";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if(resultSet.next()) {
+                    return resultSet.getInt("count");
+                } else {
+                    return 0;
+                }
+            }
+        }
+        catch (SQLException e) {
+            return 0;
+        }
+    }
+
+    public static ArrayList<Notification> getNotificationsByFiltersAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
         ArrayList<Notification> notifications = new ArrayList<>();
         String orderByDate;
 
@@ -317,49 +352,42 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             orderByDate = "ASC";
         }
 
-        try {
-            if (courseId != null && notificationType != null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND courseId = ? AND type = ? ORDER BY timestamp " + orderByDate);
-                preparedStatement.setInt(1, userId);
-                preparedStatement.setInt(2, courseId);
-                preparedStatement.setString(3, notificationType);
+        // Build the query
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Notification WHERE userId = ?");
+        if(courseId != null)
+            queryBuilder.append(" AND courseId = ?");
+        if(notificationType != null)
+            queryBuilder.append(" AND type = ?");
+        queryBuilder.append(" ORDER BY timestamp ").append(orderByDate);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+            // Set values
+            preparedStatement.setInt(1, userId);
+            int statementIndex = 2;
+            if(courseId != null) {
+                preparedStatement.setInt(statementIndex, courseId);
+                statementIndex++;
             }
-            else if (courseId != null && notificationType == null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND courseId = ? ORDER BY timestamp " + orderByDate);
-                preparedStatement.setInt(1, userId);
-                preparedStatement.setInt(2, courseId);
+            if(notificationType != null) {
+                preparedStatement.setString(statementIndex, notificationType);
             }
-            else if (courseId == null && notificationType != null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND type = ? ORDER BY timestamp " + orderByDate);
-                preparedStatement.setInt(1, userId);
-                preparedStatement.setString(2, notificationType);
-            }
-            else {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? ORDER BY timestamp " + orderByDate);
-                preparedStatement.setInt(1, userId);
-            }
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                do {
-                    Notification notification = new Notification();
-                    notification.setFromResultSet(resultSet, 0);
-                    if (!notification.readByUser) {
-                        Notification notification2 = notification;
-                        notification = (Notification)notification.clone();
-                        notification2.setReadByUser(true);
-                        notification2.update(connection);
-                    }
+
+            // Execute query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while(resultSet.next()) {
+                    Notification notification = Notification.initFromResultSet(resultSet);
                     notifications.add(notification);
+                    if (!notification.readByUser) {
+                        // Save as read to the db
+                        notification.setReadByUser(true);
+                        notification.update(connection);
+                        notification.setReadByUser(false);
+                    }
                 }
-                while(resultSet.next());
-            }
-            else {
-                throw new NoSuchItemException();
-            }
-        }
-        finally {
-            if(resultSet != null) {
-                resultSet.close();
+
+                if(notifications.size() == 0) {
+                    throw new NoSuchItemException();
+                }
             }
         }
 

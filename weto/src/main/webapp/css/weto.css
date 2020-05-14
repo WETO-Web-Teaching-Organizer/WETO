@@ -730,6 +730,19 @@ div .replyText {
 #sidebartoggle-wrapper .btn-sidebar img:hover {
   background-color: none;
 }
+#sidebartoggle-wrapper #notification-center-button {
+  position: relative;
+}
+#sidebartoggle-wrapper #notification-center-button span.unreadNotifications:after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+  background: #A52929;
+}
 #sidebartoggle-wrapper #teacherRole-status .tooltip-inner {
   width: 90px;
 }
@@ -4208,9 +4221,22 @@ table.tablesorter thead tr .headerSortUp {
   font-size: large;
 }
 
+#notification-center-filters .input-group {
+  margin-bottom: 0.3em;
+  display: inline-block;
+}
+#notification-center-filters .linkButton {
+  vertical-align: bottom;
+  height: 34px;
+}
+
+#notifications-header {
+  margin-top: 1em;
+}
+
 /*Style for notifications table*/
 table.notificationsTable {
-  margin: 50px 0px 0px 0px;
+  margin: 0;
   border-collapse: separate;
   width: 99%;
   table-layout: fixed;
@@ -4225,7 +4251,7 @@ table.notificationsTable th:nth-child(3), table.notificationsTable td:nth-child(
   width: 10%;
 }
 table.notificationsTable th:nth-child(4), table.notificationsTable td:nth-child(4) {
-  width: 50%;
+  width: 40%;
 }
 table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(5) {
   width: 10%;
@@ -4233,14 +4259,8 @@ table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(
 table.notificationsTable th:nth-child(6), table.notificationsTable td:nth-child(6) {
   width: 10%;
 }
-table.notificationsTable thead tr {
-  border: none;
-}
-table.notificationsTable thead tr th {
-  background-color: #fff;
-  color: #005768;
-  border: 1px hidden black;
-  border-bottom-style: solid;
+table.notificationsTable th:nth-child(7), table.notificationsTable td:nth-child(7) {
+  width: 10%;
 }
 table.notificationsTable tbody tr {
   border: none;
@@ -4252,8 +4272,8 @@ table.notificationsTable tbody tr td {
 table.notificationsTable tbody tr td span {
   padding: 5px;
   border-radius: 50%;
-  background-color: #00551D;
-  color: #fff;
+  color: #00551D;
+  font-weight: bold;
 }
 
 /*# sourceMappingURL=weto.css.map */
