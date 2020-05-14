@@ -1,7 +1,9 @@
 
         package fi.uta.cs.weto.util;
 
+        import com.opensymphony.xwork2.ActionContext;
         import fi.uta.cs.weto.db.*;
+        import fi.uta.cs.weto.model.WetoTimeStamp;
         import org.apache.log4j.Logger;
         import org.apache.velocity.Template;
         import org.apache.velocity.VelocityContext;
@@ -17,6 +19,7 @@
         import java.sql.Connection;
         import java.sql.SQLException;
         import java.util.ArrayList;
+        import java.util.GregorianCalendar;
         import java.util.HashMap;
         import java.util.HashSet;
         import java.util.concurrent.Executors;
@@ -85,14 +88,32 @@ public class NotificationManager implements ServletContextListener {
                         }
                         
                          for (Permission permission : allActiveCoursePermissions) {
-                             String asd = permission.getEndTimeStampString();
-                             //Implement check deadline time here
 
+                             if (permission.getEndDate() == null) {
+                                 }
+                             try {
+                                 WetoTimeStamp permissionStamp = new WetoTimeStamp(permission.getEndDate());
+                                 WetoTimeStamp deadlineStamp = new WetoTimeStamp(permission.getEndDate());
+                                 deadlineStamp.setHour(deadlineStamp.getHour() - 4);
+                                 WetoTimeStamp nowStamp = new WetoTimeStamp(new GregorianCalendar());
+                                 boolean isAfterTime = nowStamp.getTimeStamp() >= deadlineStamp.getTimeStamp();
+                                 boolean isBeforeDeadline = nowStamp.getTimeStamp() <= permissionStamp.getTimeStamp();
+                                 if (!(isAfterTime && isBeforeDeadline)) continue;
+                             } catch (Exception e) {
+                                 logger.debug("Something went wrong: " + e);
+                             }
 
                              //Implement teacher notifications here
                             //Check if permission is submission permission
                             if (permission.getType() == 1) {
                                 HashSet<Integer> notSubmittedStudents = new HashSet<>();
+                                int assignmentTaskID = permission.getTaskId();
+
+                                Task permissionsTask = Task.select1ById(courseCon,assignmentTaskID);
+                                if (!permissionsTask.getHasSubmissions()) {
+                                    continue;
+                                }
+
                                 boolean isAllUsersPermission = permission.getUserRefId() == null;
                                 if (isAllUsersPermission) {
                                     try {
@@ -106,10 +127,10 @@ public class NotificationManager implements ServletContextListener {
                                         logger.error(e);
                                     }
                                 }
-                                int assignmentTask = permission.getTaskId();
+
 
                                 //one tasks submissions
-                                ArrayList<Submission> taskSubmissions = Submission.selectByTaskId(courseCon, assignmentTask);
+                                ArrayList<Submission> taskSubmissions = Submission.selectByTaskId(courseCon, assignmentTaskID);
                                 for (Submission sub : taskSubmissions) {
                                     int status = sub.getStatus();
                                     //submission status 2 == accepted
@@ -129,16 +150,19 @@ public class NotificationManager implements ServletContextListener {
                                         UserAccount user = UserAccount.select1ById(courseCon, student);
                                         UserAccount masterUser = UserAccount.select1ByLoginName(masterCon, user.getLoginName());
                                         int taskID = permission.getTaskId();
-                                        Task temp = Task.select1ById(courseCon,taskID);
-                                        int courseID = temp.getRootTaskId();
 
+                                        int courseID = permissionsTask.getRootTaskId();
+
+                                        StringBuilder link = new StringBuilder();
+                                        link.append("/weto5/viewSubmissions.action?taskId=").append(taskID).append("&tabId=4&dbId=").append(databaseID);
+
+                                        ///ActionContext.getContext().getName()
+                                        ////weto5/viewForumTopic.action?taskId=8&tabId=5&dbId=1&topicId=43
                                         //get courses ID in the master database
                                         int masterTaskID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon,databaseID,courseID).getMasterTaskId();
-
-
                                         try {
-                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, "");
-                                            notification.setMessage("<h2>Hei käyttäjä " + masterUser.getFirstName() +". Et ole tehnyt tehtävää nro. " + taskID + "</h2>");
+                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, link.toString());
+                                            notification.setMessage(permissionsTask.getName());
                                             notification.createNotification(masterCon, courseCon);
                                         } catch (Exception e) {
                                             logger.error(e);
@@ -148,8 +172,6 @@ public class NotificationManager implements ServletContextListener {
                                     }
                                 }
                             }
-
-
                         connectionManager.freeConnection(courseCon);
                     }
                 } catch (Exception e) {
