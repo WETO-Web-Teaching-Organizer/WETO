@@ -389,7 +389,63 @@ public class ForumActions
       tag.setType(TagType.FORUM_TOPIC.getValue());
       tag.insert(conn);
       addActionMessage(getText("forum.message.messageAdded"));
+      createNotification(tag);
       return SUCCESS;
+    }
+
+    private void createNotification(Tag tag) {
+
+      Connection masterConnection = getMasterConnection();
+      Connection courseConnection = getCourseConnection();
+
+      try {
+
+        ArrayList<Tag> forumSubscriptions = Tag.selectByTaggedIdAndType(courseConnection, getTaskId(), TagType.FORUM_SUBSCRIPTION.getValue());
+
+        // Get the teachers for the course
+        HashSet<Integer> teacherIdSet = new HashSet<>();
+        for (UserTaskView teacher : UserTaskView.selectByTaskIdAndClusterType(courseConnection, getTaskId(), ClusterType.TEACHERS.getValue())) {
+          teacherIdSet.add(teacher.getUserId());
+        }
+
+        // Map values that will be put to the notification template
+        UserAccount author = UserAccount.select1ById(courseConnection, getCourseUserId());
+        HashMap<String, String> valueMap = new HashMap<>();
+        // User name
+        if (teacherIdSet.contains(author.getId())) {
+          valueMap.put("&user;", author.getFirstName() + " " + author.getLastName());
+        } else {
+          valueMap.put("&user;", anonymousName);
+        }
+
+        // Forum topic
+        JsonObject topicJson = new JsonParser().parse(tag.getText()).getAsJsonObject();
+        valueMap.put("&forumTitle;", topicJson.get("title").toString());
+
+        String notificationMessage = Notification.getMessageFromTemplate(Notification.FORUM_TOPIC, valueMap);
+        String notificationLink = WetoUtilities.getAppBaseUrlFromServlet(getRequest())
+                + "/viewForum.action?taskId=" + getTaskId()
+                + "&tabId=" + getTabId()
+                + "&dbId=" + getDbId();
+
+        CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
+
+        for (int i = 0; i < forumSubscriptions.size(); i++) {
+          Integer authorId = forumSubscriptions.get(i).getAuthorId();
+          if (!authorId.equals(getCourseUserId())) {
+            UserAccount user = UserAccount.select1ById(courseConnection, authorId);
+            UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
+
+            Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
+            notification.setMessage(notificationMessage);
+            notification.createNotification(masterConnection, courseConnection);
+          }
+        }
+
+
+      }
+      catch (Exception ignored) {
+      }
     }
 
     public void setTopicTitle(String topicTitle)
@@ -719,6 +775,7 @@ public class ForumActions
         tag.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
         tag.setRank(-1);
         tag.insert(courseConnection);
+        addActionMessage(getText("forum.message.topicSubscribed"));
       } else {
         ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(courseConnection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
         for (int i = 0; i < subscriptionTags.size(); i++) {
@@ -728,6 +785,7 @@ public class ForumActions
           }
         }
         tag.delete(courseConnection);
+        addActionMessage(getText("forum.message.topicUnsubscribed"));
       }
       return SUCCESS;
     }

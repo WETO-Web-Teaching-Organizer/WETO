@@ -48,8 +48,15 @@
                     <td><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></td>
                     <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
                     <td><s:text name="%{#notification.message}" /></td>
-                    <td>"Link"</td>
-                    <td><s:text name="%{#notification.timestamp}" /></td>
+                    <td><s:if test="%{#notification.link != null && #notification.link.length() > 0}" >
+                        <a href="${notification.link}">View</a></s:if>
+                    </td>
+                    <td>
+                    <s:set var="timestampObject" value="%{#notification.getTimestampAsObject()}" />
+                    <s:if test="%{#timestampObject != null}">
+                        <s:text name="%{#timestampObject.toString()}" />
+                    </s:if>
+                    </td>
                 </tr>
             </s:iterator>
             </tbody>
