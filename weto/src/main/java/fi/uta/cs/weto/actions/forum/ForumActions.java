@@ -126,6 +126,7 @@ public class ForumActions
   {
     private ArrayList<ForumBean> topicBeans = new ArrayList<>();
     private boolean canAddTopic;
+    private boolean forumSubscribed;
 
     public View()
     {
@@ -181,6 +182,14 @@ public class ForumActions
                 .getAsString(), "", author, tag.getAuthorId(),
                 new WetoTimeStamp(tag.getTimeStamp()).getDateString()));
       }
+      // Check if forum is subscribed.
+      try {
+        Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(conn, taskId, -1, userId, TagType.FORUM_SUBSCRIPTION.getValue());
+        forumSubscribed = true;
+      }
+      // Forum is not subscribed.
+      catch (NoSuchItemException e) {
+      }
       return SUCCESS;
     }
 
@@ -194,6 +203,14 @@ public class ForumActions
       return canAddTopic;
     }
 
+    public boolean isForumSubscribed() {
+      return forumSubscribed;
+    }
+
+    public void setForumSubscribed(boolean forumSubscribed) {
+      this.forumSubscribed = forumSubscribed;
+    }
+
   }
 
   public static class ViewTopic extends WetoCourseAction
@@ -202,6 +219,7 @@ public class ForumActions
     private String topicTitle;
     private ArrayList<ForumBean> messageBeans = new ArrayList<>();
     private boolean canAddReply;
+    private boolean subscribed;
 
     public ViewTopic()
     {
@@ -277,7 +295,26 @@ public class ForumActions
                         .getTimeStamp()).toString()));
         messageJson = null;
       }
+
+      subscribed = isTopicSubscribed (conn, taskId, userId);
       return SUCCESS;
+    }
+
+    public boolean isTopicSubscribed (Connection connection, Integer taskId, Integer userId) {
+      boolean topicSubscribed = false;
+      // Check if user has subscribed topic.
+      try {
+        ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(connection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+        for (int i = 0; i < subscriptionTags.size(); i++) {
+          if (subscriptionTags.get(i).getStatus().equals(topicId)) {
+            topicSubscribed = true;
+            break;
+          }
+        }
+      }
+      catch (Exception ignored) {
+      }
+      return topicSubscribed;
     }
 
     public void setTopicId(Integer topicId)
@@ -305,6 +342,13 @@ public class ForumActions
       return canAddReply;
     }
 
+    public boolean isSubscribed() {
+      return subscribed;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+      this.subscribed = subscribed;
+    }
   }
 
   public static class AddTopic extends WetoCourseAction
@@ -436,12 +480,16 @@ public class ForumActions
         messages.add(topic);
         messages.addAll(Tag.selectByTaggedIdAndStatusAndType(courseConnection, getTaskId(), topicId, TagType.FORUM_MESSAGE.getValue()));
 
+        /*
         HashSet<Integer> messageAuthors = new HashSet<>();
         for(Tag message : messages) {
           if(!message.getAuthorId().equals(getCourseUserId())) {
             messageAuthors.add(message.getAuthorId());
           }
         }
+        */
+
+        ArrayList<Tag> topicSubscriptions = Tag.selectByTaggedIdAndStatusAndType(courseConnection, getTaskId(), topicId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
 
         // Get the teachers for the course
         HashSet<Integer> teacherIdSet = new HashSet<>();
@@ -472,6 +520,7 @@ public class ForumActions
                 + "&topicId=" + getTopicId();
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
+        /*
         // Send to all participants
         for(Integer authorId : messageAuthors) {
           UserAccount user = UserAccount.select1ById(courseConnection, authorId);
@@ -480,6 +529,18 @@ public class ForumActions
           Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
           notification.setMessage(notificationMessage);
           notification.createNotification(masterConnection, courseConnection);
+        }
+        */
+        for (int i = 0; i < topicSubscriptions.size(); i++ ) {
+          Integer authorId = topicSubscriptions.get(i).getAuthorId();
+          if (!authorId.equals(getCourseUserId())) {
+            UserAccount user = UserAccount.select1ById(courseConnection, authorId);
+            UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
+
+            Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
+            notification.setMessage(notificationMessage);
+            notification.createNotification(masterConnection, courseConnection);
+          }
         }
       } catch (Exception ignored) {
       }
@@ -616,5 +677,96 @@ public class ForumActions
       this.commitDelete = commitDelete;
     }
 
+  }
+
+  public static class SaveTopicSubscription extends WetoCourseAction {
+
+    private Integer topicId;
+    private boolean subscription;
+
+    public SaveTopicSubscription() {
+      super(Tab.FORUM.getBit(), 0, 0, 0);
+    }
+
+    public Integer getTopicId() {
+      return topicId;
+    }
+
+    public void setTopicId(Integer topicId) {
+      this.topicId = topicId;
+    }
+
+    public boolean isSubscription() {
+      return subscription;
+    }
+
+    public void setSubscription(boolean subscription) {
+      this.subscription = subscription;
+    }
+
+    @Override
+    public String action() throws Exception {
+      Connection courseConnection = getCourseConnection();
+      int userId = getCourseUserId();
+      int taskId = getTaskId();
+
+      Tag tag = new Tag();
+      if (subscription) {
+        //tag.setText();
+        tag.setTaggedId(taskId);
+        tag.setStatus(topicId);
+        tag.setAuthorId(userId);
+        tag.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+        tag.setRank(-1);
+        tag.insert(courseConnection);
+      } else {
+        ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(courseConnection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+        for (int i = 0; i < subscriptionTags.size(); i++) {
+          if (subscriptionTags.get(i).getStatus().equals(topicId)) {
+            tag = subscriptionTags.get(i);
+            break;
+          }
+        }
+        tag.delete(courseConnection);
+      }
+      return SUCCESS;
+    }
+  }
+
+  public static class SaveForumSubscription extends WetoCourseAction {
+
+    boolean forumSubscription;
+
+    public SaveForumSubscription() { super(Tab.FORUM.getBit(), 0, 0, 0); }
+
+    public boolean isForumSubscription() {
+      return forumSubscription;
+    }
+
+    public void setForumSubscription(boolean forumSubscription) {
+      this.forumSubscription = forumSubscription;
+    }
+
+    public String action() throws Exception {
+      Connection courseConnection = getCourseConnection();
+      int userId = getCourseUserId();
+      int taskId = getTaskId();
+
+      Tag tag = new Tag();
+      if(forumSubscription) {
+        tag.setTaggedId(taskId);
+        tag.setAuthorId(userId);
+        tag.setType(TagType.FORUM_SUBSCRIPTION.getValue());
+        tag.setRank(-1);
+        tag.insert(courseConnection);
+        addActionMessage(getText("forum.message.forumSubscribed"));
+      }
+      else {
+        tag = Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(courseConnection, taskId, -1, userId, TagType.FORUM_SUBSCRIPTION.getValue());
+        tag.delete(courseConnection);
+        addActionMessage(getText("forum.message.forumUnsubscribed"));
+      }
+      return SUCCESS;
+    }
   }
 }

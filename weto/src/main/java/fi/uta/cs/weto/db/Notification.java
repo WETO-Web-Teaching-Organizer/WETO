@@ -14,9 +14,10 @@ import java.util.*;
 
 public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
+    public static final String FORUM_TOPIC= "forum_topic";
 
     // Create a list of the different types
-    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST));
+    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, FORUM_TOPIC));
 
     private static final Logger logger = Logger.getLogger(Notification.class);
 
@@ -318,23 +319,23 @@ public class Notification extends SqlAssignableObject implements Cloneable {
 
         try {
             if (courseId != null && notificationType != null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND courseId = ? AND type = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND courseId = ? AND type = ? ORDER BY timestamp " + orderByDate);
                 preparedStatement.setInt(1, userId);
                 preparedStatement.setInt(2, courseId);
                 preparedStatement.setString(3, notificationType);
             }
             else if (courseId != null && notificationType == null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND courseId = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND courseId = ? ORDER BY timestamp " + orderByDate);
                 preparedStatement.setInt(1, userId);
                 preparedStatement.setInt(2, courseId);
             }
             else if (courseId == null && notificationType != null) {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? AND type = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? AND type = ? ORDER BY timestamp " + orderByDate);
                 preparedStatement.setInt(1, userId);
                 preparedStatement.setString(2, notificationType);
             }
             else {
-                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail FROM Notification WHERE userId = ? ORDER BY timestamp " + orderByDate);
+                preparedStatement = connection.prepareStatement("SELECT id, userId, courseId, type, message, timestamp, readByUser, sentByEmail, link FROM Notification WHERE userId = ? ORDER BY timestamp " + orderByDate);
                 preparedStatement.setInt(1, userId);
             }
             resultSet = preparedStatement.executeQuery();

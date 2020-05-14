@@ -6,7 +6,6 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/cssweto.css" />
 
 <div class="notificationCenter">
     <h1 id="testing"><s:text name="notificationCenter.header.notificationCenter" /></h1>
