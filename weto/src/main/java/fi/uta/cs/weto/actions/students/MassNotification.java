@@ -7,6 +7,7 @@ import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,12 @@ public class MassNotification {
             int courseId = getCourseTaskId();
             int userId = getCourseUserId();
 
-            students = StudentView.selectByTaskId(courseConnection, courseId);
+            try{
+                students = StudentView.selectByTaskId(courseConnection, courseId);
+            }
+            catch (SQLException e){
+                throw new WetoActionException("Failed to retrieve students.");
+            }
             return SUCCESS;
         }
     }
@@ -67,13 +73,29 @@ public class MassNotification {
         public String action() throws Exception {
             Connection courseConnection = getCourseConnection();
             Connection masterConnection = getMasterConnection();
-            CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
-            for(String studentID : studentIDs){
-                Student student = Student.select1ByStudentNumber(courseConnection, studentID);
-                UserAccount masterUserAccount = UserAccount.select1ById(masterConnection, student.getUserId());
-                Notification newNotification = new Notification(masterUserAccount.getId(), masterCourse.getMasterTaskId(), Notification.MASS_NOTIFICATION, null);
-                newNotification.setMessage(notificationMessage);
-                newNotification.createNotification(masterConnection, courseConnection);
+            try{
+                CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
+                for(String studentID : studentIDs){
+                    Student student = Student.select1ByStudentNumber(courseConnection, studentID);
+
+                    UserIdReplication uIDr = UserIdReplication.select1ByCourseDbUserId(courseConnection,
+                            student.getUserId());
+                    Integer masterUserId = uIDr.getMasterDbUserId();
+
+                    UserAccount masterUserAccount = UserAccount.select1ById(masterConnection, masterUserId);
+                    Notification newNotification = new Notification(masterUserAccount.getId(), masterCourse.getMasterTaskId(), Notification.MASS_NOTIFICATION, null);
+                        if(notificationMessage.isEmpty()) {
+                            throw new WetoActionException("Failed to send notifications, please add text to notification.");
+                        }
+                        newNotification.setMessage(notificationMessage);
+                        newNotification.createNotification(masterConnection, courseConnection);
+                }
+            }
+            catch(WetoActionException e){
+                throw e;
+            }
+            catch (Exception e){
+                throw new WetoActionException("Failed to send notifications, please select students to send notifications.");
             }
             return SUCCESS;
         }
