@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+    <package name="weto-notifications" extends="weto-default">
+        <global-results>
+            <result type="redirectAction" name="error">
+                <param name="actionName">viewTask</param>
+                <param name="taskId">${taskId}</param>
+                <param name="tabId">${tabId}</param>
+                <param name="dbId">${dbId}</param>
+            </result>
+        </global-results>
+
+        <action name="viewNotificationSettings" class="fi.uta.cs.weto.actions.notifications.NotificationActions$ViewNotificationSettings">
+            <result type="tiles" name="success">notificationSettings.page</result>
+            <result type="redirectAction" name="error">
+                <param name="actionName">viewTask</param>
+                <param name="taskId">${taskId}</param>
+                <param name="tabId">${tabId}</param>
+                <param name="dbId">${dbId}</param>
+            </result>
+        </action>
+
+        <action name="saveNotificationSettings" class="fi.uta.cs.weto.actions.notifications.NotificationActions$SaveNotificationSettings">
+            <result type="redirectAction" name="success">
+                <param name="actionName">viewNotificationSettings</param>
+                <param name="taskId">${taskId}</param>
+                <param name="tabId">${tabId}</param>
+                <param name="dbId">${dbId}</param>
+            </result>
+            <result type="redirectAction" name="error">
+                <param name="actionName">viewNotificationSettings</param>
+                <param name="taskId">${taskId}</param>
+                <param name="tabId">${tabId}</param>
+                <param name="dbId">${dbId}</param>
+                <param name="saveFailed">true</param>
+            </result>
+        </action>
+
+        <action name="viewNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$ViewNotificationCenter">
+            <result type="tiles" name="success">notificationCenter.page</result>
+            <result type="tiles" name="error">generalError.page</result>
+        </action>
+
+        <action name="deleteNotification" class="fi.uta.cs.weto.actions.notifications.NotificationActions$DeleteNotification">
+            <result type="redirectAction" name="success">viewNotifications</result>
+            <result type="tiles" name="error">generalError.page</result>
+        </action>
+    </package>
+</struts>

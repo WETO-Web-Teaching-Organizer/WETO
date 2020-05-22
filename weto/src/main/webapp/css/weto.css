@@ -548,12 +548,24 @@ div .replyText {
 }
 #sidebar-wrapper #course-name {
   padding-top: 1em;
+  position: relative;
 }
 #sidebar-wrapper #course-name a {
   color: #fff;
 }
 #sidebar-wrapper #course-name a:hover {
   text-decoration: underline;
+}
+#sidebar-wrapper #course-name #notification-settings-button {
+  position: absolute;
+  top: 1em;
+  right: 0;
+  background: none;
+  border: none;
+  padding: 0 12px;
+}
+#sidebar-wrapper #course-name #notification-settings-button span {
+  color: #fff;
 }
 #sidebar-wrapper ul {
   list-style-type: none;
@@ -717,6 +729,19 @@ div .replyText {
 }
 #sidebartoggle-wrapper .btn-sidebar img:hover {
   background-color: none;
+}
+#sidebartoggle-wrapper #notification-center-button {
+  position: relative;
+}
+#sidebartoggle-wrapper #notification-center-button span.unreadNotifications:after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+  background: #A52929;
 }
 #sidebartoggle-wrapper #teacherRole-status .tooltip-inner {
   width: 90px;
@@ -4194,6 +4219,61 @@ table.tablesorter thead tr .headerSortUp {
 .degreeHeader {
   font-weight: bold;
   font-size: large;
+}
+
+#notification-center-filters .input-group {
+  margin-bottom: 0.3em;
+  display: inline-block;
+}
+#notification-center-filters .linkButton {
+  vertical-align: bottom;
+  height: 34px;
+}
+
+#notifications-header {
+  margin-top: 1em;
+}
+
+/*Style for notifications table*/
+table.notificationsTable {
+  margin: 0;
+  border-collapse: separate;
+  width: 99%;
+  table-layout: fixed;
+}
+table.notificationsTable th:nth-child(1), table.notificationsTable td:nth-child(1) {
+  width: 5%;
+}
+table.notificationsTable th:nth-child(2), table.notificationsTable td:nth-child(2) {
+  width: 15%;
+}
+table.notificationsTable th:nth-child(3), table.notificationsTable td:nth-child(3) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(4), table.notificationsTable td:nth-child(4) {
+  width: 40%;
+}
+table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(5) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(6), table.notificationsTable td:nth-child(6) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(7), table.notificationsTable td:nth-child(7) {
+  width: 10%;
+}
+table.notificationsTable tbody tr {
+  border: none;
+}
+table.notificationsTable tbody tr td {
+  border: 1px hidden black;
+  border-bottom-style: solid;
+}
+table.notificationsTable tbody tr td span {
+  padding: 5px;
+  border-radius: 50%;
+  color: #00551D;
+  font-weight: bold;
 }
 
 /*# sourceMappingURL=weto.css.map */
