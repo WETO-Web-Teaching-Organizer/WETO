@@ -46,10 +46,16 @@
         <p>Student list is empty.</p>
     </s:else>
 
-    <label>
+    <div>
         <button type="button" id="selectAll"><s:text name="massNotification.button.selectAll"></s:text></button>
         <button type="button" id="deselectAll"><s:text name="massNotification.button.deselectAll"></s:text></button>
-        <script>
+        <br><br>
+        <label for="notificationMessage"><s:text name="massNotification.label.message"/></label
+        <input type="text" id="notificationMessage" class="form-control" name="notificationMessage">
+        <input type="submit" class="linkButton" value="<s:text name="massNotification.header.sendNotification"/>"/>
+    </div>
+    <script>
+        $(document).ready(function() {
             $("#selectAll").click(function(event) {
                 event.preventDefault();
                 $(".studentIdCheckbox").prop("checked", true);
@@ -58,10 +64,6 @@
                 event.preventDefault();
                 $(".studentIdCheckbox").prop("checked", false);
             });
-        </script>
-        <br> <br>
-        <s:text name="massNotification.label.message"/>
-        <input type="text" name="notificationMessage">
-        <input type="submit" value="<s:text name="massNotification.header.sendNotification"/>"/>
-    </label>
+        });
+    </script>
 </form>
