@@ -49,12 +49,12 @@
   <input type="hidden" name="tabId" value="${tabId}" />
   <input type="hidden" name="dbId" value="${dbId}" />
   <input type="hidden" name="topicId" value="${topicId}" />
-  <s:if test="%{!subscribed}">
-    <input type="hidden" name="subscription" value="true"/>
+  <s:if test="%{!topicSubscribed}">
+    <input type="hidden" name="topicSubscription" value="true"/>
     <input type="submit" value="<s:text name="forum.header.subscribeTopic" />" class="linkButton" />
   </s:if>
   <s:else>
-    <input type="hidden" name="subscription" value="false"/>
+    <input type="hidden" name="topicSubscription" value="false"/>
     <input type="submit" value="<s:text name="forum.header.unsubscribeTopic" />" class="linkButton" />
   </s:else>
 </form>

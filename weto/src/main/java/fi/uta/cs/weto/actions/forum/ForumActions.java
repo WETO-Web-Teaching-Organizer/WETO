@@ -188,7 +188,22 @@ public class ForumActions
         forumSubscribed = true;
       }
       // Forum is not subscribed.
-      catch (NoSuchItemException e) {
+      catch (NoSuchItemException noSubscription) {
+        // Check if user is a teacher and have not yet subscribed the forum. If that is the case lets make subscription.
+        if (teacherIdSet.contains(userId)) {
+          try {
+            Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(conn, taskId, -2, userId, TagType.FORUM_SUBSCRIPTION.getValue());
+          }
+          catch (NoSuchItemException subscriptionNeverMade) {
+            Tag tag = new Tag();
+            tag.setTaggedId(taskId);
+            tag.setAuthorId(userId);
+            tag.setType(TagType.FORUM_SUBSCRIPTION.getValue());
+            tag.setRank(-1);
+            tag.insert(conn);
+            forumSubscribed = true;
+          }
+        }
       }
       return SUCCESS;
     }
@@ -219,7 +234,7 @@ public class ForumActions
     private String topicTitle;
     private ArrayList<ForumBean> messageBeans = new ArrayList<>();
     private boolean canAddReply;
-    private boolean subscribed;
+    private boolean topicSubscribed;
 
     public ViewTopic()
     {
@@ -295,26 +310,15 @@ public class ForumActions
                         .getTimeStamp()).toString()));
         messageJson = null;
       }
-
-      subscribed = isTopicSubscribed (conn, taskId, userId);
-      return SUCCESS;
-    }
-
-    public boolean isTopicSubscribed (Connection connection, Integer taskId, Integer userId) {
-      boolean topicSubscribed = false;
       // Check if user has subscribed topic.
-      try {
-        ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(connection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
-        for (int i = 0; i < subscriptionTags.size(); i++) {
-          if (subscriptionTags.get(i).getStatus().equals(topicId)) {
-            topicSubscribed = true;
-            break;
-          }
+      ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+      for (int i = 0; i < subscriptionTags.size(); i++) {
+        if (subscriptionTags.get(i).getStatus().equals(topicId) && subscriptionTags.get(i).getRank().equals(-1)) {
+          topicSubscribed = true;
+          break;
         }
       }
-      catch (Exception ignored) {
-      }
-      return topicSubscribed;
+      return SUCCESS;
     }
 
     public void setTopicId(Integer topicId)
@@ -342,12 +346,12 @@ public class ForumActions
       return canAddReply;
     }
 
-    public boolean isSubscribed() {
-      return subscribed;
+    public boolean isTopicSubscribed() {
+      return topicSubscribed;
     }
 
-    public void setSubscribed(boolean subscribed) {
-      this.subscribed = subscribed;
+    public void setTopicSubscribed(boolean topicSubscribed) {
+      this.topicSubscribed = topicSubscribed;
     }
   }
 
@@ -389,18 +393,39 @@ public class ForumActions
       tag.setType(TagType.FORUM_TOPIC.getValue());
       tag.insert(conn);
       addActionMessage(getText("forum.message.messageAdded"));
+      // Lets make forum subscription for the teachers, if this is the first topic and the first time subscription for the teacher.
+      if (Tag.selectByTaggedIdAndType(conn, taskId, TagType.FORUM_TOPIC.getValue()).size() == 1) {
+        ArrayList<UserTaskView> teachers = UserTaskView.selectByTaskIdAndClusterType(conn, taskId, ClusterType.TEACHERS.getValue());
+        for (int i = 0; i < teachers.size(); i++) {
+          if (Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, teachers.get(i).getUserId(), TagType.FORUM_SUBSCRIPTION.getValue()).isEmpty()) {
+            Tag subscription = new Tag();
+            subscription.setTaggedId(taskId);
+            subscription.setAuthorId(teachers.get(i).getUserId());
+            subscription.setType(TagType.FORUM_SUBSCRIPTION.getValue());
+            subscription.setRank(-1);
+            subscription.insert(conn);
+          }
+        }
+      }
+      // Lets make an automatic forum topic subscription for the author of the topic.
+      Tag topicSubscription = new Tag();
+      topicSubscription.setTaggedId(taskId);
+      topicSubscription.setStatus(tag.getId());
+      topicSubscription.setAuthorId(userId);
+      topicSubscription.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+      topicSubscription.setRank(-1);
+      topicSubscription.insert(conn);
+      // Create notification.
       createNotification(tag);
       return SUCCESS;
     }
 
     private void createNotification(Tag tag) {
-
       Connection masterConnection = getMasterConnection();
       Connection courseConnection = getCourseConnection();
 
       try {
-
-        ArrayList<Tag> forumSubscriptions = Tag.selectByTaggedIdAndType(courseConnection, getTaskId(), TagType.FORUM_SUBSCRIPTION.getValue());
+        ArrayList<Tag> forumSubscriptions = Tag.selectByTaggedIdAndRankAndType(courseConnection, getTaskId(), -1, TagType.FORUM_SUBSCRIPTION.getValue());
 
         // Get the teachers for the course
         HashSet<Integer> teacherIdSet = new HashSet<>();
@@ -417,7 +442,6 @@ public class ForumActions
         } else {
           valueMap.put("&user;", anonymousName);
         }
-
         // Forum topic
         JsonObject topicJson = new JsonParser().parse(tag.getText()).getAsJsonObject();
         valueMap.put("&forumTitle;", topicJson.get("title").toString());
@@ -429,7 +453,6 @@ public class ForumActions
                 + "&dbId=" + getDbId();
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
-
         for (int i = 0; i < forumSubscriptions.size(); i++) {
           Integer authorId = forumSubscriptions.get(i).getAuthorId();
           if (!authorId.equals(getCourseUserId())) {
@@ -441,8 +464,6 @@ public class ForumActions
             notification.createNotification(masterConnection, courseConnection);
           }
         }
-
-
       }
       catch (Exception ignored) {
       }
@@ -522,6 +543,26 @@ public class ForumActions
                 .getValue(), tag.getId(), null, userIP).insert(conn);
       }
       addActionMessage(getText("forum.message.messageAdded"));
+      // Check if user has subscribed topic before.
+      ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+      Tag subscription = null;
+      for (int i = 0; i < subscriptionTags.size(); i++) {
+        if (subscriptionTags.get(i).getStatus().equals(topicId)) {
+          subscription = subscriptionTags.get(i);
+          break;
+        }
+      }
+      // If user has not subscribed topic before, lets make automatic subscription.
+      if (subscription == null) {
+        subscription = new Tag();
+        subscription.setTaggedId(taskId);
+        subscription.setStatus(topicId);
+        subscription.setAuthorId(userId);
+        subscription.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+        subscription.setRank(-1);
+        subscription.insert(conn);
+      }
+      // Create notification.
       createNotifications(messageText);
       return SUCCESS;
     }
@@ -535,15 +576,6 @@ public class ForumActions
         Tag topic = Tag.select1ById(courseConnection, topicId);
         messages.add(topic);
         messages.addAll(Tag.selectByTaggedIdAndStatusAndType(courseConnection, getTaskId(), topicId, TagType.FORUM_MESSAGE.getValue()));
-
-        /*
-        HashSet<Integer> messageAuthors = new HashSet<>();
-        for(Tag message : messages) {
-          if(!message.getAuthorId().equals(getCourseUserId())) {
-            messageAuthors.add(message.getAuthorId());
-          }
-        }
-        */
 
         ArrayList<Tag> topicSubscriptions = Tag.selectByTaggedIdAndStatusAndType(courseConnection, getTaskId(), topicId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
 
@@ -576,20 +608,11 @@ public class ForumActions
                 + "&topicId=" + getTopicId();
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
-        /*
-        // Send to all participants
-        for(Integer authorId : messageAuthors) {
-          UserAccount user = UserAccount.select1ById(courseConnection, authorId);
-          UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
 
-          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
-          notification.setMessage(notificationMessage);
-          notification.createNotification(masterConnection, courseConnection);
-        }
-        */
         for (int i = 0; i < topicSubscriptions.size(); i++ ) {
           Integer authorId = topicSubscriptions.get(i).getAuthorId();
-          if (!authorId.equals(getCourseUserId())) {
+          Integer subscriptionRank =  topicSubscriptions.get(i).getRank();
+          if (!authorId.equals(getCourseUserId()) && subscriptionRank.equals(-1)) {
             UserAccount user = UserAccount.select1ById(courseConnection, authorId);
             UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
 
@@ -598,7 +621,8 @@ public class ForumActions
             notification.createNotification(masterConnection, courseConnection);
           }
         }
-      } catch (Exception ignored) {
+      }
+      catch (Exception ignored) {
       }
     }
 
@@ -738,7 +762,7 @@ public class ForumActions
   public static class SaveTopicSubscription extends WetoCourseAction {
 
     private Integer topicId;
-    private boolean subscription;
+    private boolean topicSubscription;
 
     public SaveTopicSubscription() {
       super(Tab.FORUM.getBit(), 0, 0, 0);
@@ -752,12 +776,12 @@ public class ForumActions
       this.topicId = topicId;
     }
 
-    public boolean isSubscription() {
-      return subscription;
+    public boolean isTopicSubscription() {
+      return topicSubscription;
     }
 
-    public void setSubscription(boolean subscription) {
-      this.subscription = subscription;
+    public void setTopicSubscription(boolean topicSubscription) {
+      this.topicSubscription = topicSubscription;
     }
 
     @Override
@@ -765,26 +789,35 @@ public class ForumActions
       Connection courseConnection = getCourseConnection();
       int userId = getCourseUserId();
       int taskId = getTaskId();
+      Tag tag = null;
 
-      Tag tag = new Tag();
-      if (subscription) {
-        //tag.setText();
-        tag.setTaggedId(taskId);
-        tag.setStatus(topicId);
-        tag.setAuthorId(userId);
-        tag.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
-        tag.setRank(-1);
-        tag.insert(courseConnection);
-        addActionMessage(getText("forum.message.topicSubscribed"));
-      } else {
-        ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(courseConnection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
-        for (int i = 0; i < subscriptionTags.size(); i++) {
-          if (subscriptionTags.get(i).getStatus().equals(topicId)) {
-            tag = subscriptionTags.get(i);
-            break;
-          }
+      ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(courseConnection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+      for (int i = 0; i < subscriptionTags.size(); i++) {
+        if (subscriptionTags.get(i).getStatus().equals(topicId)) {
+          tag = subscriptionTags.get(i);
+          break;
         }
-        tag.delete(courseConnection);
+      }
+      if (topicSubscription) {
+        if (tag != null) {
+          tag.setRank(-1);
+          tag.update(courseConnection);
+        }
+        // In case of first time subscription.
+        else {
+          tag = new Tag();
+          tag.setTaggedId(taskId);
+          tag.setStatus(topicId);
+          tag.setAuthorId(userId);
+          tag.setType(TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
+          tag.setRank(-1);
+          tag.insert(courseConnection);
+        }
+        addActionMessage(getText("forum.message.topicSubscribed"));
+      }
+      else {
+        tag.setRank(-2);
+        tag.update(courseConnection);
         addActionMessage(getText("forum.message.topicUnsubscribed"));
       }
       return SUCCESS;
@@ -809,20 +842,34 @@ public class ForumActions
       Connection courseConnection = getCourseConnection();
       int userId = getCourseUserId();
       int taskId = getTaskId();
+      Tag tag;
 
-      Tag tag = new Tag();
       if(forumSubscription) {
-        tag.setTaggedId(taskId);
-        tag.setAuthorId(userId);
-        tag.setType(TagType.FORUM_SUBSCRIPTION.getValue());
-        tag.setRank(-1);
-        tag.insert(courseConnection);
+        try {
+          tag = Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(courseConnection, taskId, -2, userId, TagType.FORUM_SUBSCRIPTION.getValue());
+          tag.setRank(-1);
+          tag.update(courseConnection);
+        }
+        // In case of first time subscription.
+        catch (NoSuchItemException e) {
+          tag = new Tag();
+          tag.setTaggedId(taskId);
+          tag.setAuthorId(userId);
+          tag.setType(TagType.FORUM_SUBSCRIPTION.getValue());
+          tag.setRank(-1);
+          tag.insert(courseConnection);
+        }
         addActionMessage(getText("forum.message.forumSubscribed"));
       }
       else {
-        tag = Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(courseConnection, taskId, -1, userId, TagType.FORUM_SUBSCRIPTION.getValue());
-        tag.delete(courseConnection);
-        addActionMessage(getText("forum.message.forumUnsubscribed"));
+        try {
+          tag = Tag.select1ByTaggedIdAndRankAndAuthorIdAndType(courseConnection, taskId, -1, userId, TagType.FORUM_SUBSCRIPTION.getValue());
+          tag.setRank(-2);
+          tag.update(courseConnection);
+          addActionMessage(getText("forum.message.forumUnsubscribed"));
+        }
+        catch (NoSuchItemException ignored) {
+        }
       }
       return SUCCESS;
     }
