@@ -1,29 +1,33 @@
-package fi.uta.cs.weto.util;
 
-import fi.uta.cs.weto.db.Notification;
-import fi.uta.cs.weto.db.Task;
-import fi.uta.cs.weto.db.UserAccount;
-import org.apache.log4j.Logger;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+        package fi.uta.cs.weto.util;
 
-import javax.mail.MessagingException;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+        import com.opensymphony.xwork2.ActionContext;
+        import fi.uta.cs.weto.db.*;
+        import fi.uta.cs.weto.model.WetoTimeStamp;
+        import org.apache.log4j.Logger;
+        import org.apache.velocity.Template;
+        import org.apache.velocity.VelocityContext;
+        import org.apache.velocity.app.VelocityEngine;
+        import org.apache.velocity.runtime.RuntimeConstants;
+        import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
-@WebListener()
+        import javax.mail.MessagingException;
+        import javax.servlet.ServletContextEvent;
+        import javax.servlet.ServletContextListener;
+        import javax.servlet.annotation.WebListener;
+        import java.io.*;
+        import java.sql.Connection;
+        import java.sql.SQLException;
+        import java.util.ArrayList;
+        import java.util.GregorianCalendar;
+        import java.util.HashMap;
+        import java.util.HashSet;
+        import java.util.concurrent.Executors;
+        import java.util.concurrent.ScheduledExecutorService;
+        import java.util.concurrent.TimeUnit;
+
+
+        @WebListener()
 public class NotificationManager implements ServletContextListener {
     private static final Logger logger = Logger.getLogger(NotificationManager.class);
 
@@ -40,11 +44,142 @@ public class NotificationManager implements ServletContextListener {
         int notificationEmailInterval = Integer.parseInt(
                 WetoUtilities.getPackageResource("notification.emailInterval.minutes"));
         scheduler.scheduleAtFixedRate(new NotificationEmailTask(), 1, notificationEmailInterval, TimeUnit.MINUTES);
+
+        scheduler.scheduleAtFixedRate(new DeadlineNotificationTask(), 1, notificationEmailInterval, TimeUnit.MINUTES);
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
         scheduler.shutdownNow();
+    }
+
+
+    private class DeadlineNotificationTask implements Runnable {
+
+        @Override
+        public void run() {
+
+            Connection masterCon = connectionManager.getConnection("master");
+            ArrayList<Permission> activeTasks = new ArrayList<>();
+
+            try {
+                activeTasks = Permission.selectActive(masterCon);
+                logger.debug("loaded " + activeTasks.size() + " active courses");
+            } catch (Exception e) {
+                logger.error(e);
+            }
+            //Lets find all currently active tasks and their databases
+            ArrayList<Integer> databases = new ArrayList<>();
+            for (Permission masterTask : activeTasks) {
+                try {
+
+                    int databaseID = CourseImplementation.select1ByMasterTaskId(masterCon,masterTask.getId()).getDatabaseId();
+
+                    //iterate a course database only once
+                    if (!databases.contains(databaseID)) {
+                        databases.add(databaseID);
+                        String databaseName = DatabasePool.select1ById(masterCon, databaseID).getName();
+                        Connection courseCon = connectionManager.getConnection(databaseName);
+                        ArrayList<Permission> allActiveCoursePermissions = new ArrayList<>();
+                        try {
+                            allActiveCoursePermissions = Permission.selectActive(courseCon);
+                        } catch (Exception e) {
+                            logger.debug(e + "  with connection   " + courseCon);
+                        }
+                        
+                         for (Permission permission : allActiveCoursePermissions) {
+
+                             if (permission.getEndDate() == null) {
+                                 }
+                             try {
+                                 WetoTimeStamp permissionStamp = new WetoTimeStamp(permission.getEndDate());
+                                 WetoTimeStamp deadlineStamp = new WetoTimeStamp(permission.getEndDate());
+                                 deadlineStamp.setHour(deadlineStamp.getHour() - 4);
+                                 WetoTimeStamp nowStamp = new WetoTimeStamp(new GregorianCalendar());
+                                 boolean isAfterTime = nowStamp.getTimeStamp() >= deadlineStamp.getTimeStamp();
+                                 boolean isBeforeDeadline = nowStamp.getTimeStamp() <= permissionStamp.getTimeStamp();
+                                 if (!(isAfterTime && isBeforeDeadline)) continue;
+                             } catch (Exception e) {
+                                 logger.debug("Something went wrong: " + e);
+                             }
+
+                             //Implement teacher notifications here
+                            //Check if permission is submission permission
+                            if (permission.getType() == 1) {
+                                HashSet<Integer> notSubmittedStudents = new HashSet<>();
+                                int assignmentTaskID = permission.getTaskId();
+
+                                Task permissionsTask = Task.select1ById(courseCon,assignmentTaskID);
+                                if (!permissionsTask.getHasSubmissions()) {
+                                    continue;
+                                }
+
+                                boolean isAllUsersPermission = permission.getUserRefId() == null;
+                                if (isAllUsersPermission) {
+                                    try {
+                                        Task temp = Task.select1ById(courseCon, permission.getTaskId());
+                                        ArrayList<ClusterMember> memberList = ClusterMember.selectByClusterId(courseCon, temp.getRootTaskId());
+
+                                        for (ClusterMember member : memberList) {
+                                            notSubmittedStudents.add(member.getUserId());
+                                        }
+                                    } catch (Exception e) {
+                                        logger.error(e);
+                                    }
+                                }
+
+
+                                //one tasks submissions
+                                ArrayList<Submission> taskSubmissions = Submission.selectByTaskId(courseCon, assignmentTaskID);
+                                for (Submission sub : taskSubmissions) {
+                                    int status = sub.getStatus();
+                                    //submission status 2 == accepted
+                                    if (status == 2 && isAllUsersPermission) {
+                                        try {
+                                            notSubmittedStudents.remove(sub.getUserId());
+                                        } catch (Exception e) {
+                                            logger.debug("There was no id to remove");
+                                        }
+                                    }
+                                    if (status != 2 && !isAllUsersPermission) {
+                                        notSubmittedStudents.add(sub.getUserId());
+                                    }
+                                }
+
+                                    for (int student : notSubmittedStudents) {
+                                        UserAccount user = UserAccount.select1ById(courseCon, student);
+                                        UserAccount masterUser = UserAccount.select1ByLoginName(masterCon, user.getLoginName());
+                                        int taskID = permission.getTaskId();
+
+                                        int courseID = permissionsTask.getRootTaskId();
+
+                                        StringBuilder link = new StringBuilder();
+                                        link.append("/weto5/viewSubmissions.action?taskId=").append(taskID).append("&tabId=4&dbId=").append(databaseID);
+
+                                        ///ActionContext.getContext().getName()
+                                        ////weto5/viewForumTopic.action?taskId=8&tabId=5&dbId=1&topicId=43
+                                        //get courses ID in the master database
+                                        int masterTaskID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon,databaseID,courseID).getMasterTaskId();
+                                        try {
+                                            Notification notification = new Notification(masterUser.getId(), masterTaskID, Notification.DEADLINE, link.toString());
+                                            notification.setMessage(permissionsTask.getName());
+                                            notification.createNotification(masterCon, courseCon);
+                                        } catch (Exception e) {
+                                            logger.error(e);
+                                        }
+
+
+                                    }
+                                }
+                            }
+                        connectionManager.freeConnection(courseCon);
+                    }
+                } catch (Exception e) {
+                    logger.error(e);
+                }
+            }
+                connectionManager.freeConnection(masterCon);
+        }
     }
 
     private class NotificationEmailTask implements Runnable {
@@ -71,8 +206,7 @@ public class NotificationManager implements ServletContextListener {
             }
 
             // Setup Velocity templates for the email
-            final String htmlTemplateName = "NotificationEmailTemplate.vm";
-            final String textTemplateName = "NotificationEmailTemplateText.vm";
+            final String templateName = "NotificationEmailTemplate.vm";
 
             VelocityEngine velocityEngine = new VelocityEngine();
             velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -82,12 +216,10 @@ public class NotificationManager implements ServletContextListener {
             velocityEngine.setProperty("runtime.log.logsystem.log4j.category", "velocity");
             velocityEngine.setProperty("runtime.log.logsystem.log4j.logger", "velocity");
 
-            Template htmlTemplate;
-            Template textTemplate;
+            Template template;
             try {
                 velocityEngine.init();
-                htmlTemplate = velocityEngine.getTemplate(htmlTemplateName, "UTF-8");
-                textTemplate = velocityEngine.getTemplate(textTemplateName, "UTF-8");
+                template = velocityEngine.getTemplate(templateName, "UTF-8");
             } catch (Exception e) {
                 logger.error("Failed to initialize velocity engine", e);
                 return;
@@ -116,10 +248,9 @@ public class NotificationManager implements ServletContextListener {
                     break;
                 }
 
-                try (StringWriter htmlStringWriter = new StringWriter();
-                    StringWriter textStringWriter = new StringWriter()) {
+                try (StringWriter stringWriter = new StringWriter()) {
                     String emailSubject = String.format("WETO: %s new notification(s)", notifications.size());
-                    String htmlMessage, textMessage;
+                    String emailMessage;
 
                     // Set up the context for velocity and evaluate the template
                     VelocityContext velocityContext = new VelocityContext();
@@ -128,15 +259,12 @@ public class NotificationManager implements ServletContextListener {
                     velocityContext.put("notifications", notifications);
                     velocityContext.put("notificationTypeMap", Notification.getTypeDisplayMap());
 
-                    htmlTemplate.merge(velocityContext, htmlStringWriter);
-                    htmlStringWriter.flush();
-                    htmlMessage = htmlStringWriter.toString();
+                    template.merge(velocityContext, stringWriter);
 
-                    textTemplate.merge(velocityContext, textStringWriter);
-                    textStringWriter.flush();
-                    textMessage = textStringWriter.toString();
+                    stringWriter.flush();
+                    emailMessage = stringWriter.toString();
 
-                    Email.sendHtmlEmail(userAccount.getEmail(), emailSubject, htmlMessage, textMessage);
+                    Email.sendMail(userAccount.getEmail(), emailSubject, emailMessage);
                 } catch (IOException e) {
                     logger.error("Failed to create a html from the email template", e);
                     break;
