@@ -456,7 +456,7 @@ public class ForumActions
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
         for (Tag subscription : forumSubscriptions) {
           Integer authorId = subscription.getAuthorId();
-          if (!authorId.equals(getCourseUserId())) {
+          if (authorId.equals(getCourseUserId())) {
             continue;
           }
           
