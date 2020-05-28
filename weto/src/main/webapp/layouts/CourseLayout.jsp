@@ -260,5 +260,6 @@
         });
       }
     </script>
+    <%@ include file="/pages/notifications/Toast.jsp"%>
   </body>
 </html>
