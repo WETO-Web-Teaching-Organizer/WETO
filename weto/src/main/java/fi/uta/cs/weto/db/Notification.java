@@ -14,10 +14,11 @@ import java.util.*;
 
 public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
+    public static final String FORUM_TOPIC= "forum_topic";
     public static final String MASS_NOTIFICATION = "mass_notification";
 
     // Create a list of the different types
-    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, MASS_NOTIFICATION));
+    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, FORUM_TOPIC, MASS_NOTIFICATION));
 
     private static final Logger logger = Logger.getLogger(Notification.class);
 

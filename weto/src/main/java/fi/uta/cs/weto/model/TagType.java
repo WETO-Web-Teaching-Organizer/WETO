@@ -15,7 +15,11 @@ public enum TagType
   REVIEW_INSTRUCTIONS(7, "tag.header.reviewInstructions", true),
   QUIZ_SCORE(8, "tag.header.quizScore", false),
   FORUM_MESSAGE(9, "tag.header.forumMessage", false),
-  GRADE_DISCUSSION(10, "tag.header.gradeDiscussion", false);
+  GRADE_DISCUSSION(10, "tag.header.gradeDiscussion", false),
+  // Forum subscription-tag type. Used when forum is subscribed for receiving notifications when a new topic is added.
+  FORUM_SUBSCRIPTION(11, "tag.header.forumSubscription", false),
+  // Forum topic subscription-tag type. Used when forum topic is subscribed for receiving notifications.
+  FORUM_TOPIC_SUBSCRIPTION(12, "tag.header.forumTopicSubscription", false);
 
   private final Integer value;
   private final String property;
