@@ -1,30 +1,34 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <tiles:insertAttribute name = "body"/>
-    <div class="showToast" role="alert" aria-live="assertive" aria-atomic="true"><tiles:insertAttribute name="showToast"/>
-        <div class="toast-header">
-            <img src="..." class="rounded mr-2" alt="...">
-            <strong class="mr-auto"><s:text name="notificationCenter.header.newNotifications" /></strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <button type="button" id="showToast" onClick="showToast();"><s:text name="notificationCenter.header.showToast"></s:text></button>
-        <div class="toast-body">
-            You have a new notification!
-        </div>
+
+<div id="notificationToast" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+    <div class="toast-body">
+        <span><s:text name="notificationCenter.header.newNotifications" /></span>
+        <a id="showToast" href="<s:url action="viewNotifications" />"><s:text name="notificationCenter.header.showToast" /></a>
+        <a href="#" onclick="hideToast();"><s:text name="notificationCenter.header.hideToast" /></a>
     </div>
-    <script>
-        var ajax_toast = function() {
-            $("#showToast").click(function(event) {
-                event.preventDefault();
-                window.open("NotificationCenter.jsp");
-            });
-        }
+</div>
+<script>
+    function ajax_toast() {
+        $.ajax('<s:url action="getJSONNotifications" />', {
+            method: "GET",
+            success: function(data) {
+                console.log(data);
+                if(data.newNotifications) {
+                    $("#notificationToast").fadeIn();
+                    setTimeout(hideToast, 1000 * 15);
+
+                    $("#notification-center-button .glyphicon").addClass('unreadNotifications');
+                }
+            }
+        });
+    }
+
+    function hideToast() {
+        $("#notificationToast").fadeOut();
+    }
+
+    $(document).ready(function() {
         var interval = 1000 * 60 * 5; // X is your minutes
         setInterval(ajax_toast, interval);
-    </script>
-</body>
+    });
+</script>

@@ -279,4 +279,28 @@ public class NotificationActions {
             return SUCCESS;
         }
     }
+
+    public static class GetJSONNotifications extends WetoMasterAction {
+        boolean newNotifications;
+
+        public boolean isNewNotifications() {
+            return newNotifications;
+        }
+
+        public void setNewNotifications(boolean newNotifications) {
+            this.newNotifications = newNotifications;
+        }
+
+        public GetJSONNotifications() {
+            super();
+        }
+
+        public String action() {
+            Connection masterConnection = getMasterConnection();
+
+            newNotifications = Notification.getCountOfUnreadNotificationsByUser(masterConnection, getMasterUserId()) > 0;
+
+            return SUCCESS;
+        }
+    }
 }

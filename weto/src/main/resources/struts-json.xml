@@ -177,5 +177,15 @@
         <param name="root">jsonString</param>
       </result>
     </action>
+
+    <action name="getJSONNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$GetJSONNotifications">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+      <result name="error" type="json">
+        <param name="ignoreHierarchy">false</param>
+        <param name="includeProperties">actionErrors\[\d+\], fieldErrors\..+$, actionMessages\[\d+\]</param>
+      </result>
+    </action>
   </package>
 </struts>

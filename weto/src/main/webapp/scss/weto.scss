@@ -606,3 +606,29 @@ table.notificationsTable {
     }
   }
 }
+
+#notificationToast {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+  z-index: 999;
+  background: #444E;
+  padding: 1em;
+  border-radius: 1em;
+  color: #fff;
+
+  .toast-body span {
+    font-size: 1.2em;
+    vertical-align: middle;
+  }
+
+  .toast-body a {
+    font-size: 1.5em;
+    margin-left: 0.75em;
+    vertical-align: middle;
+
+    &:link, &:visited {
+      color: #00b6da;
+    }
+  }
+}
