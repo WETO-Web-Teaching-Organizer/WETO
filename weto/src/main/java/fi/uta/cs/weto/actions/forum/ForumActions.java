@@ -396,15 +396,16 @@ public class ForumActions
       // Lets make forum subscription for the teachers, if this is the first topic and the first time subscription for the teacher.
       if (Tag.selectByTaggedIdAndType(conn, taskId, TagType.FORUM_TOPIC.getValue()).size() == 1) {
         ArrayList<UserTaskView> teachers = UserTaskView.selectByTaskIdAndClusterType(conn, taskId, ClusterType.TEACHERS.getValue());
-        for (int i = 0; i < teachers.size(); i++) {
-          if (Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, teachers.get(i).getUserId(), TagType.FORUM_SUBSCRIPTION.getValue()).isEmpty()) {
-            Tag subscription = new Tag();
-            subscription.setTaggedId(taskId);
-            subscription.setAuthorId(teachers.get(i).getUserId());
-            subscription.setType(TagType.FORUM_SUBSCRIPTION.getValue());
-            subscription.setRank(-1);
-            subscription.insert(conn);
+        for (UserTaskView teacher : teachers) {
+          if (!Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, teacher.getUserId(), TagType.FORUM_SUBSCRIPTION.getValue()).isEmpty()) {
+            continue;
           }
+          Tag subscription = new Tag();
+          subscription.setTaggedId(taskId);
+          subscription.setAuthorId(teacher.getUserId());
+          subscription.setType(TagType.FORUM_SUBSCRIPTION.getValue());
+          subscription.setRank(-1);
+          subscription.insert(conn);
         }
       }
       // Lets make an automatic forum topic subscription for the author of the topic.
@@ -453,16 +454,18 @@ public class ForumActions
                 + "&dbId=" + getDbId();
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
-        for (int i = 0; i < forumSubscriptions.size(); i++) {
-          Integer authorId = forumSubscriptions.get(i).getAuthorId();
+        for (Tag subscription : forumSubscriptions) {
+          Integer authorId = subscription.getAuthorId();
           if (!authorId.equals(getCourseUserId())) {
-            UserAccount user = UserAccount.select1ById(courseConnection, authorId);
-            UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
-
-            Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_POST, notificationLink);
-            notification.setMessage(notificationMessage);
-            notification.createNotification(masterConnection, courseConnection);
+            continue;
           }
+          
+          UserAccount user = UserAccount.select1ById(courseConnection, authorId);
+          UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
+
+          Notification notification = new Notification(masterUser.getId(), masterCourse.getMasterTaskId(), Notification.FORUM_TOPIC, notificationLink);
+          notification.setMessage(notificationMessage);
+          notification.createNotification(masterConnection, courseConnection);
         }
       }
       catch (Exception ignored) {
@@ -546,9 +549,9 @@ public class ForumActions
       // Check if user has subscribed topic before.
       ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(conn, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
       Tag subscription = null;
-      for (int i = 0; i < subscriptionTags.size(); i++) {
-        if (subscriptionTags.get(i).getStatus().equals(topicId)) {
-          subscription = subscriptionTags.get(i);
+      for (Tag subscriptionTag : subscriptionTags) {
+        if (subscriptionTag.getStatus().equals(topicId)) {
+          subscription = subscriptionTag;
           break;
         }
       }
@@ -609,9 +612,9 @@ public class ForumActions
 
         CourseImplementation masterCourse = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterConnection, getDbId(), getCourseTaskId());
 
-        for (int i = 0; i < topicSubscriptions.size(); i++ ) {
-          Integer authorId = topicSubscriptions.get(i).getAuthorId();
-          Integer subscriptionRank =  topicSubscriptions.get(i).getRank();
+        for (Tag topicSubscription : topicSubscriptions) {
+          Integer authorId = topicSubscription.getAuthorId();
+          Integer subscriptionRank =  topicSubscription.getRank();
           if (!authorId.equals(getCourseUserId()) && subscriptionRank.equals(-1)) {
             UserAccount user = UserAccount.select1ById(courseConnection, authorId);
             UserAccount masterUser = UserAccount.select1ByLoginName(masterConnection, user.getLoginName());
@@ -792,9 +795,9 @@ public class ForumActions
       Tag tag = null;
 
       ArrayList<Tag> subscriptionTags = Tag.selectByTaggedIdAndAuthorIdAndType(courseConnection, taskId, userId, TagType.FORUM_TOPIC_SUBSCRIPTION.getValue());
-      for (int i = 0; i < subscriptionTags.size(); i++) {
-        if (subscriptionTags.get(i).getStatus().equals(topicId)) {
-          tag = subscriptionTags.get(i);
+      for (Tag subscriptionTag : subscriptionTags) {
+        if (subscriptionTag.getStatus().equals(topicId)) {
+          tag = subscriptionTag;
           break;
         }
       }
