@@ -342,7 +342,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
         }
     }
 
-    public static ArrayList<Notification> getNotificationsByFiltersAndMarkAsRead(Connection connection, int userId, Integer courseId, String notificationType, Boolean dateDesc) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
+    public static ArrayList<Notification> getNotificationsByFilters(Connection connection, int userId, Integer courseId, String notificationType, boolean dateDesc, boolean markAsRead) throws SQLException, InvalidValueException, NoSuchItemException, CloneNotSupportedException {
         ArrayList<Notification> notifications = new ArrayList<>();
         String orderByDate;
 
@@ -378,7 +378,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
                 while(resultSet.next()) {
                     Notification notification = Notification.initFromResultSet(resultSet);
                     notifications.add(notification);
-                    if (!notification.readByUser) {
+                    if (markAsRead && !notification.readByUser) {
                         // Save as read to the db
                         notification.setReadByUser(true);
                         notification.update(connection);

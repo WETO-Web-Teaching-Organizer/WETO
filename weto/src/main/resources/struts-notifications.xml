@@ -49,5 +49,10 @@
             <result type="redirectAction" name="success">viewNotifications</result>
             <result type="redirectAction" name="error">viewNotifications</result>
         </action>
+
+        <action name="deleteAllNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$DeleteAllNotifications">
+            <result type="redirectAction" name="success">viewNotifications</result>
+            <result type="redirectAction" name="error">viewNotifications</result>
+        </action>
     </package>
 </struts>
