@@ -62,6 +62,9 @@ public class NotificationManager implements ServletContextListener {
                 return;
             }
             for (Notification notification : unsentNotifications) {
+                if(notification.isReadByUser())
+                    continue;
+
                 int userId = notification.getUserId();
 
                 if(notificationMap.get(userId) == null) {
