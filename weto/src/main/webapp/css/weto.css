@@ -4276,4 +4276,27 @@ table.notificationsTable tbody tr td span {
   font-weight: bold;
 }
 
+#notificationToast {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+  z-index: 999;
+  background: #444E;
+  padding: 1em;
+  border-radius: 1em;
+  color: #fff;
+}
+#notificationToast .toast-body span {
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+#notificationToast .toast-body a {
+  font-size: 1.5em;
+  margin-left: 0.75em;
+  vertical-align: middle;
+}
+#notificationToast .toast-body a:link, #notificationToast .toast-body a:visited {
+  color: #00b6da;
+}
+
 /*# sourceMappingURL=weto.css.map */

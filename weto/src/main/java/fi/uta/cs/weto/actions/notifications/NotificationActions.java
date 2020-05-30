@@ -5,6 +5,7 @@ import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.*;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -281,6 +282,30 @@ public class NotificationActions {
             } catch (Exception e) {
                 throw new WetoActionException("Failed to retrieve or delete notification");
             }
+
+            return SUCCESS;
+        }
+    }
+
+    public static class GetJSONNotifications extends WetoMasterAction {
+        boolean newNotifications;
+
+        public boolean isNewNotifications() {
+            return newNotifications;
+        }
+
+        public void setNewNotifications(boolean newNotifications) {
+            this.newNotifications = newNotifications;
+        }
+
+        public GetJSONNotifications() {
+            super();
+        }
+
+        public String action() {
+            Connection masterConnection = getMasterConnection();
+
+            newNotifications = Notification.getCountOfUnreadNotificationsByUser(masterConnection, getMasterUserId()) > 0;
 
             return SUCCESS;
         }

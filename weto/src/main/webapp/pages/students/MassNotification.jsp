@@ -7,6 +7,7 @@
     <input type="hidden" name="dbId" value="${dbId}" />
 
     <s:if test="!students.isEmpty()">
+        <h2><s:text name="massNotification.header.sendMassNotifications" /></h2>
         <div class="table-responsive">
             <table class="tablesorter table" id="studentTable">
                 <thead>
@@ -50,9 +51,10 @@
         <button type="button" id="selectAll"><s:text name="massNotification.button.selectAll"></s:text></button>
         <button type="button" id="deselectAll"><s:text name="massNotification.button.deselectAll"></s:text></button>
         <br><br>
-        <label for="notificationMessage"><s:text name="massNotification.label.message"/></label
+        <label for="notificationMessage"><s:text name="massNotification.label.message"/></label>
         <input type="text" id="notificationMessage" class="form-control" name="notificationMessage">
-        <input type="submit" class="linkButton" value="<s:text name="massNotification.header.sendNotification"/>"/>
+        <input type="submit" class="linkButton" value="<s:text name="massNotification.header.sendNotification"/>"
+               style="margin: 0.5em 0 0 0;" />
     </div>
     <script>
         $(document).ready(function() {
