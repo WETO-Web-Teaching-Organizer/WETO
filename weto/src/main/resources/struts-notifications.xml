@@ -37,7 +37,6 @@
                 <param name="taskId">${taskId}</param>
                 <param name="tabId">${tabId}</param>
                 <param name="dbId">${dbId}</param>
-                <param name="saveFailed">true</param>
             </result>
         </action>
 
@@ -48,7 +47,7 @@
 
         <action name="deleteNotification" class="fi.uta.cs.weto.actions.notifications.NotificationActions$DeleteNotification">
             <result type="redirectAction" name="success">viewNotifications</result>
-            <result type="tiles" name="error">generalError.page</result>
+            <result type="redirectAction" name="error">viewNotifications</result>
         </action>
     </package>
 </struts>

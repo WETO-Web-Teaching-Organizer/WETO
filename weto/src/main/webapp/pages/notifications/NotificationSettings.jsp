@@ -5,13 +5,6 @@
         <input type="hidden" name="tabId" value="${tabId}" />
         <input type="hidden" name="dbId" value="${dbId}" />
 
-        <s:if test="%{saveFailed}">
-            <div class="alert alert-danger" role="alert">
-                <span class="glyphicon glyphicon-alert"></span>
-                <s:text name="notificationSettings.header.saveFailed" />
-            </div>
-        </s:if>
-
         <div class="content-col">
             <h2><s:text name="notificationSettings.header.notificationSettings" /></h2>
             <div class="container-fluid" style="padding: 0;">

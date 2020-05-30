@@ -6,15 +6,17 @@ import fi.uta.cs.weto.model.Tab;
 import fi.uta.cs.weto.model.WetoActionException;
 import fi.uta.cs.weto.model.WetoCourseAction;
 import fi.uta.cs.weto.model.WetoMasterAction;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NotificationActions {
+    private static final Logger logger = Logger.getLogger(NotificationActions.class);
+
     public static class ViewNotificationSettings extends WetoCourseAction {
         private boolean saveFailed;
         private List<NotificationSetting> settings;
@@ -50,6 +52,7 @@ public class NotificationActions {
             try {
                 settings = NotificationSetting.createSettings(courseConnection, userId, courseId);
             } catch (Exception e) {
+                logger.error("Error while trying to view notification settings", e);
                 throw new WetoActionException("Failed to retrieve notification settings");
             }
 
@@ -79,7 +82,7 @@ public class NotificationActions {
             int courseId = getCourseTaskId();
 
             try {
-                List<NotificationSetting> currentSettings = NotificationSetting.selectByUserAndCourse(courseConnection, userId, courseId);
+                List<NotificationSetting> currentSettings = NotificationSetting.createSettings(courseConnection, userId, courseId);
                 for(NotificationSetting setting : currentSettings) {
 
                     try {
@@ -104,6 +107,7 @@ public class NotificationActions {
                     setting.update(courseConnection);
                 }
             } catch (Exception e) {
+                logger.error("Error while saving notification settings", e);
                 throw new WetoActionException("Failed to save settings");
             }
 
@@ -194,18 +198,17 @@ public class NotificationActions {
             Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
 
-            ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+            ArrayList<CourseView> courseViews = CourseView.selectAll(masterConnection);
             courseIdsNames.put(-1, ALLCOURSESOPTION);
-            for (int i = 0; i < courseView.size(); i++) {
-               try {
-                   CourseView course = courseView.get(i);
-                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, course.getMasterTaskId(), userId);
-                   courseIdsNames.put(course.getMasterTaskId(), course.getName());
-                   courseMap.put(course.getMasterTaskId(), course);
+            for (CourseView courseView : courseViews) {
+                try {
+                    UserTaskView.select1ByTaskIdAndUserId(masterConnection, courseView.getMasterTaskId(), userId);
+                    courseIdsNames.put(courseView.getMasterTaskId(), courseView.getName());
+                    courseMap.put(courseView.getMasterTaskId(), courseView);
                 }
                 // User is not member of the course.
-               catch (NoSuchItemException e) {
-               }
+                catch (NoSuchItemException ignored) {
+                }
             }
 
             notificationTypes.put(-1, ALLTYPESOPTION);
@@ -228,6 +231,7 @@ public class NotificationActions {
                 return SUCCESS;
             }
             catch (Exception e) {
+                logger.error("Error while trying to view notification center", e);
                 throw new WetoActionException("Failed to retrieve notifications");
             }
 
