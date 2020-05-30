@@ -3,6 +3,7 @@ package fi.uta.cs.weto.db;
 import fi.uta.cs.sqldatamodel.InvalidValueException;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.sqldatamodel.SqlAssignableObject;
+import fi.uta.cs.weto.model.ClusterType;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -274,6 +275,19 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         ArrayList<NotificationSetting> existingSettings = selectByUserAndCourse(connection, userId, courseId);
 
         for(String notificationType : Notification.notificationTypes) {
+
+            boolean isStudent = UserTaskView.selectByUserIdAndClusterType(connection, userId, ClusterType.TEACHERS.getValue()).isEmpty();
+
+            if(notificationType.equals(Notification.PERMISSION_EXPIRATION) && isStudent) {
+                continue;
+
+            }
+            if (notificationType.equals(Notification.SUBMISSION_DEADLINE) && !isStudent) {
+                continue;
+
+            }
+
+
             // Check existing settings
             boolean alreadyExists = false;
             for(NotificationSetting setting : existingSettings) {

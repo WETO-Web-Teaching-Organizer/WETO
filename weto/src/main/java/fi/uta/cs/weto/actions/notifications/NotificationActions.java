@@ -2,10 +2,7 @@ package fi.uta.cs.weto.actions.notifications;
 
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.weto.db.*;
-import fi.uta.cs.weto.model.Tab;
-import fi.uta.cs.weto.model.WetoActionException;
-import fi.uta.cs.weto.model.WetoCourseAction;
-import fi.uta.cs.weto.model.WetoMasterAction;
+import fi.uta.cs.weto.model.*;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -208,7 +205,16 @@ public class NotificationActions {
             }
 
             notificationTypes.put(-1, ALLTYPESOPTION);
+            boolean isStudent = UserTaskView.selectByUserIdAndClusterType(masterConnection, userId, ClusterType.TEACHERS.getValue()).isEmpty();
             for  (int i = 0; i < Notification.notificationTypes.size(); i++) {
+                if(Notification.notificationTypes.get(i).equals(Notification.PERMISSION_EXPIRATION) && isStudent) {
+                    continue;
+
+                }
+                if (Notification.notificationTypes.get(i).equals(Notification.SUBMISSION_DEADLINE) && !isStudent) {
+                    continue;
+
+                }
                 notificationTypes.put(i, Notification.notificationTypes.get(i));
             }
 
