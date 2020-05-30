@@ -8,16 +8,26 @@
     </div>
 </div>
 <script>
+    var toastShown = false;
+    var toastIntervalSet = false;
+    var toastAjaxInterval = 1000 * 60 * 3;
+    var toastInitialDelay = 1000 * 30;
+
     function ajax_toast() {
+        if(!toastIntervalSet) {
+            setInterval(ajax_toast, toastAjaxInterval);
+            toastIntervalSet = true;
+        }
+
         $.ajax('<s:url action="getJSONNotifications" />', {
             method: "GET",
             success: function(data) {
-                console.log(data);
-                if(data.newNotifications) {
+                if(data.newNotifications && !toastShown) {
                     $("#notificationToast").fadeIn();
-                    setTimeout(hideToast, 1000 * 15);
-
                     $("#notification-center-button .glyphicon").addClass('unreadNotifications');
+                    toastShown = true;
+                } else if(!data.newNotifications) {
+                    toastShown = false;
                 }
             }
         });
@@ -28,7 +38,6 @@
     }
 
     $(document).ready(function() {
-        var interval = 1000 * 60 * 5; // X is your minutes
-        setInterval(ajax_toast, interval);
+        setTimeout(ajax_toast, toastInitialDelay);
     });
 </script>
