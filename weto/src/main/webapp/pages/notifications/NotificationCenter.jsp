@@ -79,6 +79,9 @@
             </s:iterator>
             </tbody>
         </table>
+        <form action="<s:url action="deleteAllNotifications" />" method="post">
+            <input type="submit" value="<s:text name="notificationCenter.form.deleteAllNotifications" />" class="linkButton" />
+        </form>
     </s:if>
     <s:else>
         <p><s:text name="notificationCenter.header.notificationsIsEmpty" /></p>

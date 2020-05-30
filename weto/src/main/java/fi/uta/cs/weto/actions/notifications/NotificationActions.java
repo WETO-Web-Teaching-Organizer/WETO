@@ -3,15 +3,17 @@ package fi.uta.cs.weto.actions.notifications;
 import fi.uta.cs.sqldatamodel.NoSuchItemException;
 import fi.uta.cs.weto.db.*;
 import fi.uta.cs.weto.model.*;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NotificationActions {
+    private static final Logger logger = Logger.getLogger(NotificationActions.class);
+
     public static class ViewNotificationSettings extends WetoCourseAction {
         private boolean saveFailed;
         private List<NotificationSetting> settings;
@@ -47,6 +49,7 @@ public class NotificationActions {
             try {
                 settings = NotificationSetting.createSettings(courseConnection, userId, courseId);
             } catch (Exception e) {
+                logger.error("Error while trying to view notification settings", e);
                 throw new WetoActionException("Failed to retrieve notification settings");
             }
 
@@ -76,7 +79,7 @@ public class NotificationActions {
             int courseId = getCourseTaskId();
 
             try {
-                List<NotificationSetting> currentSettings = NotificationSetting.selectByUserAndCourse(courseConnection, userId, courseId);
+                List<NotificationSetting> currentSettings = NotificationSetting.createSettings(courseConnection, userId, courseId);
                 for(NotificationSetting setting : currentSettings) {
 
                     try {
@@ -101,6 +104,7 @@ public class NotificationActions {
                     setting.update(courseConnection);
                 }
             } catch (Exception e) {
+                logger.error("Error while saving notification settings", e);
                 throw new WetoActionException("Failed to save settings");
             }
 
@@ -191,18 +195,17 @@ public class NotificationActions {
             Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
 
-            ArrayList<CourseView> courseView = CourseView.selectAll(masterConnection);
+            ArrayList<CourseView> courseViews = CourseView.selectAll(masterConnection);
             courseIdsNames.put(-1, ALLCOURSESOPTION);
-            for (int i = 0; i < courseView.size(); i++) {
-               try {
-                   CourseView course = courseView.get(i);
-                   UserTaskView.select1ByTaskIdAndUserId(masterConnection, course.getMasterTaskId(), userId);
-                   courseIdsNames.put(course.getMasterTaskId(), course.getName());
-                   courseMap.put(course.getMasterTaskId(), course);
+            for (CourseView courseView : courseViews) {
+                try {
+                    UserTaskView.select1ByTaskIdAndUserId(masterConnection, courseView.getMasterTaskId(), userId);
+                    courseIdsNames.put(courseView.getMasterTaskId(), courseView.getName());
+                    courseMap.put(courseView.getMasterTaskId(), courseView);
                 }
                 // User is not member of the course.
-               catch (NoSuchItemException e) {
-               }
+                catch (NoSuchItemException ignored) {
+                }
             }
 
             notificationTypes.put(-1, ALLTYPESOPTION);
@@ -227,13 +230,14 @@ public class NotificationActions {
             }
 
             try {
-                notifications = Notification.getNotificationsByFiltersAndMarkAsRead(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc);
+                notifications = Notification.getNotificationsByFilters(masterConnection, userId, courseId, notificationTypes.get(type), dateDesc, true);
             }
             //User haven't received any notifications.
             catch (NoSuchItemException e) {
                 return SUCCESS;
             }
             catch (Exception e) {
+                logger.error("Error while trying to view notification center", e);
                 throw new WetoActionException("Failed to retrieve notifications");
             }
 
@@ -262,25 +266,54 @@ public class NotificationActions {
             Connection masterConnection = getMasterConnection();
             int userId = getMasterUserId();
 
-            if(notificationId == -1) {
-                throw new WetoActionException("Notification id is missing");
-            }
-
             try {
+                if(notificationId == -1) {
+                    throw new Exception("Notification id is missing");
+                }
+
                 Notification notification = new Notification();
                 notification.setId(notificationId);
                 notification.select(masterConnection);
 
                 if(userId != notification.getUserId()) {
-                    throw new WetoActionException("Denied: Notification user id doesn't match the current user");
+                    throw new Exception("Denied: Notification user id doesn't match the current user");
                 }
 
                 notification.delete(masterConnection);
-            } catch (WetoActionException e) {
-                throw e;
             } catch (NoSuchItemException ignored) {
             } catch (Exception e) {
+                logger.error("Error while trying to delete notification", e);
                 throw new WetoActionException("Failed to retrieve or delete notification");
+            }
+
+            return SUCCESS;
+        }
+    }
+
+    public static class DeleteAllNotifications extends WetoMasterAction {
+        public DeleteAllNotifications() {
+            super();
+        }
+
+        @Override
+        public String action() throws WetoActionException {
+            Connection masterConnection = getMasterConnection();
+            int userId = getMasterUserId();
+
+            try {
+                ArrayList<Notification> notifications = Notification.getNotificationsByFilters(masterConnection, userId, null, null, false, false);
+
+                for(Notification notification : notifications) {
+                    try {
+                        notification.delete(masterConnection);
+                    } catch (NoSuchItemException ignored) {
+                    }
+                }
+            } catch (NoSuchItemException e) {
+                throw new WetoActionException("No notifications to delete");
+            } catch (Exception e) {
+                logger.error("Error while trying to delete all notifications", e);
+                throw new WetoActionException("Failed to delete notifications");
             }
 
             return SUCCESS;
