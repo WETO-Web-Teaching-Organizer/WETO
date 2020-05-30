@@ -104,10 +104,10 @@ public class NotificationManager implements ServletContextListener {
                             try {
 
                                 int timeSpanLocation = Integer.parseInt(
-                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckTime.hours"));
+                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckTime.minutes"));
 
                                 int timeSpanWidth = Integer.parseInt(
-                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.hours"));
+                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
 
                                 WetoTimeStamp timeSpanStart = new WetoTimeStamp(permission.getEndDate());
                                 WetoTimeStamp timeSpanEnd = new WetoTimeStamp(permission.getEndDate());
@@ -115,10 +115,14 @@ public class NotificationManager implements ServletContextListener {
 
                                 timeSpanStart.setHour(timeSpanStart.getHour() - timeSpanLocation); //This should be the windows start point of checking eg. 24h behind
                                 timeSpanEnd.setHour(timeSpanStart.getHour() + timeSpanWidth);
-                                 //Testing the time window of deadli
+
+                                /*
+                                Testing the time window of deadline
                                 Date leftSide = timeSpanStart.toCalendar().getTime();
                                 Date rightSide = timeSpanEnd.toCalendar().getTime();
                                 Date middle = timeNow.toCalendar().getTime();
+
+                                 */
 
 
 
