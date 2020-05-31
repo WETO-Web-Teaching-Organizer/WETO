@@ -56,7 +56,6 @@ public class NotificationManager implements ServletContextListener {
 
         @Override
         public void run() {
-
             ArrayList<Integer> triggeringPermissions = new ArrayList<>();
             triggeringPermissions.add(PermissionType.SUBMISSION.getValue());
             triggeringPermissions.add(PermissionType.GRADING.getValue());
@@ -75,7 +74,6 @@ public class NotificationManager implements ServletContextListener {
             ArrayList<Integer> iteratedDatabases = new ArrayList<>();
             for (Permission masterTask : activeTasks) {
                 try {
-
                     int databaseID = CourseImplementation.select1ByMasterTaskId(masterCon,masterTask.getTaskId()).getDatabaseId();
 
                     //iterate a course database only once
@@ -102,7 +100,6 @@ public class NotificationManager implements ServletContextListener {
 
                                 int timeSpanLocation = Integer.parseInt(
                                         WetoUtilities.getPackageResource("notification.permissionExpirationCheckTime.minutes"));
-
                                 int timeSpanWidth = Integer.parseInt(
                                         WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
 
@@ -141,7 +138,6 @@ public class NotificationManager implements ServletContextListener {
                                             + "/viewPermissions.action?taskId=" + taskId
                                             + "&tabId=" + Tab.PERMISSIONS.getValue()
                                             + "&dbId=" + databaseID;
-
 
                                     for (UserTaskView teacher : UserTaskView.selectByTaskIdAndClusterType(courseCon, rootTaskId, ClusterType.TEACHERS.getValue())) {
                                         UserAccount courseAccount = UserAccount.select1ById(courseCon,teacher.getUserId());
@@ -229,10 +225,27 @@ public class NotificationManager implements ServletContextListener {
                                 }
                             }
                         }
+
+                        try {
+                            courseCon.commit();
+                        } catch (Exception e) {
+                            try {
+                                courseCon.rollback();
+                            } catch (SQLException ignored) {
+                            }
+                        }
                         connectionManager.freeConnection(courseCon);
                     }
                 } catch (Exception e) {
                     logger.error(e);
+                }
+            }
+            try {
+                masterCon.commit();
+            } catch (Exception e) {
+                try {
+                    masterCon.rollback();
+                } catch (SQLException ignored) {
                 }
             }
             connectionManager.freeConnection(masterCon);
