@@ -38,7 +38,7 @@ public class NotificationManager implements ServletContextListener {
         int notificationEmailInterval = Integer.parseInt(
                 WetoUtilities.getPackageResource("notification.emailInterval.minutes"));
         int permissionExpirationCheckInterval = Integer.parseInt(
-                WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.hours"));
+                WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
         scheduler.scheduleAtFixedRate(new NotificationEmailTask(), 1, notificationEmailInterval, TimeUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(new DeadlineNotificationTask(), 1, permissionExpirationCheckInterval, TimeUnit.MINUTES);
@@ -110,8 +110,8 @@ public class NotificationManager implements ServletContextListener {
                                 WetoTimeStamp timeSpanEnd = new WetoTimeStamp(permission.getEndDate());
                                 WetoTimeStamp timeNow = new WetoTimeStamp(new GregorianCalendar());
 
-                                timeSpanStart.setHour(timeSpanStart.getHour() - timeSpanLocation); //This should be the windows start point of checking eg. 24h behind
-                                timeSpanEnd.setHour(timeSpanStart.getHour() + timeSpanWidth);
+                                timeSpanStart.setMinute(timeSpanStart.getMinute() - timeSpanLocation); //This should be the windows start point of checking eg. 24h behind
+                                timeSpanEnd.setMinute(timeSpanStart.getMinute() + timeSpanWidth);
 
                                 boolean isAfterStart = timeNow.getTimeStamp() >= timeSpanStart.getTimeStamp();
                                 boolean isBeforeEnd = timeNow.getTimeStamp() <= timeSpanEnd.getTimeStamp();
@@ -157,7 +157,7 @@ public class NotificationManager implements ServletContextListener {
                             }
 
                             // Check if permission is submission permission
-                            if (permission.getType() == PermissionType.SUBMISSION.value) {
+                            if (permission.getType() == PermissionType.SUBMISSION.getValue()) {
 
                                 //Store students which haven't completed the assignment to a set
                                 HashSet<Integer> notCompletedSubmissionStudents = new HashSet<>();
@@ -188,7 +188,6 @@ public class NotificationManager implements ServletContextListener {
                                 //Remove users with completed submissions
                                 for (Submission sub : taskSubmissions) {
                                     int status = sub.getStatus();
-
 
                                     //submission status 2 == accepted
                                     if (SubmissionStatus.getStatus(status).equals(SubmissionStatus.ACCEPTED) && isAllUsersPermission) {
