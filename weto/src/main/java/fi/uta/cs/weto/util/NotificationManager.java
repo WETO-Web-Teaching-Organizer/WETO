@@ -205,11 +205,8 @@ public class NotificationManager implements ServletContextListener {
                                 }
 
                                 for (int student : notCompletedSubmissionStudents) {
-
-
                                     UserAccount courseAccount2 = UserAccount.select1ById(courseCon,student);
                                     UserAccount masterAccount2 = UserAccount.select1ByLoginName(masterCon,courseAccount2.getLoginName());
-
 
                                     int masterCourseID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon, databaseID, assignment.getRootTaskId()).getMasterTaskId();
                                     HashMap<String, String> valueMap = new HashMap<>();
