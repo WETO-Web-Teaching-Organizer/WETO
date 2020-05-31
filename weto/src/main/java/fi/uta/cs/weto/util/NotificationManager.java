@@ -97,10 +97,8 @@ public class NotificationManager implements ServletContextListener {
                                 continue;
                             }
 
-
                              //Check if the permission expiration is going to happen in notification.permissionExpirationCheckTime.hours
                              //Timespans width should be the same as the interval for checking incoming deadlines to avoid double or missing notifications.
-
                             try {
 
                                 int timeSpanLocation = Integer.parseInt(
