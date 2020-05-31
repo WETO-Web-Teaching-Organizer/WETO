@@ -312,7 +312,7 @@ public class NotificationManager implements ServletContextListener {
                 }
 
                 try (StringWriter htmlStringWriter = new StringWriter();
-                     StringWriter textStringWriter = new StringWriter()) {
+                    StringWriter textStringWriter = new StringWriter()) {
                     String emailSubject = String.format("WETO: %s new notification(s)", notifications.size());
                     String htmlMessage, textMessage;
 
