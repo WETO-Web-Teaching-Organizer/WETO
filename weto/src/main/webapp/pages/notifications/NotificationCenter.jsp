@@ -16,7 +16,7 @@
             <label for="type"><s:text name="notificationCenter.header.type" /></label>
             <select id="type" name="type" class="form-control">
                 <s:iterator value="%{notificationTypes}" var="notificationType">
-                    <option value="${key}" <s:if test="%{key == type}">selected="selected"</s:if>><s:text name="notificationCenter.header.%{#notificationType.value}" /></option>
+                    <option value="${key}" <s:if test="%{key == type}">selected="selected"</s:if>><s:text name="notification.%{#notificationType.value}" /></option>
                 </s:iterator>
             </select>
         </div>
@@ -56,7 +56,7 @@
                         </s:url>
                         <a href="${courseUrl}"><s:text name="%{courseIdsNames.get(#notification.courseId)}" /></a>
                     </td>
-                    <td><s:text name="notificationCenter.header.%{#notification.type}" /></td>
+                    <td><s:text name="notification.%{#notification.type}" /></td>
                     <td>${notification.message}</td>
                     <td>
                         <s:if test="%{#notification.link != null && #notification.link.length() > 0}" >

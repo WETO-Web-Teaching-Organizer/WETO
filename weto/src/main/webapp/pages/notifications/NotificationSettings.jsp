@@ -21,7 +21,7 @@
                         <s:iterator value="%{settings}" var="setting">
                             <tr>
                                 <td>
-                                    <s:text name="notificationSettings.header.%{#setting.type}" />
+                                    <s:text name="notification.%{#setting.type}" />
                                 </td>
                                 <td>
                                     <input type="checkbox"
