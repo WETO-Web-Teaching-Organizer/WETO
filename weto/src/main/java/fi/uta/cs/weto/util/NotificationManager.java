@@ -116,17 +116,6 @@ public class NotificationManager implements ServletContextListener {
                                 timeSpanStart.setHour(timeSpanStart.getHour() - timeSpanLocation); //This should be the windows start point of checking eg. 24h behind
                                 timeSpanEnd.setHour(timeSpanStart.getHour() + timeSpanWidth);
 
-                                /*
-                                Testing the time window of deadline
-                                Date leftSide = timeSpanStart.toCalendar().getTime();
-                                Date rightSide = timeSpanEnd.toCalendar().getTime();
-                                Date middle = timeNow.toCalendar().getTime();
-
-                                 */
-
-
-
-
                                 boolean isAfterStart = timeNow.getTimeStamp() >= timeSpanStart.getTimeStamp();
                                 boolean isBeforeEnd = timeNow.getTimeStamp() <= timeSpanEnd.getTimeStamp();
                                 if (!(isAfterStart && isBeforeEnd)) continue;
