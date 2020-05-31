@@ -157,7 +157,7 @@ public class NotificationManager implements ServletContextListener {
                             }
 
                             // Check if permission is submission permission
-                            if (permission.getType() == 1) {
+                            if (permission.getType() == PermissionType.SUBMISSION.value) {
 
                                 //Store students which haven't completed the assignment to a set
                                 HashSet<Integer> notCompletedSubmissionStudents = new HashSet<>();
