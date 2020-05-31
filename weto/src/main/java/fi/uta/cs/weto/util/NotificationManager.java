@@ -157,7 +157,7 @@ public class NotificationManager implements ServletContextListener {
                             }
 
                             // Check if permission is submission permission
-                            if (permission.getType() == PermissionType.SUBMISSION.getValue()) {
+                            if (permission.getType().equals(PermissionType.SUBMISSION.getValue())) {
 
                                 //Store students which haven't completed the assignment to a set
                                 HashSet<Integer> notCompletedSubmissionStudents = new HashSet<>();
@@ -190,7 +190,10 @@ public class NotificationManager implements ServletContextListener {
                                     int status = sub.getStatus();
 
                                     //submission status 2 == accepted
-                                    if (SubmissionStatus.getStatus(status).equals(SubmissionStatus.ACCEPTED) && isAllUsersPermission) {
+                                    SubmissionStatus submissionStatus = SubmissionStatus.getStatus(status);
+                                    if (submissionStatus != null
+                                            && submissionStatus.equals(SubmissionStatus.ACCEPTED)
+                                            && isAllUsersPermission) {
                                         try {
                                             notCompletedSubmissionStudents.remove(sub.getUserId());
                                         } catch (Exception e) {
