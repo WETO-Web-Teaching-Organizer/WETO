@@ -118,7 +118,7 @@ public class NotificationManager implements ServletContextListener {
                                 boolean isBeforeEnd = timeNow.getTimeStamp() <= timeSpanEnd.getTimeStamp();
                                 if (!(isAfterStart && isBeforeEnd)) continue;
                             } catch (Exception e) {
-                                logger.debug("Something went wrong: " + e);
+                                logger.error("Something went wrong while checking permission timespans", e);
                             }
 
                             //Implement teacher notifications here
