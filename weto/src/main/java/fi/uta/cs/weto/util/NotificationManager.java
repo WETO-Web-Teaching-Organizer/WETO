@@ -70,7 +70,7 @@ public class NotificationManager implements ServletContextListener {
                 activeTasks = Permission.selectActive(masterCon);
                 logger.debug("loaded " + activeTasks.size() + " active courses");
             } catch (Exception e) {
-                logger.error(e);
+                logger.error("Failed to load active courses", e);
             }
 
             ArrayList<Integer> iteratedDatabases = new ArrayList<>();
