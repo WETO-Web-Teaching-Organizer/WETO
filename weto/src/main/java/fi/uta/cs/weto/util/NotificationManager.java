@@ -1,8 +1,7 @@
 package fi.uta.cs.weto.util;
 
-import fi.uta.cs.weto.db.Notification;
-import fi.uta.cs.weto.db.Task;
-import fi.uta.cs.weto.db.UserAccount;
+import fi.uta.cs.weto.db.*;
+import fi.uta.cs.weto.model.*;
 import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -17,8 +16,7 @@ import javax.servlet.annotation.WebListener;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,13 +37,206 @@ public class NotificationManager implements ServletContextListener {
 
         int notificationEmailInterval = Integer.parseInt(
                 WetoUtilities.getPackageResource("notification.emailInterval.minutes"));
+        int permissionExpirationCheckInterval = Integer.parseInt(
+                WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
         scheduler.scheduleAtFixedRate(new NotificationEmailTask(), 1, notificationEmailInterval, TimeUnit.MINUTES);
+
+        scheduler.scheduleAtFixedRate(new DeadlineNotificationTask(), 1, permissionExpirationCheckInterval, TimeUnit.MINUTES);
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
         scheduler.shutdownNow();
     }
+
+
+
+
+    private class DeadlineNotificationTask implements Runnable {
+
+        @Override
+        public void run() {
+
+            ArrayList<Integer> triggeringPermissions = new ArrayList<>();
+            triggeringPermissions.add(PermissionType.SUBMISSION.getValue());
+            triggeringPermissions.add(PermissionType.GRADING.getValue());
+            triggeringPermissions.add(PermissionType.RESULTS.getValue());
+            triggeringPermissions.add(PermissionType.GRADE_CHALLENGE.getValue());
+
+            Connection masterCon = connectionManager.getConnection("master");
+            ArrayList<Permission> activeTasks = new ArrayList<>();
+
+            try {
+                activeTasks = Permission.selectActive(masterCon);
+            } catch (Exception e) {
+                logger.error("Failed to load active courses", e);
+            }
+
+            ArrayList<Integer> iteratedDatabases = new ArrayList<>();
+            for (Permission masterTask : activeTasks) {
+                try {
+
+                    int databaseID = CourseImplementation.select1ByMasterTaskId(masterCon,masterTask.getTaskId()).getDatabaseId();
+
+                    //iterate a course database only once
+                    if (!iteratedDatabases.contains(databaseID)) {
+                        iteratedDatabases.add(databaseID);
+                        String databaseName = DatabasePool.select1ById(masterCon, databaseID).getName();
+                        Connection courseCon = connectionManager.getConnection(databaseName);
+                        ArrayList<Permission> allActiveCoursePermissions = new ArrayList<>();
+                        try {
+                            allActiveCoursePermissions = Permission.selectActive(courseCon);
+                        } catch (Exception e) {
+                            logger.debug(e + "  with connection   " + courseCon);
+                        }
+
+                        for (Permission permission : allActiveCoursePermissions) {
+
+                            if (permission.getEndDate() == null) {
+                                continue;
+                            }
+
+                             //Check if the permission expiration is going to happen in notification.permissionExpirationCheckTime.hours
+                             //Timespans width should be the same as the interval for checking incoming deadlines to avoid double or missing notifications.
+                            try {
+
+                                int timeSpanLocation = Integer.parseInt(
+                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckTime.minutes"));
+
+                                int timeSpanWidth = Integer.parseInt(
+                                        WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
+
+                                WetoTimeStamp timeSpanStart = new WetoTimeStamp(permission.getEndDate());
+                                WetoTimeStamp timeSpanEnd = new WetoTimeStamp(permission.getEndDate());
+                                WetoTimeStamp timeNow = new WetoTimeStamp(new GregorianCalendar());
+
+                                timeSpanStart.setMinute(timeSpanStart.getMinute() - timeSpanLocation); //This should be the windows start point of checking eg. 24h behind
+                                timeSpanEnd.setMinute(timeSpanStart.getMinute() + timeSpanWidth);
+
+                                boolean isAfterStart = timeNow.getTimeStamp() >= timeSpanStart.getTimeStamp();
+                                boolean isBeforeEnd = timeNow.getTimeStamp() <= timeSpanEnd.getTimeStamp();
+                                if (!(isAfterStart && isBeforeEnd)) continue;
+                            } catch (Exception e) {
+                                logger.error("Something went wrong while checking permission timespans", e);
+                            }
+
+                            // Create teacher notifications
+                            if (triggeringPermissions.contains(permission.getType())) {
+                                int taskId = permission.getTaskId();
+                                Task task = Task.select1ById(courseCon, taskId);
+                                int rootTaskId = task.getRootTaskId();
+                                try {
+                                    int masterCourseId = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon, databaseID, rootTaskId).getMasterTaskId();
+
+                                    // Create notification's message for teachers.
+                                    HashMap<String, String> templateValueMap = new HashMap<>();
+                                    templateValueMap.put("&permission;", WetoUtilities.getMessageResource(PermissionType.getType(permission.getType()).getProperty()));
+                                    templateValueMap.put("&task;", task.getName());
+                                    templateValueMap.put("&expirationTime;", new WetoTimeStamp(permission.getEndDate()).toString());
+
+                                    String notificationMessage = Notification.getMessageFromTemplate(Notification.PERMISSION_EXPIRATION, templateValueMap);
+
+                                    // Create link.
+                                    String link = WetoUtilities.getPackageResource("weto.appBaseUrl")
+                                            + "/viewPermissions.action?taskId=" + taskId
+                                            + "&tabId=" + Tab.PERMISSIONS.getValue()
+                                            + "&dbId=" + databaseID;
+
+
+                                    for (UserTaskView teacher : UserTaskView.selectByTaskIdAndClusterType(courseCon, rootTaskId, ClusterType.TEACHERS.getValue())) {
+                                        UserAccount courseAccount = UserAccount.select1ById(courseCon,teacher.getUserId());
+                                        UserAccount masterAccount = UserAccount.select1ByLoginName(masterCon,courseAccount.getLoginName());
+                                        Notification notification = new Notification(masterAccount.getId(), masterCourseId, Notification.PERMISSION_EXPIRATION, link);
+                                        notification.setMessage(notificationMessage);
+                                        notification.createNotification(masterCon, courseCon);
+
+                                    }
+                                }
+                                catch (Exception ignored) {
+                                }
+                            }
+
+                            // Check if permission is submission permission
+                            if (permission.getType() == PermissionType.SUBMISSION.getValue()) {
+
+                                //Store students which haven't completed the assignment to a set
+                                HashSet<Integer> notCompletedSubmissionStudents = new HashSet<>();
+
+                                int assignmentTaskID = permission.getTaskId();
+                                Task assignment = Task.select1ById(courseCon,assignmentTaskID);
+
+                                //Submissions tab should be visible to be able to return a submission
+                                if (!assignment.getHasSubmissions()) {
+                                    continue;
+                                }
+
+                                boolean isAllUsersPermission = permission.getUserRefId() == null;
+                                //Get all students on task to set
+                                if (isAllUsersPermission) {
+
+                                    try {
+                                        for (UserTaskView student : UserTaskView.selectByTaskIdAndClusterType(courseCon, assignment.getId(), ClusterType.STUDENTS.getValue())) {
+                                            notCompletedSubmissionStudents.add(student.getUserId());
+                                        }
+                                    } catch (Exception e) {
+                                        logger.error(e);
+                                    }
+                                }
+
+                                ArrayList<Submission> taskSubmissions = Submission.selectByTaskId(courseCon, assignmentTaskID);
+
+                                //Remove users with completed submissions
+                                for (Submission sub : taskSubmissions) {
+                                    int status = sub.getStatus();
+
+                                    //submission status 2 == accepted
+                                    if (SubmissionStatus.getStatus(status).equals(SubmissionStatus.ACCEPTED) && isAllUsersPermission) {
+                                        try {
+                                            notCompletedSubmissionStudents.remove(sub.getUserId());
+                                        } catch (Exception e) {
+                                            logger.debug("There was no id to remove");
+                                        }
+                                    }
+                                    //In case the permission is for a single user
+                                    if (status != 2 && !isAllUsersPermission) {
+                                        notCompletedSubmissionStudents.add(sub.getUserId());
+                                    }
+                                }
+
+                                for (int student : notCompletedSubmissionStudents) {
+                                    UserAccount courseAccount2 = UserAccount.select1ById(courseCon,student);
+                                    UserAccount masterAccount2 = UserAccount.select1ByLoginName(masterCon,courseAccount2.getLoginName());
+
+                                    int masterCourseID = CourseImplementation.select1ByDatabaseIdAndCourseTaskId(masterCon, databaseID, assignment.getRootTaskId()).getMasterTaskId();
+                                    HashMap<String, String> valueMap = new HashMap<>();
+
+                                    valueMap.put("&task;", assignment.getName());
+                                    valueMap.put("&expirationTime;", new WetoTimeStamp(permission.getEndDate()).toString());
+                                    String message = Notification.getMessageFromTemplate(Notification.SUBMISSION_DEADLINE, valueMap);
+
+                                    // Create link.
+                                    String notificationLink = WetoUtilities.getPackageResource("weto.appBaseUrl")
+                                            + "/viewSubmissions.action?taskId=" + assignment.getId()
+                                            + "&tabId=" + Tab.SUBMISSIONS.getValue()
+                                            + "&dbId=" + databaseID;
+
+                                    Notification notification = new Notification((masterAccount2.getId()), masterCourseID, Notification.SUBMISSION_DEADLINE, notificationLink);
+                                    notification.setMessage(message);
+                                    notification.createNotification(masterCon, courseCon);
+                                }
+                            }
+                        }
+                        connectionManager.freeConnection(courseCon);
+                    }
+                } catch (Exception e) {
+                    logger.error(e);
+                }
+            }
+            connectionManager.freeConnection(masterCon);
+        }
+
+    }
+
 
     private class NotificationEmailTask implements Runnable {
         @Override

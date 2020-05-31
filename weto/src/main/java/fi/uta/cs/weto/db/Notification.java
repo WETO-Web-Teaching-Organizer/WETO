@@ -16,10 +16,12 @@ public class Notification extends SqlAssignableObject implements Cloneable {
     public static final String FORUM_POST = "forum_post";
     public static final String FORUM_TOPIC= "forum_topic";
     public static final String MASS_NOTIFICATION = "mass_notification";
+    public static final String PERMISSION_EXPIRATION = "permission_expiration";
+    public static final String SUBMISSION_DEADLINE = "submission_deadline";
 
     // Create a list of the different types
-    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, FORUM_TOPIC, MASS_NOTIFICATION));
 
+    public static final List<String> notificationTypes = Collections.unmodifiableList(Arrays.asList(FORUM_POST, MASS_NOTIFICATION, PERMISSION_EXPIRATION, SUBMISSION_DEADLINE, FORUM_TOPIC));
     private static final Logger logger = Logger.getLogger(Notification.class);
 
     private int id;
