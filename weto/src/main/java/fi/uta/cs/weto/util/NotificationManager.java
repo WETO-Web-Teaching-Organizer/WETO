@@ -68,7 +68,6 @@ public class NotificationManager implements ServletContextListener {
 
             try {
                 activeTasks = Permission.selectActive(masterCon);
-                logger.debug("loaded " + activeTasks.size() + " active courses");
             } catch (Exception e) {
                 logger.error("Failed to load active courses", e);
             }
