@@ -120,7 +120,7 @@ public class NotificationManager implements ServletContextListener {
                                 logger.error("Something went wrong while checking permission timespans", e);
                             }
 
-                            //Implement teacher notifications here
+                            // Create teacher notifications
                             if (triggeringPermissions.contains(permission.getType())) {
                                 int taskId = permission.getTaskId();
                                 Task task = Task.select1ById(courseCon, taskId);
