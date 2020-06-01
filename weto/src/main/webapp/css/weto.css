@@ -4238,29 +4238,7 @@ table.tablesorter thead tr .headerSortUp {
 table.notificationsTable {
   margin: 0;
   border-collapse: separate;
-  width: 99%;
   table-layout: fixed;
-}
-table.notificationsTable th:nth-child(1), table.notificationsTable td:nth-child(1) {
-  width: 5%;
-}
-table.notificationsTable th:nth-child(2), table.notificationsTable td:nth-child(2) {
-  width: 15%;
-}
-table.notificationsTable th:nth-child(3), table.notificationsTable td:nth-child(3) {
-  width: 10%;
-}
-table.notificationsTable th:nth-child(4), table.notificationsTable td:nth-child(4) {
-  width: 40%;
-}
-table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(5) {
-  width: 10%;
-}
-table.notificationsTable th:nth-child(6), table.notificationsTable td:nth-child(6) {
-  width: 10%;
-}
-table.notificationsTable th:nth-child(7), table.notificationsTable td:nth-child(7) {
-  width: 10%;
 }
 table.notificationsTable tbody tr {
   border: none;
