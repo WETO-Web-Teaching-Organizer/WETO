@@ -1,7 +1,7 @@
 <%@ include file="/WEB-INF/taglibs.jsp"%>
 
 
-<form action="<s:url action="sendMassNotifications"/>" method="POST">
+<form id="massNotificationForm" action="<s:url action="sendMassNotifications"/>" method="POST">
     <input type="hidden" name="taskId" value="${taskId}" />
     <input type="hidden" name="tabId" value="${tabId}" />
     <input type="hidden" name="dbId" value="${dbId}" />
@@ -48,8 +48,10 @@
     </s:else>
 
     <div>
-        <button type="button" id="selectAll"><s:text name="massNotification.button.selectAll"></s:text></button>
-        <button type="button" id="deselectAll"><s:text name="massNotification.button.deselectAll"></s:text></button>
+        <div class="selectionButtons">
+            <button type="button" id="selectAll"><s:text name="massNotification.button.selectAll" /></button>
+            <button type="button" id="deselectAll"><s:text name="massNotification.button.deselectAll" /></button>
+        </div>
         <br><br>
         <label for="notificationMessage"><s:text name="massNotification.label.message"/></label>
         <input type="text" id="notificationMessage" class="form-control" name="notificationMessage">

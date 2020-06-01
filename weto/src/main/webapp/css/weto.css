@@ -4278,4 +4278,8 @@ table.notificationsTable tbody tr td span {
   color: #00b6da;
 }
 
+#massNotificationForm .selectionButtons {
+  text-align: right;
+}
+
 /*# sourceMappingURL=weto.css.map */
