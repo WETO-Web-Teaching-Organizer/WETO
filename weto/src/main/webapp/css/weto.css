@@ -4281,6 +4281,7 @@ table.notificationsTable tbody tr td span {
   right: 1em;
   bottom: 1em;
   z-index: 999;
+  background: #444;
   background: #444E;
   padding: 1em;
   border-radius: 1em;
