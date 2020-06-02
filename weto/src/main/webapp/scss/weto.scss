@@ -567,20 +567,26 @@ table.tablesorter thead tr .headerSortUp {
 table.notificationsTable {
   margin: 0;
   border-collapse: separate;
-  table-layout: fixed;
+
   tbody {
     tr {
       border: none;
+
       td {
         border: 1px hidden black;
         border-bottom-style: solid;
+
         span {
-          padding: 5px;
-          border-radius: 50%;
           color: $darkergreen;
           font-weight: bold;
         }
       }
+    }
+  }
+
+  tr {
+    td:first-child, th:first-child {
+      width: 50px;
     }
   }
 }

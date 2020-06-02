@@ -4238,7 +4238,6 @@ table.tablesorter thead tr .headerSortUp {
 table.notificationsTable {
   margin: 0;
   border-collapse: separate;
-  table-layout: fixed;
 }
 table.notificationsTable tbody tr {
   border: none;
@@ -4248,10 +4247,11 @@ table.notificationsTable tbody tr td {
   border-bottom-style: solid;
 }
 table.notificationsTable tbody tr td span {
-  padding: 5px;
-  border-radius: 50%;
   color: #00551D;
   font-weight: bold;
+}
+table.notificationsTable tr td:first-child, table.notificationsTable tr th:first-child {
+  width: 50px;
 }
 
 #notificationToast {
