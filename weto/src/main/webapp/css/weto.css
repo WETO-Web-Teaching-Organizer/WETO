@@ -4238,7 +4238,29 @@ table.tablesorter thead tr .headerSortUp {
 table.notificationsTable {
   margin: 0;
   border-collapse: separate;
+  width: 99%;
   table-layout: fixed;
+}
+table.notificationsTable th:nth-child(1), table.notificationsTable td:nth-child(1) {
+  width: 5%;
+}
+table.notificationsTable th:nth-child(2), table.notificationsTable td:nth-child(2) {
+  width: 15%;
+}
+table.notificationsTable th:nth-child(3), table.notificationsTable td:nth-child(3) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(4), table.notificationsTable td:nth-child(4) {
+  width: 40%;
+}
+table.notificationsTable th:nth-child(5), table.notificationsTable td:nth-child(5) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(6), table.notificationsTable td:nth-child(6) {
+  width: 10%;
+}
+table.notificationsTable th:nth-child(7), table.notificationsTable td:nth-child(7) {
+  width: 10%;
 }
 table.notificationsTable tbody tr {
   border: none;
@@ -4259,7 +4281,6 @@ table.notificationsTable tbody tr td span {
   right: 1em;
   bottom: 1em;
   z-index: 999;
-  background: #444;
   background: #444E;
   padding: 1em;
   border-radius: 1em;
@@ -4276,10 +4297,6 @@ table.notificationsTable tbody tr td span {
 }
 #notificationToast .toast-body a:link, #notificationToast .toast-body a:visited {
   color: #00b6da;
-}
-
-#massNotificationForm .selectionButtons {
-  text-align: right;
 }
 
 /*# sourceMappingURL=weto.css.map */
