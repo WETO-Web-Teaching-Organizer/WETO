@@ -21,6 +21,7 @@
 
         $.ajax('<s:url action="getJSONNotifications" />', {
             method: "GET",
+            cache: false,
             success: function(data) {
                 if(data.newNotifications && !toastShown) {
                     $("#notificationToast").fadeIn();
