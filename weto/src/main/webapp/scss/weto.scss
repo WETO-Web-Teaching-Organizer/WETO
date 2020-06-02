@@ -567,29 +567,7 @@ table.tablesorter thead tr .headerSortUp {
 table.notificationsTable {
   margin: 0;
   border-collapse: separate;
-  width: 99%;
   table-layout: fixed;
-  th:nth-child(1), td:nth-child(1) {
-    width: 5%;
-  }
-  th:nth-child(2), td:nth-child(2) {
-    width: 15%;
-  }
-  th:nth-child(3), td:nth-child(3) {
-    width: 10%;
-  }
-  th:nth-child(4), td:nth-child(4) {
-    width: 40%;
-  }
-  th:nth-child(5), td:nth-child(5) {
-    width: 10%;
-  }
-  th:nth-child(6), td:nth-child(6) {
-    width: 10%;
-  }
-  th:nth-child(7), td:nth-child(7) {
-    width: 10%;
-  }
   tbody {
     tr {
       border: none;
@@ -612,6 +590,7 @@ table.notificationsTable {
   right: 1em;
   bottom: 1em;
   z-index: 999;
+  background: #444; // Fallback for IE/Edge
   background: #444E;
   padding: 1em;
   border-radius: 1em;
@@ -631,4 +610,8 @@ table.notificationsTable {
       color: #00b6da;
     }
   }
+}
+
+#massNotificationForm .selectionButtons {
+  text-align: right;
 }
