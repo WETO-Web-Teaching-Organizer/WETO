@@ -54,7 +54,7 @@
         <label for="notificationMessage"><s:text name="massNotification.label.message"/></label>
         <input type="text" id="notificationMessage" class="form-control" name="notificationMessage">
         <input type="submit" class="linkButton" value="<s:text name="massNotification.header.sendNotification"/>"
-               style="margin: 0.5em 0 0 0;" onclick="return confirm('Are you sure?')"/>
+               style="margin: 0.5em 0 0 0;" onclick="return confirm('<s:text name="massNotification.prompt.confirm"></s:text>')"/>
     </div>
     <script>
         $(document).ready(function() {
