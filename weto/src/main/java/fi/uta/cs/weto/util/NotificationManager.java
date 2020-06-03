@@ -39,7 +39,7 @@ public class NotificationManager implements ServletContextListener {
                 WetoUtilities.getPackageResource("notification.emailInterval.minutes"));
         int permissionExpirationCheckInterval = Integer.parseInt(
                 WetoUtilities.getPackageResource("notification.permissionExpirationCheckInterval.minutes"));
-        scheduler.scheduleAtFixedRate(new NotificationEmailTask(), 1, notificationEmailInterval, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(new NotificationEmailTask(), 2, notificationEmailInterval, TimeUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(new DeadlineNotificationTask(), 1, permissionExpirationCheckInterval, TimeUnit.MINUTES);
     }

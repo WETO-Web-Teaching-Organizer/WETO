@@ -274,19 +274,21 @@ public class NotificationSetting extends SqlAssignableObject implements Cloneabl
         ArrayList<NotificationSetting> settings = new ArrayList<>();
         ArrayList<NotificationSetting> existingSettings = selectByUserAndCourse(connection, userId, courseId);
 
+        boolean isStudent = false;
+        try {
+            UserTaskView.select1ByTaskIdAndUserIdAndClusterType(connection, courseId, userId, ClusterType.TEACHERS.getValue());
+        } catch (NoSuchItemException e) {
+            isStudent = true;
+        }
+
         for(String notificationType : Notification.notificationTypes) {
-
-            boolean isStudent = UserTaskView.selectByUserIdAndClusterType(connection, userId, ClusterType.TEACHERS.getValue()).isEmpty();
-
             if(notificationType.equals(Notification.PERMISSION_EXPIRATION) && isStudent) {
                 continue;
 
             }
             if (notificationType.equals(Notification.SUBMISSION_DEADLINE) && !isStudent) {
                 continue;
-
             }
-
 
             // Check existing settings
             boolean alreadyExists = false;

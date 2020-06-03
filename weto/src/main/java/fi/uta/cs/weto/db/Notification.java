@@ -181,7 +181,7 @@ public class Notification extends SqlAssignableObject implements Cloneable {
             }
 
             if(userSetting == null) {
-                throw new NoSuchItemException("User setting missing");
+                throw new NoSuchItemException("User setting missing, type = " + this.type);
             }
 
 
