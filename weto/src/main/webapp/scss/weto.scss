@@ -596,6 +596,7 @@ table.notificationsTable {
   right: 1em;
   bottom: 1em;
   z-index: 999;
+  background: #444; // Fallback for IE/Edge
   background: #444E;
   padding: 1em;
   border-radius: 1em;
@@ -615,4 +616,8 @@ table.notificationsTable {
       color: #00b6da;
     }
   }
+}
+
+#massNotificationForm .selectionButtons {
+  text-align: right;
 }

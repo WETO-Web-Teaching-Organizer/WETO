@@ -36,7 +36,6 @@ public class MassNotification {
         public String action() throws Exception {
             Connection courseConnection = getCourseConnection();
             int courseId = getCourseTaskId();
-            int userId = getCourseUserId();
 
             try{
                 students = StudentView.selectByTaskId(courseConnection, courseId);
