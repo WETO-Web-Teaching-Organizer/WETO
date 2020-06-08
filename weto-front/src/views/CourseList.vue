@@ -10,7 +10,7 @@
     </div>
     
     <div v-if="status === 'normal'">
-      <v-container v-for="subject in backendResponse.subjects" :key="subject.name">
+      <v-container v-for="subject in backendResponse.subjects" :key="subject.name" class="mt-6">
         <v-card>
           <h1 class="subjects pl-2">{{ subject.name }}</h1>
         </v-card>
@@ -18,12 +18,13 @@
         <v-card>
           <div clasS="activeCourses">
             <v-list v-if="backendResponse.registeredCourses[subject.id] !== null">
-              <h3 class="pl-2">Your active courses</h3>
+              <h2 class="pl-3">Your active courses</h2>
               <v-list-item v-for="course in backendResponse.registeredCourses[subject.id]" :key="course.name">
-                <v-list-item-content>
-                  <v-btn rounded @click="selectCourse(course)" class="primary">
-                    {{ course.name }}
-                    <span v-if="backendResponse.viewPeriods[course.masterTaskId][0] !== null ||
+                <v-list-item-content class="pl-6">
+                  <a @click="selectCourse(course)">
+                    <h3>- {{ course.name }}</h3>
+                  </a>
+                  <span v-if="backendResponse.viewPeriods[course.masterTaskId][0] !== null ||
                               backendResponse.viewPeriods[course.masterTaskId][1] !== null">
                     ({{ backendResponse.viewPeriods[course.masterTaskId][0] }} -
                     {{ backendResponse.viewPeriods[course.masterTaskId][1] }})
@@ -37,22 +38,16 @@
         <v-card>
           <div class="availableCourses">
             <v-list v-if="backendResponse.courses[subject.id] !== null" class="availableCourses">
-              <v-list-item>
-                <v-list-item-content>
-                  <h3>Available courses</h3>
-                </v-list-item-content>
-              </v-list-item>
+              <h2 class="pl-3">Available courses</h2>
               <v-list-item v-for="course in backendResponse.courses[subject.id]" :key="course.name">
                 <v-list-item-content>
-                  <v-btn rounded @click="selectCourse(course)" class="secondary">
-                    {{ course.name }}
+                  <a @click="selectCourse(course)">
+                    <h3>- {{ course.name }}</h3>
+                  </a>
+                  <span>
                     (Registration open until:
-                    {{ backendResponse.registerPeriods[course.masterTaskId][1] }} )
-                  </v-btn>
-                  <h4>{{ course.name }}
-                    (Registration open until:
-                    {{ backendResponse.registerPeriods[course.masterTaskId][1] }} )
-                  </h4>
+                    {{ backendResponse.registerPeriods[course.masterTaskId][1] }}
+                  </span>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -64,20 +59,20 @@
             <v-expansion-panels>
               <v-expansion-panel>
                 <v-expansion-panel-header class="my-2">
-                  <h3>Inactive courses</h3>
+                  <h2>Inactive courses</h2>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-list>
                     <v-list-item v-for="course in backendResponse.inactiveCourses" :key="course.name">
-                      <v-list-item-content>
-                        <v-btn rounded @click="selectCourse(course)">
-                          {{ course.name }}
-                          <span v-if="backendResponse.viewPeriods[course.masterTaskId][0] !== null ||
-                                  backendResponse.viewPeriods[course.masterTaskId][1] !== null">
-                         ({{ backendResponse.viewPeriods[course.masterTaskId][0] }} -
-                          {{ backendResponse.viewPeriods[course.masterTaskId][1] }})
-                      </span>
-                        </v-btn>
+                      <v-list-item-content class="pl-6">
+                        <a @click="selectCourse(course)">
+                          <h3>- {{ course.name }}</h3>
+                        </a>
+                        <span v-if="backendResponse.viewPeriods[course.masterTaskId][0] !== null ||
+                                    backendResponse.viewPeriods[course.masterTaskId][1] !== null">
+                        ({{ backendResponse.viewPeriods[course.masterTaskId][0] }} -
+                        {{ backendResponse.viewPeriods[course.masterTaskId][1] }})
+                        </span>
                       </v-list-item-content>
                     </v-list-item>
                   </v-list>
