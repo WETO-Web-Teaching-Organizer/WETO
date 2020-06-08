@@ -22,7 +22,7 @@
     "utf-8-validate": "^5.0.2",
     "vue": "^2.6.11",
     "vue-cli-plugin-vuetify": "^0.6.3",
-    "vuetify": "^2.2.20",
+    "vuetify": "^2.2.26",
     "vuetify-loader": "^1.4.3",
     "vuex": "^3.1.3"
   },
