@@ -1,5 +1,6 @@
 <template>
   <v-form>
+    
     <div v-if="quizOpen">
       <fieldset>
         <editor v-model="value" @init="editorInit" lang="html" theme="chrome" height="150"/>
@@ -18,6 +19,7 @@
       </div>
       <v-btn class="primary" @click="saveAndSubmitCode()">Save and submit</v-btn>
     </div>
+    
     <div v-else>
       <fieldset>
         <editor :value="value" @init="editorInit" lang="html" theme="chrome" height="150" disabled="true"/>
@@ -36,6 +38,7 @@
       </div>
       <v-btn class="primary" disabled>Save and submit</v-btn>
     </div>
+    
   </v-form>
 </template>
 

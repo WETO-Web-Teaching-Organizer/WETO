@@ -1,6 +1,26 @@
 <template>
   <div class="submissions">
-    <h1>This is a submissions page</h1>
+    
+    <div v-if="status === 'loading'" class="text-xs-center">
+      <v-progress-circular indeterminate color="secondary" size="70" width="7"/>
+    </div>
+  
+    <div v-if="status === 'error'" class="text-xs-center">
+      <h4>An error has occurred</h4>
+    </div>
+    
+    <div v-if="status === 'normal'">
+      <h1 class="ma-8">{{ taskName }}</h1>
+  
+      <v-btn @click="getSubmissions">
+        Submissions test
+      </v-btn>
+      
+      <v-btn @click="getSubmission">
+        Single submission test
+      </v-btn>
+    </div>
+    
   </div>
 </template>
 
@@ -89,6 +109,11 @@
       getSubmissions() {
         api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           console.log(response.data);
+        })
+      },
+      getSubmission() {
+        api.getSubmission(this.dbId, this.taskId, this.tabId).then(response => {
+          console.log(response.data)
         })
       }
     }

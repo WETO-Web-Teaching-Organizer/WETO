@@ -6,13 +6,13 @@
     </div>
     
     <div v-if="status === 'error'" class="text-xs-center">
-      <h4>Tapahtui virhe</h4>
+      <h4>An error has occurred</h4>
     </div>
     
     <div v-if="status === 'normal'">
+      <h1 class="ma-8">{{ taskName }}</h1>
+      
       <v-expansion-panels>
-        <h1>{{ taskName }}</h1>
-        
         <v-expansion-panel v-for="element in backendResponse.elements" :key="element.questionId" class="ma-5 mr-8">
           <div v-if="element.contentElementType === HTML" v-html="element.html" clasS="ma-3"/>
           <div v-else>
