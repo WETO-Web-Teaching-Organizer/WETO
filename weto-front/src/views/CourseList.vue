@@ -28,7 +28,6 @@
                     ({{ backendResponse.viewPeriods[course.masterTaskId][0] }} -
                     {{ backendResponse.viewPeriods[course.masterTaskId][1] }})
                   </span>
-                  </v-btn>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -99,7 +98,7 @@
 
   export default {
     name: 'course-list',
-    data(){
+    data() {
       return {
         backendResponse: [],
         errors: [],
@@ -111,20 +110,20 @@
         return this.$store.getters.status;
       }
     },
-    mounted(){
+    created() {
       this.checkLogin();
       this.getUser();
       this.clearSelectedCourse();
       this.fetchData();
     },
     methods: {
-      checkLogin(){
+      checkLogin() {
         api.pollLogin().catch(error => {
           this.errors.push(error);
           window.location.replace("http://localhost:8080/weto5/listCourses.action");
         })
       },
-      fetchData(){
+      fetchData() {
         this.$store.commit("changeStatus", "loading");
         api.getCourses().then(response => {
           this.backendResponse = response.data;
@@ -135,16 +134,16 @@
             this.$store.commit("changeStatus", "error");
           })
       },
-      selectCourse(course){
+      selectCourse(course) {
         this.$store.commit("selectCourse", course);
         this.$store.commit("setTask", course.courseTaskId);
         this.$store.commit("createSubTaskTree", course);
         router.push('/task')
       },
-      clearSelectedCourse(){
+      clearSelectedCourse() {
         this.$store.commit("unselectCourse");
       },
-      getUser(){
+      getUser() {
         api.getUser().then(response => {
           this.$store.commit("logUser", JSON.parse(response.data));
         })

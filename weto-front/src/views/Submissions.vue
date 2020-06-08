@@ -45,7 +45,7 @@
         return this.$store.getters.subTasks;
       }
     },
-    mounted() {
+    created() {
       this.checkLogin();
       this.checkCourseSelection();
       this.fetchData();
