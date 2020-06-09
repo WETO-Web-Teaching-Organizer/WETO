@@ -19,3 +19,13 @@
     <s:text name="students.header.importStudents" />
   </s:a>
 </li>
+<li>
+  <s:url action="massNotification" var="massNotificationUrl">
+    <s:param name="taskId" value="taskId" />
+    <s:param name="tabId" value="1" />
+    <s:param name="dbId" value="dbId" />
+  </s:url>
+  <s:a href="%{massNotificationUrl}">
+    <s:text name="students.header.massNotification" />
+  </s:a>
+</li>

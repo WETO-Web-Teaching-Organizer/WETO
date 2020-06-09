@@ -30,4 +30,8 @@
   <definition name="exportStudents.page" extends="course.page">
     <put-attribute name="body" value="/pages/students/ExportStudents.jsp" />
   </definition>
+
+  <definition name="massNotification.page" extends="course.page">
+    <put-attribute name="body" value="/pages/students/MassNotification.jsp" />
+  </definition>
 </tiles-definitions>

@@ -25,6 +25,20 @@
     </a>
   </s:iterator>
 </s:else>
+<%--Forum subscription for receiving notifications when a new topic is added.--%>
+<form action="<s:url action="saveForumSubscription" />" method="post">
+  <input type="hidden" name="taskId" value="${taskId}" />
+  <input type="hidden" name="tabId" value="${tabId}" />
+  <input type="hidden" name="dbId" value="${dbId}" />
+  <s:if test="%{!forumSubscribed}">
+    <input type="hidden" name="forumSubscription" value="true"/>
+    <input type="submit" value="<s:text name="forum.header.subscribeForum" />" class="linkButton" />
+  </s:if>
+  <s:else>
+    <input type="hidden" name="forumSubscription" value="false"/>
+    <input type="submit" value="<s:text name="forum.header.unsubscribeForum" />" class="linkButton" />
+  </s:else>
+</form>
 <s:if test="canAddTopic">
   <hr>
   <form action="<s:url action="addForumTopic" />" method="post">

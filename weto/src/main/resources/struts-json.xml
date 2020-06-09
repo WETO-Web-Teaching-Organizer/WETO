@@ -6,7 +6,7 @@
   <!-- Actions that use JSON-formatted data as responses -->
   <package name="weto-json" extends="json-default">
     <interceptors>
-      <interceptor-stack name="defaultStack">
+      <interceptor-stack name="jsonStack">
         <interceptor-ref name="json">
           <param name="enableSMD">true</param>
         </interceptor-ref>
@@ -14,7 +14,7 @@
       </interceptor-stack>
     </interceptors>
 
-    <default-interceptor-ref name="defaultStack" />
+    <default-interceptor-ref name="jsonStack" />
 
     <global-results>
       <result name="input" type="json">
@@ -122,6 +122,16 @@
         <param name="noCache">true</param>
         <param name="excludeNullProperties">true</param>
         <param name="root">jsonString</param>
+      </result>
+    </action>
+
+    <action name="getJSONNotifications" class="fi.uta.cs.weto.actions.notifications.NotificationActions$GetJSONNotifications">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+      <result name="error" type="json">
+        <param name="ignoreHierarchy">false</param>
+        <param name="includeProperties">actionErrors\[\d+\], fieldErrors\..+$, actionMessages\[\d+\]</param>
       </result>
     </action>
   </package>

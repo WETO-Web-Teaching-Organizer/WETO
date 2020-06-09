@@ -546,3 +546,78 @@ table.tablesorter thead tr .headerSortUp {
   font-weight: bold;
   font-size: large;
 }
+
+#notification-center-filters {
+  .input-group {
+    margin-bottom: 0.3em;
+    display: inline-block;
+  }
+
+  .linkButton {
+    vertical-align: bottom;
+    height: 34px;
+  }
+}
+
+#notifications-header {
+  margin-top: 1em;
+}
+
+/*Style for notifications table*/
+table.notificationsTable {
+  margin: 0;
+  border-collapse: separate;
+
+  tbody {
+    tr {
+      border: none;
+
+      td {
+        border: 1px hidden black;
+        border-bottom-style: solid;
+
+        span {
+          color: $darkergreen;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  tr {
+    td:first-child, th:first-child {
+      width: 50px;
+    }
+  }
+}
+
+#notificationToast {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+  z-index: 999;
+  background: #444; // Fallback for IE/Edge
+  background: #444E;
+  padding: 1em;
+  border-radius: 1em;
+  color: #fff;
+
+  .toast-body span {
+    font-size: 1.2em;
+    vertical-align: middle;
+  }
+
+  .toast-body a {
+    font-size: 1.5em;
+    margin-left: 0.75em;
+    vertical-align: middle;
+
+    &:link, &:visited {
+      color: #00b6da;
+    }
+  }
+}
+
+#massNotificationForm .selectionButtons {
+  text-align: right;
+}

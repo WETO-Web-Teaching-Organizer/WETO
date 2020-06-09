@@ -110,6 +110,12 @@ public class TaskModel
             .getValue());
     Tag.deleteByTaggedIdAndType(courseConn, taskId, TagType.REVIEW_INSTRUCTIONS
             .getValue());
+    // Delete forum subscriptions which are used to receive notifications.
+    Tag.deleteByTaggedIdAndType(courseConn, taskId, TagType.FORUM_SUBSCRIPTION
+            .getValue());
+    // Delete forum topic  subscriptions which are used to receive notifications.
+    Tag.deleteByTaggedIdAndType(courseConn, taskId, TagType.FORUM_TOPIC_SUBSCRIPTION
+            .getValue());
     deleteTaskGroups(courseConn, taskId);
     for(Property property : PropertyModel.getPendingStudents(courseConn, taskId))
     {

@@ -34,6 +34,12 @@
           </div>
         </span>
       </s:if>
+      <!-- Notification settings button -->
+      <button id="notification-center-button" class="btn btn-default btn-sidebar" type="button"
+              aria-label="Notification center" title="Notification center"
+              onclick="window.location.href = '<s:url action="viewNotifications" />'">
+        <span class="glyphicon glyphicon-bell <s:if test="unreadNotifications > 0">unreadNotifications</s:if>"></span>
+      </button>
       <!-- Buttons only shown for teacher -->
       <s:if test="navigator.reallyTeacher">
         <s:url action="switchRole" var="switchRoleUrl">
@@ -168,6 +174,19 @@
                 <s:param name="dbId" value="%{dbId}" />
               </s:url>
               <s:a href="%{taskUrl}" title = "Course mainpage">${courseName}</s:a>
+              <!-- Notification settings button -->
+              <s:if test="navigator.masterUserId != null && courseName != null">
+                <s:url action="viewNotificationSettings" var="notificationSettingsUrl">
+                  <s:param name="taskId" value="%{taskId}" />
+                  <s:param name="tabId" value="%{tabId}" />
+                  <s:param name="dbId" value="%{dbId}" />
+                </s:url>
+                <button id="notification-settings-button" class="btn btn-default btn-sidebar" type="button"
+                        aria-label="Notification settings" title="Notification settings"
+                        onclick="window.location.href = '${notificationSettingsUrl}'">
+                  <span class="glyphicon glyphicon-cog"></span>
+                </button>
+              </s:if>
               </div>
             <s:if test="!navigationTree.isEmpty()">
               <tiles:insertAttribute name="navMenu" />
@@ -241,5 +260,6 @@
         });
       }
     </script>
+    <%@ include file="/pages/notifications/Toast.jsp"%>
   </body>
 </html>

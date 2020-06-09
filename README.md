@@ -1,5 +1,7 @@
-# weto
+# WETO (WEb Teaching Organizer)
 
-WETO: WEb Teaching Organizer development version.
+Weto is a browser-based teaching tool used primarily at the [University of Tampere](https://www.tuni.fi/)
 
-Installation instructions WIP. Until then refer to weto ubuntu tutorial.odt.
+For instructions on how to install, see the readme file located under /vagrant.
+
+For additional details about the application, see the Wiki on the GitHub page of this repository.
