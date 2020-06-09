@@ -21,7 +21,7 @@
     components: {
       Toolbar
     },
-    mounted(){
+    created(){
       this.checkLogin()
       this.getUser()
     },

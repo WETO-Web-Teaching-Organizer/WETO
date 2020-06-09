@@ -27,5 +27,8 @@ export default {
   },
   getSubmissions(db, task, tab) {
     return AXIOS.post("/getJSONSubmissions", {dbId: db, taskId: task, tabId: tab})
+  },
+  getSubmission(db, task, tab) {
+    return AXIOS.post("/getJSONSubmission", {dbId: db, taskId: task, tabId: tab})
   }
 }

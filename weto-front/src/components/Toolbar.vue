@@ -1,11 +1,20 @@
 <template>
   <nav>
-    <v-app-bar app dark dense class="primary">
-      <v-app-bar-nav-icon @click="sidebar = !sidebar" dark/>
-      <v-divider vertical/>
-      <v-toolbar-items v-if="courseSelected()">
+    <v-app-bar app dark dense class="primary" :collapse=appbarCollapse>
+      <v-btn v-if="!sidebar" icon dark @click="sidebar = !sidebar">
+        <v-icon>menu</v-icon>
+      </v-btn>
+      <v-btn v-else icon dark disabled>
+        <v-icon>menu</v-icon>
+      </v-btn>
+      
+      <v-btn icon @click="appbarCollapse = !appbarCollapse">
+        <v-icon v-if="appbarCollapse === false">chevron_left</v-icon>
+        <v-icon v-else>chevron_right</v-icon>
+      </v-btn>
+      <v-toolbar-items v-if="courseSelected() && !appbarCollapse">
         <v-btn text class="hidden-sm-and-down" router to="/task">
-          <v-icon left>home</v-icon>
+          <v-icon left>school</v-icon>
           <span>MAIN</span></v-btn>
         <v-btn text class="hidden-sm-and-down" router to="/grading">
           <v-icon left>grade</v-icon>
@@ -45,28 +54,64 @@
         class="info"
         v-model=sidebar>
       <v-app-bar dark dense class="primary">
-        <v-btn text block class="font-weight-bold text-justify" router to="/">WETO</v-btn>
+        <v-btn icon v-if="sidebar" @click="sidebar = !sidebar" dark>
+          <v-icon>clear</v-icon>
+        </v-btn>
       </v-app-bar>
       
-      <v-btn block text class="secondary">
-        <v-icon>face</v-icon>
-        <span>
-          {{ this.$store.getters.user.firstNameData.value }}
-          {{ this.$store.getters.user.lastNameData.value }}
-        </span>
-      </v-btn>
+      <v-list flat>
+        <v-list-item-group>
+          <v-list-item link v-if="courseName !== ''" router to="/">
+            <v-list-item-icon>
+              <v-icon>home</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <h3>
+                WETO
+              </h3>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item link v-else>
+            <v-list-item-icon>
+              <v-icon>home</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <h3>
+                WETO
+              </h3>
+            </v-list-item-content>
+          </v-list-item>
+          
+          <v-list-item link>
+            <v-list-item-icon>
+              <v-icon>face</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <h3>
+                {{ this.$store.getters.user.firstNameData.value }}
+                {{ this.$store.getters.user.lastNameData.value }}
+              </h3>
+            </v-list-item-content>
+          </v-list-item>
+          
+          <v-list-item v-if="courseName !== ''" @click="selectRootTask">
+            <v-list-item-icon>
+              <v-icon>info</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <h3>{{ courseName }}</h3>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
       
-      <v-divider/>
-      
-      <v-btn block text v-if="courseName !== ''" @click="selectRootTask()">{{ courseName }}</v-btn>
-      
-      <v-treeview rounded hoverable :items="subTasks" @click="testiFunktio()">
+      <v-treeview :items="subTasks">
         <template slot="label" slot-scope="{ item }">
           <a @click="selectSubTask(item)">{{ item.name }}</a>
         </template>
       </v-treeview>
       
-      <v-list rounded class="pa-0" dense v-if="courseSelected()">
+      <v-list class="pa-0" dense v-if="courseSelected()">
         <v-list-item v-for="link in links" :key="link.text" router :to="link.route">
           <v-list-item-content>
             <span>
@@ -86,12 +131,18 @@
     data() {
       return {
         sidebar: true,
+        appbarCollapse: false,
         links: [
           {icon: 'exit_to_app', text: 'Return to course list', route: '/', toolbar: false}
         ]
       }
     },
     computed: {
+      props() {
+        return {
+          appbarCollapse: {collapse: false}
+        }
+      },
       courseName: function () {
         return this.$store.getters.selectedCourse.name;
       },
@@ -112,4 +163,5 @@
       }
     }
   }
+  
 </script>
