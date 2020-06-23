@@ -65,12 +65,8 @@ This readme covers how to set up the program for IntelliJ IDEA, but might come i
       - Build artifacts -> select "weto:war" and "weto:war exploded"
       - Run Remote External tool
         - Name: Deploy weto
-        - Deployment server: Vagrant
-        - Program:
-          - Host: localhost
-          - Port: 2222
-          - Credentials are the same as earlier
-        - -> then select the file /vagrant/deploy.sh from the dialog that opens
+        - Program: select the file /vagrant/deploy.sh from the dialog that opens
+        - Connection settings -> SSH Connection -> the vagrant specified earlier
         - Hit OK
     - Go to the tab "Startup/Connection"
       - Select "debug"
