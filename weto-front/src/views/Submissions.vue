@@ -107,14 +107,14 @@
         this.$store.commit("setTask", id);
       },
       getSubmissions() {
-        api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+        /*api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           console.log(response.data);
-        })
+        })*/
       },
       getSubmission() {
-        api.getSubmission(this.dbId, this.taskId, this.tabId).then(response => {
+        /*api.getSubmission(this.dbId, this.taskId, this.tabId).then(response => {
           console.log(response.data)
-        })
+        })*/
       }
     }
   }
