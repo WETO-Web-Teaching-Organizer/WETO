@@ -29,7 +29,6 @@
       checkLogin(){
         api.pollLogin().catch(error => {
           this.errors.push(error)
-          window.location.replace("http://localhost:8080/weto5/listCourses.action")
         })
       },
       getUser(){
