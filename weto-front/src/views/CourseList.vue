@@ -134,6 +134,8 @@
       getUser() {
         api.getUser().then(response => {
           this.$store.commit("logUser", JSON.parse(response.data));
+        }).catch(err => {
+          this.errors.push(err);
         })
       }
     }
