@@ -39,16 +39,12 @@
     methods: {
       checkLogin() {
         api.pollLogin().then(() => {
-          window.location.replace("http://localhost:4545/courses");
+          this.$router.replace("/courses") // Redirect logged in user
         })
       },
       submitLogin() {
-        const status = this.$store.getters.status;
-        const taskId = this.$store.getters.selectedCourse.courseTaskId;
-        const tabId = this.$store.getters.selectedCourse.tabId;
-        const dbId = this.$store.getters.selectedCourse.databaseId;
-        api.submitLogin(status, taskId, tabId, dbId, this.email, this.password).then((res) => {
-          console.log(res)
+        api.submitLogin(this.email, this.password).then(() => {
+          this.$router.push("/courses")
         }).catch(err => {
           this.errors.push(err);
         })

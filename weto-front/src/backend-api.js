@@ -19,8 +19,8 @@ export default {
   getRealUser() {
     return AXIOS.get('/getRealUser')
   },
-  submitLogin(status, taskId, tabId, dbId, username, password) {
-    return AXIOS.post('/submitLoginJSON', {status, taskId, tabId, dbId, username, password})
+  submitLogin(username, password) {
+    return AXIOS.post('/submitLoginJSON', {password, username})
   },
   getCourseTask(db, task, tab) {
     return AXIOS.post('/viewJSONCourseTask', {dbId: db, taskId: task, tabId: tab})
