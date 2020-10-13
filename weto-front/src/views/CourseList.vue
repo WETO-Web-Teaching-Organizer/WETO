@@ -108,7 +108,7 @@
       checkLogin() {
         api.pollLogin().catch(error => {
           this.errors.push(error);
-          window.location.replace("http://localhost:4545/login");
+          window.location.replace("http://localhost:4545/");
         })
       },
       fetchData() {
