@@ -33,10 +33,13 @@
       backendResponse: [],
       errors: [],
     }),
+    created() {
+      this.checkLogin();
+    },
     methods: {
       checkLogin() {
         api.pollLogin().then(() => {
-          window.location.replace("http://localhost:4545/");
+          window.location.replace("http://localhost:4545/courses");
         })
       },
       submitLogin() {
@@ -44,9 +47,8 @@
         const taskId = this.$store.getters.selectedCourse.courseTaskId;
         const tabId = this.$store.getters.selectedCourse.tabId;
         const dbId = this.$store.getters.selectedCourse.databaseId;
-        api.submitLogin(status, taskId, tabId, dbId, this.email, this.password).then(res => {
-          this.backendResponse.push(res);
-          //? add the response data into the store state?
+        api.submitLogin(status, taskId, tabId, dbId, this.email, this.password).then((res) => {
+          console.log(res)
         }).catch(err => {
           this.errors.push(err);
         })

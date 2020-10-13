@@ -107,6 +107,15 @@
       </result>
     </action>
 
+    <action name="submitLoginJSON" class="fi.uta.cs.weto.actions.Login">
+      <result name="success" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+      <result name="VIEWTASK" type="json">
+        <param name="encoding">UTF-8</param>
+      </result>
+    </action>
+
     <action name="getUser" class="fi.uta.cs.weto.actions.front.GetUser">
       <result name="success" type="json">
         <param name="encoding">UTF-8</param>
