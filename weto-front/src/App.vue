@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <toolbar/>
-    <v-content class="ml-4 mt-2">
+    <toolbar v-if="!login"/>
+    <v-content class="ml-4 mr-4 mt-2">
       <router-view/>
     </v-content>
   </v-app>
@@ -24,6 +24,11 @@
     created(){
       this.checkLogin()
       this.getUser()
+    },
+    computed:{
+      login() {
+        return this.$route.path === '/'
+      }
     },
     methods: {
       checkLogin(){
