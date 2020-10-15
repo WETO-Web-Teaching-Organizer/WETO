@@ -50,7 +50,7 @@
           console.log("NodeGrades: " + JSON.stringify(res));
         })
 
-        api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId + 1).then(res => {
+        api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId).then(res => {
           console.log("LeafGrades: " + JSON.stringify(res));
         })
       }
