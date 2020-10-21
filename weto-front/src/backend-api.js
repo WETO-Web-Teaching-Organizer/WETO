@@ -25,15 +25,23 @@ export default {
   getCourseTask(db, task, tab) {
     return AXIOS.post('/viewJSONCourseTask', {dbId: db, taskId: task, tabId: tab})
   },
+  // Submission APIs
   saveQuizAnswer(formData) {
     return AXIOS.post("/saveQuizAnswer", formData)
   },
   getSubmissions(db, task, tab) {
     return AXIOS.post("/getJSONSubmissions", {dbId: db, taskId: task, tabId: tab})
   },
+  getDocuments(submissionId, dbId, taskId, tabId) {
+    return AXIOS.get("/getJSONDocuments", { params: {submissionId, dbId, taskId, tabId} })
+  },
+  addSubmissionFile(fileName, submissionId, dbId, taskId, tabId) {
+    return AXIOS.post("/addSubmissionFile", {documentFileFileName: fileName, submissionId, dbId, taskId, tabId})
+  },
   getSubmission(db, task, tab) {
     return AXIOS.post("/getJSONSubmission", {dbId: db, taskId: task, tabId: tab})
   },
+  // Grading APIs
   getJSONNodeGrades(dbId, taskId, tabId) {
     return AXIOS.post("/viewJSONNodeGrades", {dbId, taskId, tabId})
   },
