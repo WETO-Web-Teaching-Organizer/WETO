@@ -35,8 +35,19 @@ export default {
   getDocuments(submissionId, dbId, taskId, tabId) {
     return AXIOS.get("/getJSONDocuments", { params: {submissionId, dbId, taskId, tabId} })
   },
+  // Create a document entry for the submission
   addSubmissionFile(fileName, submissionId, dbId, taskId, tabId) {
     return AXIOS.post("/addSubmissionFile", {documentFileFileName: fileName, submissionId, dbId, taskId, tabId})
+  },
+  // Deletes the actual file and the document entry from the submission
+  deleteSubmissionFile(documentId, dbId, taskId, tabId) {
+    let formData = new FormData();
+    formData.set("documentId", documentId)
+    formData.set("dbId", dbId)
+    formData.set("taskId", taskId)
+    formData.set("tabId", tabId)
+
+    return AXIOS.post("/commitDeleteDocument", formData)
   },
   getSubmission(db, task, tab) {
     return AXIOS.post("/getJSONSubmission", {dbId: db, taskId: task, tabId: tab})
