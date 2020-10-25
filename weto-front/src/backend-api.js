@@ -64,9 +64,21 @@ export default {
   addSubmissionFile(fileName, submissionId, dbId, taskId, tabId) {
     return AXIOS.post("/addSubmissionFile", {documentFileFileName: fileName, submissionId, dbId, taskId, tabId})
   },
-  // TODO: returns the file contents in response, but doesn't initialize file download
-  downloadSubmissionFile(documentId, dbId, taskId, tabId) {
-    return AXIOS.get("/downloadDocument", { params: {documentId, dbId, taskId, tabId} })
+  downloadSubmissionFile(fileName, documentId, dbId, taskId, tabId) {
+    // This is a hack to get around Axios not initializing file download
+    // See e.g. https://stackoverflow.com/a/53230807 
+    AXIOS.get("/downloadDocument", { responseType: "blob", params: {documentId, dbId, taskId, tabId} })
+    .then(res => {
+      let fileUrl = window.URL.createObjectURL(new Blob([res.data]))
+      let fileLink = document.createElement("a")
+
+      fileLink.href = fileUrl
+      fileLink.setAttribute("download", fileName) // Set name of document to be downloaded
+      document.body.appendChild(fileLink)
+      
+      fileLink.click()
+      fileLink.remove()
+    })
   },
   // Deletes the actual file and the document entry from the submission
   deleteSubmissionFile(documentId, dbId, taskId, tabId) {
