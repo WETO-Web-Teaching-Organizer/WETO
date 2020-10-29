@@ -1,32 +1,25 @@
 <template>
   <div class="submissions">
-    
+
     <div v-if="status === 'loading'" class="text-xs-center">
       <v-progress-circular indeterminate color="secondary" size="70" width="7"/>
     </div>
-  
+
     <div v-if="status === 'error'" class="text-xs-center">
       <h4>An error has occurred</h4>
     </div>
-    
+
     <div v-if="status === 'normal'">
       <h1 class="ma-8">{{ taskName }}</h1>
-  
-      <v-btn @click="getSubmissions">
-        Submissions test
-      </v-btn>
-      
-      <v-btn @click="getSubmission">
-        Single submission test
-      </v-btn>
     </div>
-    
+    <UserSubmission v-if="submissionStatus === 'Accepted'"/>
   </div>
 </template>
 
 <script>
   import api from '../backend-api'
   import router from '../router'
+  import UserSubmission from '../components/UserSubmission'
 
   export default {
     name: 'submission',
@@ -34,7 +27,7 @@
       return {
         backendResponse: [],
         errors: [],
-
+        submissionStatus: null,
         HTML: 0,
         MULTIPLE_CHOICE: 1,
         ESSAY: 2,
@@ -69,11 +62,15 @@
       this.checkLogin();
       this.checkCourseSelection();
       this.fetchData();
+      this.getSubmissions();
     },
     watch: {
       taskId() {
         this.fetchData();
       }
+    },
+    components: {
+      UserSubmission
     },
     methods: {
       checkLogin() {
@@ -107,15 +104,11 @@
         this.$store.commit("setTask", id);
       },
       getSubmissions() {
-        /*api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+        api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           console.log(response.data);
-        })*/
+          this.submissionStatus = response.data.submissionStates[2];
+        });
       },
-      getSubmission() {
-        /*api.getSubmission(this.dbId, this.taskId, this.tabId).then(response => {
-          console.log(response.data)
-        })*/
-      }
     }
   }
 </script>
