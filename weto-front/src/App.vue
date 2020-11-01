@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <toolbar v-if="!login"/>
-    <v-content class="ml-4 mr-4 mt-2">
+    <v-main class="ml-4 mr-4 mt-2">
       <router-view/>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 

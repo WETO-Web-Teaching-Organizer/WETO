@@ -12,6 +12,7 @@
     <div v-if="status === 'normal'">
       <h1 class="ma-8">{{ taskName }}</h1>
     </div>
+    <FileSubmit/>
     <UserSubmission v-if="submissionStatus === 'Accepted'"/>
   </div>
 </template>
@@ -20,6 +21,7 @@
   import api from '../backend-api'
   import router from '../router'
   import UserSubmission from '../components/UserSubmission'
+  import FileSubmit from '../components/FileSubmit.vue'
 
   export default {
     name: 'submission',
@@ -70,7 +72,8 @@
       }
     },
     components: {
-      UserSubmission
+      UserSubmission,
+      FileSubmit
     },
     methods: {
       checkLogin() {

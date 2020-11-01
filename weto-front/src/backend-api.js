@@ -34,6 +34,15 @@ export default {
     formData.set("tabId", tabId)
     return AXIOS.post("/createSubmission", formData)
   },
+  fileSubmission(file, submissionId, dbId, taskId, tabId) {
+    let formData = new FormData();
+    formData.set("submissionId", submissionId)
+    formData.set("dbId", dbId)
+    formData.set("taskId", taskId)
+    formData.set("documentFile", file)
+    formData.set("tabId", tabId)
+    return AXIOS.post("/viewSubmission", formData)
+  },
   completeSubmission(submissionId, dbId, taskId, tabId) {
     let formData = new FormData();
     formData.set("submissionId", submissionId)
