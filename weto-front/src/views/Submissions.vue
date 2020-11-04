@@ -1,19 +1,7 @@
 <template>
-  <div class="submissions">
-
-    <div v-if="status === 'loading'" class="text-xs-center">
-      <v-progress-circular indeterminate color="secondary" size="70" width="7"/>
-    </div>
-
-    <div v-if="status === 'error'" class="text-xs-center">
-      <h4>An error has occurred</h4>
-    </div>
-
-    <div v-if="status === 'normal'">
-      <h1 class="ma-8">{{ taskName }}</h1>
-    </div>
+  <div class="submission">
     <FileSubmit/>
-    <UserSubmission v-if="submissionStatus === 'Accepted'"/>
+    <UserSubmission v-if="submissionStatus === 'Accepted' || submissionStatus === 'Not submitted'"/>
   </div>
 </template>
 
@@ -38,9 +26,6 @@
       }
     },
     computed: {
-      status() {
-        return this.$store.getters.status;
-      },
       taskId() {
         return this.$store.getters.currentTask;
       },
