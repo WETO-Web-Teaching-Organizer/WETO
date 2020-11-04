@@ -15,12 +15,12 @@
         >
           <td>{{ doc.fileName }}</td>
           <td>{{ doc.fileDate }}</td>
-          <td>Returned</td>
+          <td>{{ submissionStatus }}</td>
           <td>
             <v-row align="center" justify="flex-start">
-              <v-btn depressed color="primary" class="docAction">View</v-btn>
-              <v-btn depressed color="secondary" class="docAction">Edit</v-btn>
-              <v-btn depressed color="error" class="docAction">Delete</v-btn>
+              <v-btn depressed color="primary" class="docAction" @click="downloadSubmissionFile(doc.fileName, doc.id)">Download</v-btn>
+              <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
+              <v-btn depressed color="error" class="docAction" @click="deleteSubmissionFile(doc.id)">Delete</v-btn>
             </v-row>
           </td>
         </tr>
@@ -42,7 +42,8 @@
         MULTIPLE_CHOICE: 1,
         ESSAY: 2,
         SURVEY: 3,
-        PROGRAM: 4
+        PROGRAM: 4,
+        submissionStatus: null
       }
     },
     computed: {
@@ -89,15 +90,12 @@
           this.$store.commit("changeStatus", "error");
         })
       },
-      getSubmissions() {
-        api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
-          console.log(response.data);
-        });
-      },
       getDocuments() {
         let submissionId;
         api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           submissionId = response.data.submissions[0].id;
+          this.submissionStatus = response.data.submissionStates[2];
+          console.log(response.data);
         }).then(() => {
           api.getDocuments(submissionId, this.dbId, this.taskId, this.tabId).then(res => {
             this.documents = res.data.documents;
@@ -105,7 +103,18 @@
             console.log(err);
           });
         })
-      }
+      },
+      downloadSubmissionFile(filename, id) {
+        api.downloadSubmissionFile(filename, id, this.dbId, this.taskId, this.tabId);
+      },
+      deleteSubmissionFile(id) {
+        api.deleteSubmissionFile(id, this.dbId, this.taskId, this.tabId).then(() => {
+          this.getDocuments();
+        }).catch(err => {
+          console.log(err);
+          this.backendResponse.push(err);
+        });
+      },
     }
   }
 </script>
