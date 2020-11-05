@@ -20,7 +20,27 @@
             <v-row align="center" justify="flex-start">
               <v-btn depressed color="primary" class="docAction" @click="downloadSubmissionFile(doc.fileName, doc.id)">Download</v-btn>
               <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
-              <v-btn depressed color="error" class="docAction" @click="deleteSubmissionFile(doc.id)">Delete</v-btn>
+              <v-dialog
+                v-model="dialog"
+                width="400"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn depressed color="error" class="docAction" v-bind="attrs" v-on="on">Delete</v-btn>
+                </template>
+                <v-card>
+                  <v-card-title>
+                    Delete file from submission
+                  </v-card-title>
+                  <v-card-text>
+                    Are you sure you want to delete the file: {{doc.fileName}}?
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="secondary" text @click="dialog = false">Cancel</v-btn>
+                    <v-btn color="primary" text @click="dialog = false; deleteSubmissionFile(doc.id)">Delete</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </v-row>
           </td>
         </tr>
@@ -38,6 +58,7 @@
         backendResponse: [],
         errors: [],
         documents: null,
+        dialog: false,
         HTML: 0,
         MULTIPLE_CHOICE: 1,
         ESSAY: 2,
@@ -119,7 +140,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   thead {
     background-color: #f3e5ff;
   }
