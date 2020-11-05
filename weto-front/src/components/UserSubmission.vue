@@ -114,9 +114,9 @@
       getDocuments() {
         let submissionId;
         api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
-          submissionId = response.data.submissions[0].id;
-          this.submissionStatus = response.data.submissionStates[2];
-          console.log(response.data);
+          const submission = response.data.submissions[0];
+          submissionId = submission.id;
+          this.submissionStatus = response.data.submissionStates[submission.status];
         }).then(() => {
           api.getDocuments(submissionId, this.dbId, this.taskId, this.tabId).then(res => {
             this.documents = res.data.documents;
