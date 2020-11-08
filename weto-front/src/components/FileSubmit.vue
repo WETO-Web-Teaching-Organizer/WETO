@@ -10,29 +10,37 @@
                     @change="selectFile"
                     @drop="dropFile"
                 />
-                <p class="call-to-action">{{this.description}}</p>
-                <v-row>
+                <div class ="dropbox-header">
+                    <p class="call-to-action">Drag and drop file(s) here or click to pick them</p>
+                    <p class="description">{{this.description}}</p>
+                </div>
+                <v-row
+                    align="center"
+                >
                     <v-col
+                        align-self="auto"
                         v-for="(file, i) in files"
                         :key="file.name"
                     >
                         <v-chip
-                        close
-                        @click:close="files.splice(i,1)">
+                            close
+                            @click:close="files.splice(i,1)">
                             <strong>{{file.name}}</strong>
                         </v-chip>
                     </v-col>
                 </v-row>
+                <p class="error-message" v-if="this.excluded && this.excludedFiles.length === 1">This file was not accepted: {{this.excludedFiles}}</p>
+                <p class="error-message" v-if="this.excluded && this.excludedFiles.length > 1">These files were not accepted: {{this.excludedFiles}}</p>
             </div>
             <v-row justify="center">
                 <v-btn
                 color="#7dcdbe"
-                @click="submitFiles"
-                >Complete submission(s)</v-btn>
+                @click="uploadFiles"
+                >Add submission file(s)</v-btn>
                 <v-btn
                 @click="removeAllFiles"
                 color="#f07387"
-                >Cancel submission(s)</v-btn>
+                >Remove submission all files</v-btn>
             </v-row>
         </form>
     </div>
@@ -71,7 +79,10 @@
             return {
                 submissionId: "",
                 files: [],
+                excludedFiles: [],
                 error: false,
+                excluded: false,
+                description: "",
             }
         },
         methods:{
@@ -84,21 +95,35 @@
                 const files = this.$refs.files.files;
                 this.files = [...this.files, ...files];
                 console.log(this.files)
+                this.excluded = false;
+                this.excludedFiles = [];
             },
-            submitFiles(){
+            uploadFiles(){
+                let i;
+                for(i = 0; i < this.files.length; i++){
+                    this.submitFile(i)
+                }
 
-                api.addSubmissionFile(this.files[0].name, this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response);
-                    this.sendSubmission();
-                })
             },
-            sendSubmission(){
-                api.fileSubmission(this.files[0], this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
+            fileNotAllowed(){
+                this.excluded = true;
+            },
+            submitFile(i){
+                console.log(this.files[i].name)
+                api.addSubmissionFile(this.files[i].name, this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
+                    if(response.data.excludedFiles.length == 1){
+                       this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
+                       this.fileNotAllowed();
+                    }
                     console.log(response)
+                    this.sendSubmission(i);
                 })
             },
-            validate(file){
-                return file
+            sendSubmission(i){
+                api.fileSubmission(this.files[i], this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
+                    console.log(response);
+                    this.getSubmissionId();
+                })
             },
             getSubmissionId(){
                 let submissionId;
@@ -106,34 +131,18 @@
                     console.log(response)
                     submissionId = response.data.submissions[0].id;
                     this.submissionId = submissionId;
+                    if(response.data.patternDescriptions === ""){
+                        this.description = "Allowed file patterns: *.*";
+                    }
+                    else{
+                        this.description = "Allowed file patterns: " + response.data.patternDescriptions;
+                    }
                 });
             },
             removeAllFiles(){
-                console.log(this.files);
                 this.files = [];
-                console.log(this.files);
-            }
-        },
-        props:{
-            fileName: {
-                type: Array,
-                required: true,
-                default: function () {return []},
-            },
-            fileType: {
-                type: Array,
-                required: true,
-                default: function () {return []},
-            },
-            fileLim:{
-                type: Number,
-                required: true,
-                default: 1,
-            },
-            description: {
-                type: String,
-                required: true,
-                default: "Drag and drop file(s) here or click to pick them",
+                this.excluded = false;
+                this.excludedFiles = [];
             }
         }
     }
@@ -150,22 +159,37 @@
         cursor: pointer;
         box-shadow: 0 0 10px lightgrey;
         background: white;
-        border: 5px solid #F3E5FF;
+        border: 10px solid #F3E5FF;
         margin-bottom: 10px
     }
     .input-file {
         opacity: 0;
         width: 100%;
-        height: 200px;
+        height: 100%;
         position: absolute;
     }
     .dropbox:hover {
-        background: lightblue;
+        background: #E0E0E0;
     }
     .dropbox .call-to-action{
         color: #32005C;
         font-size: 1.5rem;
         text-align: center;
-        padding: 70px 0;
+    }
+    .dropbox .error-message{
+        color: red;
+        font-size: 1rem;
+        text-align: center;
+        border: 5px solid red;
+        padding: 10px 0;
+    }
+    .dropbox-header{
+        padding: 75px 0;
+    }
+    .description {
+        color: #32005C;
+        font-size: 1.2rem;
+        text-align: center;
+        opacity: 0.6;
     }
 </style>
