@@ -18,14 +18,20 @@
           <td>{{ submissionStatus }}</td>
           <td>
             <v-row align="center" justify="flex-start">
-              <v-btn depressed color="primary" class="docAction" @click="downloadSubmissionFile(doc.fileName, doc.id)">Download</v-btn>
+              <v-btn depressed color="primary" class="docAction" @click="downloadSubmissionFile(doc.fileName, doc.id)">
+                <v-icon>download</v-icon>
+                Download
+              </v-btn>
               <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
               <v-dialog
                 v-model="dialog"
                 width="400"
               >
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn depressed color="error" class="docAction" v-bind="attrs" v-on="on">Delete</v-btn>
+                  <v-btn depressed color="error" class="docAction" v-bind="attrs" v-on="on">
+                    <v-icon>delete</v-icon>
+                    Delete
+                  </v-btn>
                 </template>
                 <v-card>
                   <v-card-title>
@@ -122,7 +128,10 @@
             this.documents = res.data.documents;
           }).catch((err) => {
             console.log(err);
-          });
+          })
+        }).catch(err => {
+          console.log(err);
+          this.errors.push(err);
         })
       },
       downloadSubmissionFile(filename, id) {
