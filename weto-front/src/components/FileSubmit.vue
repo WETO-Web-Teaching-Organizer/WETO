@@ -3,6 +3,7 @@
         <form enctype="multipart/form">
             <div class="dropbox">
                 <input
+                    name="Browse files"
                     class="input-file"
                     multiple
                     type="file"
@@ -40,7 +41,7 @@
                 <v-btn
                 @click="removeAllFiles"
                 color="#f07387"
-                >Remove submission all files</v-btn>
+                >Remove all submission files</v-btn>
             </v-row>
         </form>
     </div>
@@ -99,6 +100,8 @@
                 this.excludedFiles = [];
             },
             uploadFiles(){
+                this.excludedFiles = [];
+                this.excluded = false;
                 let i;
                 for(i = 0; i < this.files.length; i++){
                     this.submitFile(i)
@@ -111,9 +114,9 @@
             submitFile(i){
                 console.log(this.files[i].name)
                 api.addSubmissionFile(this.files[i].name, this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
-                    if(response.data.excludedFiles.length == 1){
-                       this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
-                       this.fileNotAllowed();
+                    if(response.data.excludedFiles.length > 0){
+                        this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
+                        this.fileNotAllowed();
                     }
                     console.log(response)
                     this.sendSubmission(i);
