@@ -18,7 +18,7 @@
           <td>{{ submissionStatus }}</td>
           <td>
             <v-row align="center" justify="flex-start">
-              <v-btn depressed color="primary" class="docAction" @click="downloadSubmissionFile(doc.fileName, doc.id)">
+              <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
                 <v-icon>download</v-icon>
                 Download
               </v-btn>
@@ -28,7 +28,7 @@
                 width="400"
               >
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn depressed color="error" class="docAction" v-bind="attrs" v-on="on">
+                  <v-btn depressed class="docAction" color="error" v-bind="attrs" v-on="on">
                     <v-icon>delete</v-icon>
                     Delete
                   </v-btn>
@@ -43,7 +43,7 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="secondary" text @click="dialog = false">Cancel</v-btn>
-                    <v-btn color="primary" text @click="dialog = false; deleteSubmissionFile(doc.id)">Delete</v-btn>
+                    <v-btn color="primary" text @click="dialog = false; deleteSubmissionFile(doc.id);">Delete</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -63,20 +63,15 @@
       return {
         backendResponse: [],
         errors: [],
-        documents: null,
         dialog: false,
-        HTML: 0,
-        MULTIPLE_CHOICE: 1,
-        ESSAY: 2,
-        SURVEY: 3,
-        PROGRAM: 4,
-        submissionStatus: null
       }
     },
+    props: {
+      submissionStatus: String,
+      submission: Object,
+      documents: Array,
+    },
     computed: {
-      status() {
-        return this.$store.getters.status;
-      },
       taskId() {
         return this.$store.getters.currentTask;
       },
@@ -89,57 +84,14 @@
       taskName() {
         return this.$store.getters.selectedCourse.name;
       },
-      user() {
-        return this.$store.getters.user;
-      },
-      subTasks() {
-        return this.$store.getters.subTasks;
-      }
-    },
-    created() {
-      this.fetchData();
-      this.getDocuments();
-    },
-    watch: {
-      taskId() {
-        this.fetchData();
-      }
     },
     methods: {
-      fetchData() {
-        this.$store.commit("changeStatus", "loading");
-        api.getCourseTask(this.dbId, this.taskId, this.tabId).then(response => {
-          this.backendResponse = response.data;
-          this.$store.commit("setSubTasks", response.data.subtasks);
-          this.$store.commit("changeStatus", "normal");
-        }).catch(error => {
-          this.errors.push(error);
-          this.$store.commit("changeStatus", "error");
-        })
-      },
-      getDocuments() {
-        let submissionId;
-        api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
-          const submission = response.data.submissions[0];
-          submissionId = submission.id;
-          this.submissionStatus = response.data.submissionStates[submission.status];
-        }).then(() => {
-          api.getDocuments(submissionId, this.dbId, this.taskId, this.tabId).then(res => {
-            this.documents = res.data.documents;
-          }).catch((err) => {
-            console.log(err);
-          })
-        }).catch(err => {
-          console.log(err);
-          this.errors.push(err);
-        })
-      },
       downloadSubmissionFile(filename, id) {
         api.downloadSubmissionFile(filename, id, this.dbId, this.taskId, this.tabId);
       },
       deleteSubmissionFile(id) {
         api.deleteSubmissionFile(id, this.dbId, this.taskId, this.tabId).then(() => {
-          this.getDocuments();
+          this.$emit('deleteDocument');
         }).catch(err => {
           console.log(err);
           this.backendResponse.push(err);
@@ -154,6 +106,8 @@
     background-color: #f3e5ff;
   }
   .docAction {
-    margin: 0 2%;
+    margin-right: 2em;
+    margin-top: 0.5em;
+    padding-left: 12px;
   }
 </style>

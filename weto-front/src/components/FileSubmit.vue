@@ -71,20 +71,24 @@
             },
             subTasks() {
                 return this.$store.getters.subTasks;
-            }
+            },
+
         },
-        created(){
-            this.getSubmissionId();
-        },
+        // created(){
+        //     this.getAllowedFilePatterns();
+        // },
         data(){
             return {
-                submissionId: "",
                 files: [],
                 excludedFiles: [],
                 error: false,
                 excluded: false,
                 description: "",
             }
+        },
+        props: {
+            submission: Object,
+            filePatterns: String,
         },
         methods:{
             dropFile(event){
@@ -102,18 +106,20 @@
             uploadFiles(){
                 this.excludedFiles = [];
                 this.excluded = false;
+                if (!this.submission) {
+                    this.$emit('add');
+                }
                 let i;
                 for(i = 0; i < this.files.length; i++){
                     this.submitFile(i)
                 }
-
             },
             fileNotAllowed(){
                 this.excluded = true;
             },
             submitFile(i){
                 console.log(this.files[i].name)
-                api.addSubmissionFile(this.files[i].name, this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
+                api.addSubmissionFile(this.files[i].name, this.submission.id, this.dbId, this.taskId, this.tabId).then(response => {
                     if(response.data.excludedFiles.length > 0){
                         this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
                         this.fileNotAllowed();
@@ -123,25 +129,20 @@
                 })
             },
             sendSubmission(i){
-                api.fileSubmission(this.files[i], this.submissionId, this.dbId, this.taskId, this.tabId).then(response => {
+                api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).then(response => {
                     console.log(response);
-                    this.getSubmissionId();
                 })
             },
-            getSubmissionId(){
-                let submissionId;
-                api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response)
-                    submissionId = response.data.submissions[0].id;
-                    this.submissionId = submissionId;
-                    if(response.data.patternDescriptions === ""){
-                        this.description = "Allowed file patterns: *.*";
-                    }
-                    else{
-                        this.description = "Allowed file patterns: " + response.data.patternDescriptions;
-                    }
-                });
-            },
+            // getAllowedFilePatterns(){
+            //     api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+            //         if(response.data.patternDescriptions === ""){
+            //             this.description = "Allowed file patterns: *.*";
+            //         }
+            //         else{
+            //             this.description = "Allowed file patterns: " + response.data.patternDescriptions;
+            //         }
+            //     }).catch(() => {});
+            // },
             removeAllFiles(){
                 this.files = [];
                 this.excluded = false;
@@ -153,7 +154,7 @@
 
 <style scoped>
     .container {
-       margin-bottom: 20px; 
+        margin-bottom: 20px;
     }
     .dropbox {
         min-height: 200px;
