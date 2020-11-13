@@ -13,7 +13,7 @@
                 />
                 <div class ="dropbox-header">
                     <p class="call-to-action">Drag and drop file(s) here or click to pick them</p>
-                    <p class="description">{{this.description}}</p>
+                    <p class="description">{{allowedFilePatterns}}</p>
                 </div>
                 <v-row
                     align="center"
@@ -72,11 +72,10 @@
             subTasks() {
                 return this.$store.getters.subTasks;
             },
-
+            allowedFilePatterns() {
+                return (this.filePatterns === "" ? "Allowed file patterns: *.*" : "Allowed file patterns: " + this.filePatterns);
+            }
         },
-        // created(){
-        //     this.getAllowedFilePatterns();
-        // },
         data(){
             return {
                 files: [],
@@ -134,16 +133,6 @@
                 })
                 this.$emit('refresh');
             },
-            // getAllowedFilePatterns(){
-            //     api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
-            //         if(response.data.patternDescriptions === ""){
-            //             this.description = "Allowed file patterns: *.*";
-            //         }
-            //         else{
-            //             this.description = "Allowed file patterns: " + response.data.patternDescriptions;
-            //         }
-            //     }).catch(() => {});
-            // },
             removeAllFiles(){
                 this.files = [];
                 this.excluded = false;
