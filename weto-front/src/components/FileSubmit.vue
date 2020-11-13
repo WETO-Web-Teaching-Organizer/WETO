@@ -132,6 +132,7 @@
                 api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).then(response => {
                     console.log(response);
                 })
+                this.$emit('refresh');
             },
             // getAllowedFilePatterns(){
             //     api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
