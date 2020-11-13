@@ -133,8 +133,8 @@
       },
       getSubmissions() {
         api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+          this.filePatterns = response.data.patternDescriptions;
           if (response.data.submissions.length) {
-            this.filePatterns = response.data.patternDescriptions;
             const s = response.data.submissions[0];
             this.submission = s;
             this.submissionStatus = response.data.submissionStates[s.status];
