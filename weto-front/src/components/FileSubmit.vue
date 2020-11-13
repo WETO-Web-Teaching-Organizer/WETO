@@ -25,6 +25,8 @@
                     >
                         <v-chip
                             close
+                            outlined
+                            color="#32005c"
                             @click:close="files.splice(i,1)">
                             <strong>{{file.name}}</strong>
                         </v-chip>
