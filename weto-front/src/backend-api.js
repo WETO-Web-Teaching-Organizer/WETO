@@ -66,6 +66,9 @@ export default {
   getSubmissions(db, task, tab) {
     return AXIOS.post("/getJSONSubmissions", {dbId: db, taskId: task, tabId: tab})
   },
+  viewSubmissions(db, task, tab) {
+    return AXIOS.get("/viewJSONSubmissions", { params: {dbId: db, taskId: task, tabId: tab} })
+  },
   getDocuments(submissionId, dbId, taskId, tabId) {
     return AXIOS.get("/getJSONDocuments", { params: {submissionId, dbId, taskId, tabId} })
   },
