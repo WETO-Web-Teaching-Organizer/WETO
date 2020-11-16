@@ -5,6 +5,7 @@
         <tr>
           <th class="text-left">Name</th>
           <th class="text-left">Date modified</th>
+          <th class="text-left">File size</th>
           <th class="text-left">Status</th>
           <th class="text-left">Actions</th>
         </tr>
@@ -15,7 +16,8 @@
         >
           <td>{{ doc.fileName }}</td>
           <td>{{ doc.fileDate }}</td>
-          <td>{{ submissionStatus }}</td>
+          <td>{{ doc.fileSize }} bytes</td>
+          <td>{{ getSubmissionStatus }}</td>
           <td>
             <v-row align="center" justify="flex-start">
               <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
@@ -86,6 +88,9 @@
       taskName() {
         return this.$store.getters.selectedCourse.name;
       },
+      getSubmissionStatus() {
+        return (this.submissionStatus === 'Accepted' ? 'Submitted' : this.submissionStatus)
+      }
     },
     methods: {
       downloadSubmissionFile(filename, id) {
@@ -104,12 +109,17 @@
 </script>
 
 <style scoped>
+  .v-data-table {
+    margin: 1em;
+    border: 1px #102027 solid;
+  }
   thead {
     background-color: #f3e5ff;
   }
   .docAction {
     margin-right: 2em;
     margin-top: 0.5em;
+    margin-bottom: 0.5em;
     padding-left: 12px;
   }
 </style>
