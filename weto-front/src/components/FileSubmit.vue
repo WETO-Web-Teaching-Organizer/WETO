@@ -100,7 +100,6 @@
             selectFile(){
                 const files = this.$refs.files.files;
                 this.files = [...this.files, ...files];
-                console.log(this.files)
                 this.excluded = false;
                 this.excludedFiles = [];
             },
@@ -119,19 +118,19 @@
                 this.excluded = true;
             },
             submitFile(i){
-                console.log(this.files[i].name)
                 api.addSubmissionFile(this.files[i].name, this.submission.id, this.dbId, this.taskId, this.tabId).then(response => {
                     if(response.data.excludedFiles.length > 0){
                         this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
                         this.fileNotAllowed();
                     }
-                    console.log(response)
                     this.sendSubmission(i);
-                })
+                }).catch(err => {
+                    console.log(err);
+                });
             },
             sendSubmission(i){
-                api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response);
+                api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).catch(err => {
+                    console.log(err);
                 })
                 this.$emit('refresh');
             },
