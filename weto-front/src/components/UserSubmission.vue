@@ -24,6 +24,7 @@
               </v-btn>
               <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
               <v-dialog
+                v-if="submissionPeriodActive === true"
                 v-model="dialog"
                 width="400"
               >
@@ -70,6 +71,7 @@
       submissionStatus: String,
       submission: Object,
       documents: Array,
+      submissionPeriodActive: Boolean,
     },
     computed: {
       taskId() {

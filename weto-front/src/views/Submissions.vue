@@ -1,14 +1,22 @@
 <template>
   <div class="submission">
-    <file-submit v-bind:submission="submission" v-bind:file-patterns="filePatterns" v-on:add="createSubmission" v-on:refresh="getSubmissions"/>
+    <h3 class="submissionPeriod">Submission period: {{submissionPeriod[0]}} - {{submissionPeriod[1]}}</h3>
+    <file-submit
+      v-if="submissionPeriodActive === true"
+      v-bind:submission="submission"
+      v-bind:file-patterns="filePatterns"
+      v-on:add="createSubmission"
+      v-on:refresh="getSubmissions"
+    />
     <user-submission
       v-if="submission !== null"
       v-bind:submission-status="submissionStatus"
       v-bind:submission="submission"
       v-bind:documents="documents"
+      v-bind:submission-period-active="submissionPeriodActive"
       v-on:deleteDocument="getSubmissions"
     />
-    <v-row v-if="submission" class="submissionActions" align="center" justify="space-around">
+    <v-row v-if="submission && submissionPeriodActive === true" class="submissionActions" align="center" justify="space-around">
       <v-btn color="primary" @click="completeSubmission" :disabled="!documents.length || submissionStatus !== 'Not submitted'">
         <v-icon>check</v-icon>
         Complete submission
@@ -57,6 +65,8 @@
         submissionStatus: null,
         filePatterns: "*.*",
         documents: [],
+        submissionPeriod: [],
+        submissionPeriodActive: null,
         dialog: false,
         HTML: 0,
         MULTIPLE_CHOICE: 1,
@@ -89,6 +99,7 @@
       this.checkLogin();
       this.checkCourseSelection();
       this.fetchData();
+      this.viewSubmissions();
       this.getSubmissions();
     },
     watch: {
@@ -150,8 +161,17 @@
           }
         }).catch(err => {
           console.log(err);
-          this.errors.push(err);
+          // this.errors.push(err);
         });
+      },
+      viewSubmissions() {
+        api.viewSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+          this.submissionPeriod = response.data.generalSubmissionPeriod;
+          this.submissionPeriodActive = response.data.submissionPeriodActive;
+        }).catch(err => {
+          console.log(err);
+          this.errors.push(err);
+        })
       },
       createSubmission() {
         api.createSubmission(this.user.idData.value, this.dbId, this.taskId, this.tabId).then(() => {
@@ -180,6 +200,10 @@
   }
 </script>
 <style scoped>
+  .submissionPeriod {
+    text-align: center;
+    color: #32005C;
+  }
   .submissionActions {
     margin-top: 1em;
   }
