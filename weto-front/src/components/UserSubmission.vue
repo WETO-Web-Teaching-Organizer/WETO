@@ -19,7 +19,7 @@
           <td>{{ doc.fileSize }} bytes</td>
           <td>{{ getSubmissionStatus }}</td>
           <td>
-            <v-row align="center" justify="flex-start">
+            <v-row>
               <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
                 <v-icon>download</v-icon>
                 Download
@@ -109,6 +109,10 @@
 </script>
 
 <style scoped>
+  .row {
+    align-content: center;
+    justify-content: flex-start;
+  }
   .v-data-table {
     margin: 1em;
     border: 1px #102027 solid;
