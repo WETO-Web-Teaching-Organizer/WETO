@@ -1,11 +1,13 @@
 <template>
   <div class="grading">
     <h1>This is a grading page</h1>
+    <TaskGrade />
   </div>
 </template>
 
 <script>
   import api from '../backend-api'
+  import TaskGrade from '../components/TaskGrade'
 
   export default {
     name: 'grading',
@@ -24,6 +26,9 @@
       this.checkLogin();
       this.checkCourseSelection();
       this.fetchData();
+    },
+    components:{
+      TaskGrade
     },
     watch: {
       taskId() {
