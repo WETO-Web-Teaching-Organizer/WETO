@@ -38,7 +38,7 @@
             <v-row justify="center">
                 <v-btn
                 color="#7dcdbe"
-                @click="uploadFiles"
+                @click="ensureSubmission"
                 >Add submission file(s)</v-btn>
                 <v-btn
                 @click="removeAllFiles"
@@ -103,12 +103,16 @@
                 this.excluded = false;
                 this.excludedFiles = [];
             },
+            ensureSubmission() {
+              if (this.submission) {
+                this.uploadFiles();
+              } else {
+                this.$emit('add');
+              }
+            },
             uploadFiles(){
                 this.excludedFiles = [];
                 this.excluded = false;
-                if (!this.submission) {
-                    this.$emit('add');
-                }
                 let i;
                 for(i = 0; i < this.files.length; i++){
                     this.submitFile(i)
@@ -123,16 +127,18 @@
                         this.excludedFiles = [...this.excludedFiles, ...response.data.excludedFiles];
                         this.fileNotAllowed();
                     }
+                }).then(() => {
                     this.sendSubmission(i);
                 }).catch(err => {
                     console.log(err);
                 });
             },
             sendSubmission(i){
-                api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).catch(err => {
+                api.fileSubmission(this.files[i], this.submission.id, this.dbId, this.taskId, this.tabId).then(() => {
+                  this.$emit('refresh');
+                }).catch(err => {
                     console.log(err);
                 })
-                this.$emit('refresh');
             },
             removeAllFiles(){
                 this.files = [];

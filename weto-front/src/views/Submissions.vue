@@ -1,6 +1,6 @@
 <template>
   <v-expansion-panels>
-    <v-expansion-panel key="submission" @click="createSubmission">
+    <v-expansion-panel key="submission" >
       <v-expansion-panel-header>
         <h2>Submission</h2>
       </v-expansion-panel-header>
@@ -153,8 +153,8 @@
       switchTask(id) {
         this.$store.commit("setTask", id);
       },
-      getSubmissions() {
-        api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
+      async getSubmissions() {
+        let promise = api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           this.filePatterns = response.data.patternDescriptions;
           if (response.data.submissions.length) {
             const s = response.data.submissions[0];
@@ -174,6 +174,8 @@
           console.log(err);
           // this.errors.push(err);
         });
+
+        return promise
       },
       viewSubmissions() {
         api.viewSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
@@ -187,7 +189,9 @@
       createSubmission() {
         if (this.submission === null) {
           api.createSubmission(this.user.idData.value, this.dbId, this.taskId, this.tabId).then(() => {
-            this.getSubmissions();
+            return this.getSubmissions().then(() => {
+              this.$refs.fileSubmit.uploadFiles();
+            })
           }).catch(err => {
             console.log(err);
           });
