@@ -1,61 +1,64 @@
 <template>
-  <v-simple-table>
-    <template v-slot:default>
-      <thead>
-        <tr>
-          <th class="text-left">Name</th>
-          <th class="text-left">Date modified</th>
-          <th class="text-left">File size</th>
-          <th class="text-left">Status</th>
-          <th class="text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="doc in documents" :key="doc.id"
-        >
-          <td>{{ doc.fileName }}</td>
-          <td>{{ doc.fileDate }}</td>
-          <td>{{ doc.fileSize }} bytes</td>
-          <td>{{ getSubmissionStatus }}</td>
-          <td>
-            <v-row>
-              <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
-                <v-icon>download</v-icon>
-                Download
-              </v-btn>
-              <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
-              <v-dialog
-                v-if="submissionPeriodActive === true"
-                v-model="dialog"
-                width="400"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn depressed class="docAction" color="error" v-bind="attrs" v-on="on">
+  <div>
+    <v-simple-table>
+      <template v-slot:default>
+        <thead>
+          <tr>
+            <th class="text-left">Name</th>
+            <th class="text-left">Date modified</th>
+            <th class="text-left">File size</th>
+            <th class="text-left">Status</th>
+            <th class="text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="doc in documents" :key="doc.id"
+          >
+            <td>{{ doc.fileName }}</td>
+            <td>{{ doc.fileDate }}</td>
+            <td>{{ doc.fileSize }} bytes</td>
+            <td>{{ getSubmissionStatus }}</td>
+            <td>
+              <v-row>
+                <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
+                  <v-icon>download</v-icon>
+                  Download
+                </v-btn>
+                <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
+                <template>
+                  <v-btn depressed class="docAction" color="error" @click="showDeleteDialog(doc)">
                     <v-icon>delete</v-icon>
                     Delete
                   </v-btn>
                 </template>
-                <v-card>
-                  <v-card-title>
-                    Delete file from submission
-                  </v-card-title>
-                  <v-card-text>
-                    Are you sure you want to delete the file: {{doc.fileName}}?
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="secondary" text @click="dialog = false">Cancel</v-btn>
-                    <v-btn color="primary" text @click="dialog = false; deleteSubmissionFile(doc.id);">Delete</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-row>
-          </td>
-        </tr>
-      </tbody>
-    </template>
-  </v-simple-table>
+              </v-row>
+            </td>
+          </tr>
+        </tbody>
+      </template>
+    </v-simple-table>
+
+    <v-dialog
+      v-if="submissionPeriodActive === true"
+      v-model="dialog"
+      max-width="400"
+    >
+      <v-card>
+        <v-card-title>
+          Delete file from submission
+        </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete the file: {{documentToDelete.fileName}}?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" text @click="dialog = false">Cancel</v-btn>
+          <v-btn color="primary" text @click="dialog = false; deleteSubmissionFile(documentToDelete.id);">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script>
@@ -67,6 +70,7 @@
         backendResponse: [],
         errors: [],
         dialog: false,
+        documentToDelete: {}
       }
     },
     props: {
@@ -103,6 +107,10 @@
           console.log(err);
           this.backendResponse.push(err);
         });
+      },
+      showDeleteDialog(document) {
+        this.documentToDelete = document;
+        this.dialog = !this.dialog;
       },
     }
   }
