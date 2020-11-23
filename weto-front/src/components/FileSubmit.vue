@@ -188,9 +188,8 @@
         padding: 75px 0;
     }
     .description {
-        color: #32005C;
+        color: #32005C99;
         font-size: 1.2rem;
         text-align: center;
-        opacity: 0.6;
     }
 </style>
