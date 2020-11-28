@@ -176,54 +176,6 @@
                   timeStampString: ""
                 },
                 resultsPeriod: [],
-                /*grades: [
-                    {
-                        feedback: "OK",
-                        phase: 1,
-                        processingTime: 30,
-                        testNo: 1,
-                        testScore: 1,
-                    },
-                    {
-                        feedback: "Failed",
-                        phase: 1,
-                        processingTime: 100,
-                        testNo: 2,
-                        testScore: 0,
-                    }
-                ],*/
-                /*
-                grades: [
-                    {
-                        name: 'Ope1',
-                        time: '18.11.2019 13:02',
-                        rating: 3.0,
-                        validity: "Valid",
-                        files: [
-                            {
-                                id: 0,
-                                name: 'Hello_world.txt',
-                                size: '245'
-                            }
-                        ]
-                    },
-                    {
-                        name: 'Ope2',
-                        time: '18.11.2019 13:02',
-                        rating: 2.0,
-                    },
-                    {
-                        name: 'Ope3',
-                        time: '18.11.2019 13:02',
-                        rating: 0.0,
-                    },
-                    {
-                        name: 'Ope4',
-                        time: '18.11.2019 13:02',
-                        rating: 1.0,
-                    }
-                ],
-                */
                 grades: [],
                 gradeHeaders: [
                     {
@@ -248,11 +200,24 @@
 
                     this.resultsPeriod = response.data.resultsPeriod;
 
-                    // Set min & max score
+                    // Parse min & max score from scoring properties
+                    let min = 0
+                    let max = 0
+
                     let scoringProperties = response.data.scoring.properties;
-                    let minMaxProps = scoringProperties.split("\n").slice(-3);
-                    this.minScore = parseFloat(minMaxProps[0].charAt(minMaxProps[0].length - 1))
-                    this.maxScore = parseFloat(minMaxProps[1].charAt(minMaxProps[0].length - 1))
+                    let scoringProps = scoringProperties.split("\n");
+                    
+                    for (let prop of scoringProps) {
+                      if (prop.includes("minScore")) {
+                        min = prop.split("=")[1]
+                      }
+                      if (prop.includes("maxScore")) {
+                        max = prop.split("=")[1]
+                      }
+                    }
+
+                    this.minScore = parseFloat(min)
+                    this.maxScore = parseFloat(max)
 
                     if (!receivedGrades || !resultsPeriodActive) return;
 
