@@ -25,7 +25,6 @@
     created() {
       this.checkLogin();
       this.checkCourseSelection();
-      this.fetchData();
     },
     components:{
       TaskGrade
@@ -50,7 +49,7 @@
       clearSelectedCourse() {
         this.$store.commit("unselectCourse");
       },
-      fetchData() {
+      /*fetchData() {
         api.getJSONNodeGrades(this.dbId, this.taskId, this.tabId).then(res => {
           console.log("NodeGrades: " + JSON.stringify(res));
         })
@@ -58,7 +57,7 @@
         api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId).then(res => {
           console.log("LeafGrades: " + JSON.stringify(res));
         })
-      }
+      }*/
     }
   }
 </script>

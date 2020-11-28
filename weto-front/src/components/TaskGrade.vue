@@ -1,6 +1,50 @@
 <template>
     <div>
+        <v-simple-table v-if="autoGrading">
+            <template v-slot:default>
+                <thead>
+                    <tr>
+                        <th class="text-left">
+                            Test #
+                        </th>
+                        <th class="text-left">
+                            Score
+                        </th>
+                        <th class="text-left">
+                            Time
+                        </th>
+                        <th class="text-left">
+                            Feedback
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="item in grades"
+                        :key="item.testNo"
+                    >
+                        <td>{{ item.testNo }}</td>
+                        <td>
+                            <v-chip
+                                :color="autoGradeColor(item.testScore)"
+                            >
+                                {{ item.testScore }}
+                            </v-chip>
+                        </td>
+                        <td>{{ item.processingTime }} </td>
+                        <td>
+                            <v-chip
+                                :color="autoGradeColor(item.testScore)"
+                            >
+                                {{ item.feedback }}
+                            </v-chip>
+                        </td>
+                    </tr>
+                </tbody>
+            </template>
+        </v-simple-table>
         <v-data-table
+            v-else
             :headers="gradeHeaders"
             :items="grades"
             :expanded.sync="expanded"
@@ -17,36 +61,10 @@
             </template>
             <template v-slot:item.rating="{ item }">
                 <v-chip
-                    :color="getColor(item.rating)"
+                    :color="gradeGetColor(item.rating)"
                 >
                     {{ item.rating }} {{item.validity}}
                 </v-chip>
-            </template>
-            <template v-slot:expanded-item="{headers, item}">
-                <td :colspan="3">
-                    <p>Submitted files:</p>
-                    <v-simple-table>
-                        <template v-slot default>
-                            <thead>
-                                <th class="text-left">File</th>
-                                <th class="text-left">Size</th>
-                                <th class="text-left">Actions</th>
-                            </thead>
-                            <tbody>
-                                <tr v-for="file in item.files" :key="file.id">
-                                    <td>{{file.name}}</td>
-                                    <td>{{file.size}}</td>
-                                    <td>
-                                        <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
-                                            <v-icon>download</v-icon>
-                                            Download
-                                        </v-btn>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </template>
-                    </v-simple-table>
-                </td>
             </template>
         </v-data-table>
     </div>
@@ -58,9 +76,8 @@
     export default{
         name: 'taskGrade',
         created(){
-            this.getNodeGrades();
+            this.checkAutograding();
             this.getStudentLeafGrades();
-            this.getGrade();
         },
         computed: {
             status() {
@@ -87,9 +104,27 @@
         },
         data(){
             return{
+                autoGrading: false,
+                autoGradingResults: [],
                 full: 3.0,
                 valid: 2.0,
                 notValid: 0.0,
+                /*grades: [
+                    {
+                        feedback: "OK",
+                        phase: 1,
+                        processingTime: 30,
+                        testNo: 1,
+                        testScore: 1,
+                    },
+                    {
+                        feedback: "Failed",
+                        phase: 1,
+                        processingTime: 100,
+                        testNo: 2,
+                        testScore: 0,
+                    }
+                ],*/
                 grades: [
                     {
                         name: 'Ope1',
@@ -134,29 +169,36 @@
             }
         },
         methods: {
-            getNodeGrades(){
-                api.getJSONNodeGrades(this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response);
-                });
-            },
             getStudentLeafGrades(){
                 api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response);
+                    console.log(response.data);
                 });
             },
-            getGrade(){
-                api.getJSONGrade(this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response);
+            checkAutograding(){
+                api.getSubmissions(this.dbId, this.taskId, 4).then(response => {
+                    console.log(response.data.hasAutoGrading);
+                    this.autoGrading = response.data.hasAutoGrading;
+                    if(response.data.hasAutoGrading){
+                        this.getAutoGradingScores();
+                    }
                 });
-
+            },
+            getAutoGradingScores(){
+                api.getJSONAutoGrading(this.db, this.taskId, this.taskId, this.submissionId).then(response => {
+                    this.autoGradingResults = response.testScores;
+                })
             },
             downloadSubmissionFile(filename, id) {
                 api.downloadSubmissionFile(filename, id, this.dbId, this.taskId, this.tabId);
             },
-            getColor(rating) {
+            gradeGetColor(rating) {
                 if(rating === this.full) return 'green'
                 else if(rating >= this.valid) return 'blue'
                 else if (rating < this.valid && rating > this.notValid) return 'yellow'
+                else return 'red'
+            },
+            autoGradeColor(score){
+                if(score === 1) return 'green'
                 else return 'red'
             }
         }
