@@ -66,7 +66,7 @@
                             <v-avatar
                                 class="grey darken-1"
                                 right>
-                                <strong>{{minimum}}</strong>
+                                <strong>{{minScore}}</strong>
                             </v-avatar>
                             <v-avatar
                                 right>
@@ -75,7 +75,7 @@
                             <v-avatar
                                 class="grey darken-1"
                                 right>
-                                <strong>{{maximum}}</strong>
+                                <strong>{{maxScore}}</strong>
                             </v-avatar>
                         </v-chip>
                     </v-toolbar>
@@ -114,7 +114,7 @@
                     </td>
                 </template>
             </v-data-table>
-            <v-alert v-if="overallScore >= minimum"
+            <v-alert v-if="overallScore >= minScore"
                 border="left"
                 text
                 colored-border
@@ -128,7 +128,7 @@
                 colored-border
                 type="error"
                 :color="red"
-            > Overall score: <strong>{{overallScore}}</strong>
+            > Overall score: <strong>{{overallGrade.mark}}</strong>
             </v-alert>
         </div>
     </div>
@@ -141,7 +141,6 @@
         name: 'taskGrade',
         created(){
             this.checkAutograding();
-            this.getStudentLeafGrades();
         },
         computed: {
             status() {
@@ -171,9 +170,13 @@
                 autoGrading: false,
                 autoGradingResults: [],
                 expanded: [],
-                maximum: 3,
-                minimum: 1,
-                overallScore: 0,
+                minScore: 0,
+                maxScore: 0,
+                overallGrade: {
+                  mark: 0,
+                  timeStampString: ""
+                },
+                resultsPeriod: [],
                 /*grades: [
                     {
                         feedback: "OK",
@@ -190,6 +193,7 @@
                         testScore: 0,
                     }
                 ],*/
+                /*
                 grades: [
                     {
                         name: 'Ope1',
@@ -220,6 +224,8 @@
                         rating: 1.0,
                     }
                 ],
+                */
+                grades: [],
                 gradeHeaders: [
                     {
                         text: 'Reviewer',
@@ -236,7 +242,40 @@
         methods: {
             getStudentLeafGrades(){
                 api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId).then(response => {
-                    console.log(response.data);
+                    let receivedGrades = response.data.studentsGradesMap[this.user.idData.value];
+                    let resultsPeriodActive = response.data.resultsPeriodActive;
+                    let visibleMembersMap = response.data.visibleMembersMap;
+                    // let receivedReviewsMap = response.data.receivedReviewsMap;
+
+                    this.resultsPeriod = response.data.resultsPeriod;
+
+                    // Set min & max score
+                    let scoringProperties = response.data.scoring.properties;
+                    let minMaxProps = scoringProperties.split("\n").slice(-3);
+                    this.minScore = parseFloat(minMaxProps[0].charAt(minMaxProps[0].length - 1))
+                    this.maxScore = parseFloat(minMaxProps[1].charAt(minMaxProps[0].length - 1))
+
+                    if (!receivedGrades || !resultsPeriodActive) return;
+
+                    Object.entries(receivedGrades).forEach(([key, value]) => {
+                      // Get overall grade from first object
+                      if (key === "0") {
+                        this.overallGrade.mark = value.mark
+                        this.overallGrade.timeStampString = value.timeStampString
+                      } else {
+                        // Get all received grades from peer reviews
+                        let reviewer = value.reviewerId ? visibleMembersMap[value.reviewerId] : null;
+                        let gradeObj = {
+                          name: reviewer ? `${reviewer.lastName} ${reviewer.firstName}` : "Anonymous",
+                          time: value.timeStampString,
+                          rating: value.mark,
+                          // text: receivedReviewsMap[value.id] ? receivedReviewsMap[value.id].allTexts : ""
+                        }
+
+                        this.grades.push(gradeObj)
+                      }
+                    })
+
                 });
             },
             checkAutograding(){
@@ -245,6 +284,9 @@
                     this.autoGrading = response.data.hasAutoGrading;
                     if(response.data.hasAutoGrading){
                         this.getAutoGradingScores();
+                    }
+                    else{
+                        this.getStudentLeafGrades();
                     }
                 });
             },
@@ -257,8 +299,8 @@
                 api.downloadSubmissionFile(filename, id, this.dbId, this.taskId, this.tabId);
             },
             gradeGetColor(rating) {
-                if(rating >= this.maximum) return '#7dcdbe'
-                else if(rating >= this.minimum) return '#ffdca5'
+                if(rating >= this.maxScore) return '#7dcdbe'
+                else if(rating >= this.minScore) return '#ffdca5'
                 else return '#f07387'
             },
             autoGradeColor(score){
