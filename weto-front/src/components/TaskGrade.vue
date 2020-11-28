@@ -50,7 +50,7 @@
                 :headers="gradeHeaders"
                 :items="grades"
                 :expanded.sync="expanded"
-                item-key="name"
+                item-key="id"
                 show-expand
                 class="table-header"
                 disable-sort
@@ -61,7 +61,6 @@
                         <v-toolbar-title>Grade</v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-chip
-                            :color="lightgrey"
                         >Rating range: 
                             <v-avatar
                                 class="grey darken-1"
@@ -114,20 +113,20 @@
                     </td>
                 </template>
             </v-data-table>
-            <v-alert v-if="overallScore >= minScore"
+            <v-alert v-if="overallGrade.mark >= minScore"
                 border="left"
                 text
                 colored-border
                 type="success"
                 color="green"
-            > Saatana
+            > Overall score: <strong>{{overallGrade.mark}}</strong>
             </v-alert>
             <v-alert v-else
                 border="left"
                 text
                 colored-border
                 type="error"
-                :color="red"
+                color="red"
             > Overall score: <strong>{{overallGrade.mark}}</strong>
             </v-alert>
         </div>
@@ -266,6 +265,7 @@
                         // Get all received grades from peer reviews
                         let reviewer = value.reviewerId ? visibleMembersMap[value.reviewerId] : null;
                         let gradeObj = {
+                          id: value.id,
                           name: reviewer ? `${reviewer.lastName} ${reviewer.firstName}` : "Anonymous",
                           time: value.timeStampString,
                           rating: value.mark,
