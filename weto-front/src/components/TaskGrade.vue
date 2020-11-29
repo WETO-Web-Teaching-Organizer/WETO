@@ -87,48 +87,49 @@
                     </v-chip>
                 </template>
                 <template v-slot:expanded-item="{headers, item}">
-                    <td :colspan="3">
-                        <p>Submitted files:</p>
-                        <v-simple-table>
-                            <template v-slot default>
-                                <thead>
-                                    <th class="text-left">File</th>
-                                    <th class="text-left">Size</th>
-                                    <th class="text-left">Actions</th>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="file in item.files" :key="file.id">
-                                        <td>{{file.name}}</td>
-                                        <td>{{file.size}}</td>
-                                        <td>
-                                            <v-btn depressed class="docAction" color="primary" @click="downloadSubmissionFile(doc.fileName, doc.id)">
-                                                <v-icon>download</v-icon>
-                                                Download
-                                            </v-btn>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </template>
-                        </v-simple-table>
+                    <td :colspan="4">
+                        <br />
+                        <v-alert
+                            text
+                            border="left"
+                            colored-border
+                            color="blue"
+                            type="info">
+                                <strong>Review text:</strong>
+                                This is a review text. Lorem ipsum.
+                        </v-alert>
                     </td>
                 </template>
             </v-data-table>
-            <v-alert v-if="overallGrade.mark >= minScore"
-                border="left"
-                text
-                colored-border
-                type="success"
-                color="green"
-            > Overall score: <strong>{{overallGrade.mark}}</strong>
-            </v-alert>
-            <v-alert v-else
-                border="left"
-                text
-                colored-border
-                type="error"
-                color="red"
-            > Overall score: <strong>{{overallGrade.mark}}</strong>
-            </v-alert>
+            <br />
+            <div v-if="!resultsPeriodActive">
+                <v-alert
+                    border="left"
+                    text
+                    colored-border
+                    type="info"
+                    color="blue"
+                > Results available: <strong>{{resultsPeriod[0]}}</strong>
+                </v-alert>
+            </div>
+            <div v-else>
+                <v-alert v-if="overallGrade.mark >= minScore"
+                    border="left"
+                    text
+                    colored-border
+                    type="success"
+                    color="green"
+                > Overall score: <strong>{{overallGrade.mark}}</strong>
+                </v-alert>
+                <v-alert v-else
+                    border="left"
+                    text
+                    colored-border
+                    type="error"
+                    color="red"
+                > Overall score: <strong>{{overallGrade.mark}}</strong>
+                </v-alert>
+            </div>
         </div>
     </div>
 </template>
@@ -141,7 +142,7 @@
         created(){
             this.checkAutograding();
         },
-        computed: {
+        computed: {            
             status() {
                 return this.$store.getters.status;
             },
@@ -176,6 +177,7 @@
                   timeStampString: ""
                 },
                 resultsPeriod: [],
+                resultsPeriodActive: false,
                 grades: [],
                 gradeHeaders: [
                     {
@@ -199,6 +201,7 @@
                     // let receivedReviewsMap = response.data.receivedReviewsMap;
 
                     this.resultsPeriod = response.data.resultsPeriod;
+                    this.resultsPeriodActive = response.data.resultsPeriodActive;
 
                     // Parse min & max score from scoring properties
                     let min = 0
@@ -245,7 +248,6 @@
             },
             checkAutograding(){
                 api.getSubmissions(this.dbId, this.taskId, 4).then(response => {
-                    console.log(response.data.hasAutoGrading);
                     this.autoGrading = response.data.hasAutoGrading;
                     if(response.data.hasAutoGrading){
                         this.getAutoGradingScores();
