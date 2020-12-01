@@ -92,6 +92,7 @@ export default {
       error: false,
       excluded: false,
       description: "",
+      errors: []
     };
   },
   props: {
@@ -129,8 +130,7 @@ export default {
       this.excluded = true;
     },
     submitFile(i) {
-      api
-        .addSubmissionFile(
+      api.addSubmissionFile(
           this.files[i].name,
           this.submission.id,
           this.dbId,
@@ -150,12 +150,11 @@ export default {
           this.sendSubmission(i);
         })
         .catch((err) => {
-          console.log(err);
+          this.errors.push(err);
         });
     },
     sendSubmission(i) {
-      api
-        .fileSubmission(
+      api.fileSubmission(
           this.files[i],
           this.submission.id,
           this.dbId,
@@ -166,7 +165,7 @@ export default {
           this.$emit("refresh");
         })
         .catch((err) => {
-          console.log(err);
+          this.errors.push(err);
         });
     },
     removeAllFiles() {

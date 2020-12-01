@@ -150,6 +150,7 @@ export default {
       autoGrading: false,
       autoGradingResults: [],
       expanded: [],
+      errors: [],
       minScore: 0,
       maxScore: 0,
       overallGrade: {
@@ -174,8 +175,7 @@ export default {
   },
   methods: {
     getStudentLeafGrades() {
-      api
-        .getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId)
+      api.getJSONStudentLeafGrades(this.dbId, this.taskId, this.tabId)
         .then((response) => {
           let receivedGrades =
             response.data.studentsGradesMap[this.user.idData.value];
@@ -229,7 +229,10 @@ export default {
 
               this.grades.push(gradeObj);
             }
-          });
+          })
+        })
+        .catch((err) => {
+          this.errors.push(err);
         });
     },
     checkAutograding() {
@@ -240,11 +243,14 @@ export default {
         } else {
           this.getStudentLeafGrades();
         }
+      })
+      .catch((err) =>{
+          this.errors.push(err);
       });
     },
+    //api function doesn't exist but when made this will make the component for autograding also
     getAutoGradingScores() {
-      api
-        .getJSONAutoGrading(
+      api.getJSONAutoGrading(
           this.db,
           this.taskId,
           this.taskId,
@@ -252,16 +258,10 @@ export default {
         )
         .then((response) => {
           this.autoGradingResults = response.testScores;
+        })
+        .catch((err) => {
+            this.errors(err);
         });
-    },
-    downloadSubmissionFile(filename, id) {
-      api.downloadSubmissionFile(
-        filename,
-        id,
-        this.dbId,
-        this.taskId,
-        this.tabId
-      );
     },
     gradeGetColor(rating) {
       if (rating >= this.maxScore) return "#7dcdbe";

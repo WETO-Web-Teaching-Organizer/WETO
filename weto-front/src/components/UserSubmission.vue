@@ -132,8 +132,7 @@ export default {
           this.$emit("deleteDocument");
         })
         .catch((err) => {
-          console.log(err);
-          this.backendResponse.push(err);
+          this.errors.push(err);
         });
     },
     showDeleteDialog(document) {

@@ -163,7 +163,7 @@
             api.getDocuments(this.submission.id, this.dbId, this.taskId, this.tabId).then(res => {
               this.documents = res.data.documents;
             }).catch((err) => {
-              console.log(err);
+              this.errors.push(err);
             });
           } else {
             this.submission = null;
@@ -171,8 +171,7 @@
             this.documents = [];
           }
         }).catch(err => {
-          console.log(err);
-          // this.errors.push(err);
+          this.errors.push(err);
         });
 
         return promise
@@ -182,7 +181,6 @@
           this.submissionPeriod = response.data.generalSubmissionPeriod;
           this.submissionPeriodActive = response.data.submissionPeriodActive;
         }).catch(err => {
-          console.log(err);
           this.errors.push(err);
         })
       },
@@ -193,7 +191,7 @@
               this.$refs.fileSubmit.uploadFiles();
             })
           }).catch(err => {
-            console.log(err);
+            this.errors.push(err);
           });
         }
       },
@@ -201,7 +199,6 @@
         api.deleteSubmission(this.submission.id, true, this.dbId, this.taskId, this.tabId).then(() => {
             this.getSubmissions();
         }).catch(err => {
-            console.log(err);
           this.errors.push(err);
         });
       },
@@ -210,7 +207,6 @@
           this.getSubmissions();
           this.$refs.fileSubmit.removeAllFiles();
         }).catch(err => {
-          console.log(err);
           this.errors.push(err);
         });
       }
