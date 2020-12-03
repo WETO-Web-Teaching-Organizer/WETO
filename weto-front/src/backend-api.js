@@ -22,6 +22,9 @@ export default {
   submitLogin(username, password) {
     return AXIOS.post('/submitLoginJSON', {username, password})
   },
+  getTask(task, tab, db) {
+    return AXIOS.get('/viewTask', {params: {taskId: task, tabId: tab, dbId: db}})
+  },
   getCourseTask(db, task, tab) {
     return AXIOS.post('/viewJSONCourseTask', {dbId: db, taskId: task, tabId: tab})
   },
@@ -78,7 +81,7 @@ export default {
   },
   downloadSubmissionFile(fileName, documentId, dbId, taskId, tabId) {
     // This is a hack to get around Axios not initializing file download
-    // See e.g. https://stackoverflow.com/a/53230807 
+    // See e.g. https://stackoverflow.com/a/53230807
     AXIOS.get("/downloadDocument", { responseType: "blob", params: {documentId, dbId, taskId, tabId} })
     .then(res => {
       let fileUrl = window.URL.createObjectURL(new Blob([res.data]))
@@ -87,7 +90,7 @@ export default {
       fileLink.href = fileUrl
       fileLink.setAttribute("download", fileName) // Set name of document to be downloaded
       document.body.appendChild(fileLink)
-      
+
       fileLink.click()
       fileLink.remove()
     })

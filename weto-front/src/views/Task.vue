@@ -14,8 +14,10 @@
 
       <div v-if="elements.length > 0 && elements[0].contentElementType === HTML" id="html">
         <div v-html="backendResponse.elements[0].html" id="task"/>
-        <submission id="submission"/>
-        <grading id="grading"/>
+        <div id="tabs">
+          <submission v-if="tabs.includes('Submissions')" id="submission"/>
+          <grading v-if="tabs.includes('Grading')" id="grading"/>
+        </div>
       </div>
       <v-expansion-panels v-else>
         <v-expansion-panel v-for="element in elements" :key="element.questionId" class="ma-5 mr-8">
@@ -89,7 +91,8 @@
         MULTIPLE_CHOICE: 1,
         ESSAY: 2,
         SURVEY: 3,
-        PROGRAM: 4
+        PROGRAM: 4,
+        tabs: []
       }
     },
     computed: {
@@ -121,10 +124,12 @@
     created() {
       this.checkLogin();
       this.checkCourseSelection();
+      this.fetchTabs();
       this.fetchData();
     },
     watch: {
       taskId() {
+        this.fetchTabs();
         this.fetchData();
       }
     },
@@ -142,6 +147,20 @@
         api.pollLogin().catch(error => {
           this.errors.push(error);
           this.$router.replace('/');
+        })
+      },
+      fetchTabs() {
+        api.getTask(this.taskId, this.tabId, this.dbId).then(res => {
+          const myregexp = /<span[^>]+?class="tabmenu-link".*?>([\s\S]*?)<\/span>/g;
+          let match = myregexp.exec(res.data);
+          let result = [];
+          while(match !== null) {
+            result.push(RegExp.$1.trim());
+            match = myregexp.exec(res.data);
+          }
+          this.tabs = result;
+        }).catch(err => {
+          this.errors.push(err);
         })
       },
       fetchData() {
@@ -173,16 +192,16 @@
 </script>
 
 <style>
-  #html {
+  #tabs {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  #html > * {
-    margin-bottom: 1em;
+  #tabs > * {
+    margin-bottom: 1.5em;
   }
   #task {
-    margin: 1em;
+    margin: 3em 1em;
   }
 
   @media screen and (min-width: 1366px){
