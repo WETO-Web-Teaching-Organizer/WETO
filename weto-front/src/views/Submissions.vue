@@ -62,7 +62,6 @@
 
 <script>
   import api from '../backend-api'
-  import router from '../router'
   import UserSubmission from '../components/UserSubmission'
   import FileSubmit from '../components/FileSubmit.vue'
 
@@ -107,9 +106,6 @@
       }
     },
     created() {
-      // this.checkLogin();
-      // this.checkCourseSelection();
-      // this.fetchData();
       this.viewSubmissions();
       this.getSubmissions();
     },
@@ -123,12 +119,6 @@
       FileSubmit
     },
     methods: {
-      checkLogin() {
-        api.pollLogin().catch(error => {
-          this.errors.push(error);
-          window.location.replace("http://localhost:4545/");
-        })
-      },
       fetchData() {
         this.$store.commit("changeStatus", "loading");
         api.getCourseTask(this.dbId, this.taskId, this.tabId).then(response => {
@@ -141,18 +131,6 @@
             this.$store.commit("changeStatus", "error");
           })
       },
-      checkCourseSelection() {
-        if (this.taskId === null || this.dbId === null) {
-          this.clearSelectedCourse();
-          router.push('/');
-        }
-      },
-      clearSelectedCourse() {
-        this.$store.commit("unselectCourse");
-      },
-      switchTask(id) {
-        this.$store.commit("setTask", id);
-      },
       async getSubmissions() {
         let promise = api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           this.filePatterns = response.data.patternDescriptions;
@@ -163,7 +141,7 @@
             api.getDocuments(this.submission.id, this.dbId, this.taskId, this.tabId).then(res => {
               this.documents = res.data.documents;
             }).catch((err) => {
-              console.log(err);
+              this.errors.push(err);
             });
           } else {
             this.submission = null;
@@ -171,8 +149,7 @@
             this.documents = [];
           }
         }).catch(err => {
-          console.log(err);
-          // this.errors.push(err);
+          this.errors.push(err);
         });
 
         return promise
@@ -182,7 +159,6 @@
           this.submissionPeriod = response.data.generalSubmissionPeriod;
           this.submissionPeriodActive = response.data.submissionPeriodActive;
         }).catch(err => {
-          console.log(err);
           this.errors.push(err);
         })
       },
@@ -193,7 +169,7 @@
               this.$refs.fileSubmit.uploadFiles();
             })
           }).catch(err => {
-            console.log(err);
+            this.errors.push(err);
           });
         }
       },
@@ -201,7 +177,6 @@
         api.deleteSubmission(this.submission.id, true, this.dbId, this.taskId, this.tabId).then(() => {
             this.getSubmissions();
         }).catch(err => {
-            console.log(err);
           this.errors.push(err);
         });
       },
@@ -210,7 +185,6 @@
           this.getSubmissions();
           this.$refs.fileSubmit.removeAllFiles();
         }).catch(err => {
-          console.log(err);
           this.errors.push(err);
         });
       }
