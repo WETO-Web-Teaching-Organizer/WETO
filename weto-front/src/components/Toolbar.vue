@@ -3,6 +3,11 @@
     <v-app-bar app dark dense clipped-left class="primary">
       <v-app-bar-nav-icon @click="sidebar = !sidebar"></v-app-bar-nav-icon>
       <v-toolbar-title>WETO</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn text>
+        <v-icon>face</v-icon>
+        {{ this.$store.getters.user.firstNameData.value + ' ' + this.$store.getters.user.lastNameData.value}}
+      </v-btn>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -15,25 +20,13 @@
     >
       <v-list nav>
         <v-list-item-group>
-          <v-list-item link router to="/courses">
+          <v-list-item to="/courses">
             <v-list-item-icon>
               <v-icon>home</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <h3>
                 Home
-              </h3>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item link>
-            <v-list-item-icon>
-              <v-icon>face</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <h3>
-                {{ this.$store.getters.user.firstNameData.value }}
-                {{ this.$store.getters.user.lastNameData.value }}
               </h3>
             </v-list-item-content>
           </v-list-item>
@@ -49,7 +42,7 @@
         </v-list-item-group>
       </v-list>
 
-      <v-treeview :items="subTasks">
+      <v-treeview :items="subTasks" hoverable>
         <template slot="label" slot-scope="{ item }">
           <a @click="selectSubTask(item)">{{ itemName(item) }}</a>
         </template>
@@ -64,7 +57,7 @@
     name: "Toolbar.vue",
     data() {
       return {
-        sidebar: true,
+        sidebar: null,
       }
     },
     computed: {
