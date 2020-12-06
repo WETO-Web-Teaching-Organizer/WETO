@@ -6,7 +6,7 @@
       <v-spacer></v-spacer>
       <v-btn text>
         <v-icon>face</v-icon>
-        {{ this.$store.getters.user.firstNameData.value + ' ' + this.$store.getters.user.lastNameData.value}}
+        {{ userName }}
       </v-btn>
     </v-app-bar>
 
@@ -67,6 +67,9 @@
       subTasks() {
         return this.$store.getters.subTaskTree;
       },
+      userName() {
+        return this.$store.getters.user.firstNameData.value + ' ' + this.$store.getters.user.lastNameData.value;
+      }
     },
     methods: {
       courseSelected() {
@@ -74,10 +77,10 @@
           this.$store.getters.selectedCourse.databaseId !== null;
       },
       selectRootTask() {
-        this.$store.commit("setTask", this.$store.getters.selectedCourse.courseTaskId);
+        this.$store.commit("setTask", this.$store.getters.selectedCourse);
       },
       selectSubTask(item) {
-        this.$store.commit("setTask", item.id);
+        this.$store.commit("setTask", item);
         this.$router.replace('/task');
       },
       itemName(item) {
