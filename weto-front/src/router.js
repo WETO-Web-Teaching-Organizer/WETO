@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Task from './views/Task.vue'
-import Submissions from './views/Submissions.vue'
-import Grading from './views/Grading.vue'
 import Forum from './views/Forum.vue'
 import Groups from './views/Groups.vue'
 import CourseList from './views/CourseList.vue'
@@ -28,16 +26,6 @@ export default new Router({
       path: '/task',
       name: 'task',
       component: Task
-    },
-    {
-      path: '/grading',
-      name: 'grading',
-      component: Grading
-    },
-    {
-      path: '/submissions',
-      name: 'submissions',
-      component: Submissions
     },
     {
       path: '/forum',
