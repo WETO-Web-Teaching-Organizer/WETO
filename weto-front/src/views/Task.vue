@@ -109,10 +109,10 @@
         return this.$store.getters.selectedCourse.tabId;
       },
       courseName() {
-        return this.$store.getters.selectedCourse.name;
+        return this.$store.getters.selectedCourse.name.replace(/&Auml;/g, 'Ä').replace(/&auml;/g, 'ä').replace(/&Ouml;/g, 'Ö').replace(/&ouml;/g, 'ö');
       },
       taskName() {
-        return this.$store.getters.currentTask.name;
+        return this.$store.getters.currentTask.name.replace(/&Auml;/g, 'Ä').replace(/&auml;/g, 'ä').replace(/&Ouml;/g, 'Ö').replace(/&ouml;/g, 'ö');
       },
       user() {
         return this.$store.getters.user;
