@@ -15,13 +15,9 @@
 
       <div v-if="elements.length > 0 && elements[0].contentElementType === HTML" id="html">
         <div v-html="backendResponse.elements[0].html" id="task"/>
-        <div id="tabs">
-          <submission v-if="tabs.includes('Submissions')" id="submission"/>
-          <grading v-if="tabs.includes('Grading')" id="grading"/>
-        </div>
       </div>
       <v-expansion-panels v-else>
-        <v-expansion-panel v-for="element in elements" :key="element.questionId" class="ma-5 mr-8">
+        <v-expansion-panel v-for="element in elements" :key="element.questionId" class="inline-element">
           <div>
             <v-expansion-panel-header>
               <h2>
@@ -55,10 +51,14 @@
               <survey-quiz :element="element" :taskId="taskId" :tabId="tabId" :dbId="dbId"
                            :quizOpen="backendResponse.quizOpen"/>
             </v-expansion-panel-content>
-
           </div>
         </v-expansion-panel>
       </v-expansion-panels>
+
+      <div id="tabs">
+        <submission v-if="tabs.includes('Submissions')" id="submission"/>
+        <grading v-if="tabs.includes('Grading')" id="grading"/>
+      </div>
 
       <div v-if="typeof subTasks !== undefined">
         <div v-for="subTask in subTasks" :key="subTask.id">
@@ -209,9 +209,13 @@
   #task {
     margin: 3em 1em;
   }
+  .inline-element {
+    margin-bottom: 1.5em;
+  }
 
   @media screen and (min-width: 1366px){
     #submission { max-width: 80vw;}
     #grading { max-width: 80vw;}
+    .inline-elements { max-width: 80vw;}
   }
 </style>
