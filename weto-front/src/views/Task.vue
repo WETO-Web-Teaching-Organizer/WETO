@@ -10,7 +10,8 @@
     </div>
 
     <div v-if="status === 'normal'">
-      <h1 class="ma-8">{{ taskName }}</h1>
+      <h1 class="titles">{{ courseName }}</h1>
+      <h2 v-if="taskName !== courseName" class="titles">{{ taskName }}</h2>
 
       <div v-if="elements.length > 0 && elements[0].contentElementType === HTML" id="html">
         <div v-html="backendResponse.elements[0].html" id="task"/>
@@ -61,7 +62,7 @@
 
       <div v-if="typeof subTasks !== undefined">
         <div v-for="subTask in subTasks" :key="subTask.id">
-          <v-btn rounded class="mb-2" @click="switchTask(subTask.id)">{{ subTask.name }}</v-btn>
+          <v-btn rounded class="mb-2" @click="switchTask(subTask)">{{ subTask.name }}</v-btn>
         </div>
       </div>
     </div>
@@ -71,7 +72,6 @@
 
 <script>
   import api from '../backend-api'
-  import router from '../router'
   import CodeQuiz from '../components/CodeQuiz'
   import EssayQuiz from '../components/EssayQuiz'
   import SingleChoiceQuiz from "../components/SingleChoiceQuiz";
@@ -100,7 +100,7 @@
         return this.$store.getters.status;
       },
       taskId() {
-        return this.$store.getters.currentTask;
+        return this.$store.getters.currentTask.id || this.$store.getters.currentTask.courseTaskId;
       },
       dbId() {
         return this.$store.getters.selectedCourse.databaseId;
@@ -108,8 +108,11 @@
       tabId() {
         return this.$store.getters.selectedCourse.tabId;
       },
-      taskName() {
+      courseName() {
         return this.$store.getters.selectedCourse.name;
+      },
+      taskName() {
+        return this.$store.getters.currentTask.name;
       },
       user() {
         return this.$store.getters.user;
@@ -178,20 +181,23 @@
       checkCourseSelection() {
         if (this.taskId === null || this.dbId === null) {
           this.clearSelectedCourse();
-          router.push('/');
+          this.$router.push('/');
         }
       },
       clearSelectedCourse() {
         this.$store.commit("unselectCourse");
       },
-      switchTask(id) {
-        this.$store.commit("setTask", id);
+      switchTask(task) {
+        this.$store.commit("setTask", task);
       }
     }
   }
 </script>
 
 <style>
+  .titles {
+    margin: 1.5rem;
+  }
   #tabs {
     display: flex;
     flex-direction: column;
