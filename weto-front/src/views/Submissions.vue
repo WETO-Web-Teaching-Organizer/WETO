@@ -87,16 +87,13 @@
     },
     computed: {
       taskId() {
-        return this.$store.getters.currentTask;
+        return this.$store.getters.currentTask.id;
       },
       dbId() {
         return this.$store.getters.selectedCourse.databaseId;
       },
       tabId() {
         return 4;
-      },
-      taskName() {
-        return this.$store.getters.selectedCourse.name;
       },
       user() {
         return this.$store.getters.user;
@@ -109,28 +106,11 @@
       this.viewSubmissions();
       this.getSubmissions();
     },
-    watch: {
-      taskId() {
-        this.fetchData();
-      }
-    },
     components: {
       UserSubmission,
       FileSubmit
     },
     methods: {
-      fetchData() {
-        this.$store.commit("changeStatus", "loading");
-        api.getCourseTask(this.dbId, this.taskId, this.tabId).then(response => {
-          this.backendResponse = response.data;
-          this.$store.commit("setSubTasks", response.data.subtasks);
-          this.$store.commit("changeStatus", "normal");
-        })
-          .catch(error => {
-            this.errors.push(error);
-            this.$store.commit("changeStatus", "error");
-          })
-      },
       async getSubmissions() {
         let promise = api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           this.filePatterns = response.data.patternDescriptions;

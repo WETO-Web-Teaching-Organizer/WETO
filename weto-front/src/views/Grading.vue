@@ -21,7 +21,7 @@
     name: 'grading',
     computed: {
       taskId() {
-        return this.$store.getters.currentTask;
+        return this.$store.getters.currentTask.id;
       },
       dbId() {
         return this.$store.getters.selectedCourse.databaseId

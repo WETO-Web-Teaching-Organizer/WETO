@@ -58,8 +58,8 @@ export const store = new Vuex.Store({
     logUser(state, user) {
       state.user = user;
     },
-    setTask(state, taskId) {
-      state.currentTask = taskId;
+    setTask(state, task) {
+      state.currentTask = task;
     },
     createSubTaskTree(state, course) {
       state.subTaskTree = getChildSubTasks(course.databaseId, course.courseTaskId);
