@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import api from '../backend-api'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex);
 
@@ -26,6 +27,8 @@ export const store = new Vuex.Store({
       loginNameData: {value: ""}
     }
   },
+
+  plugins: [createPersistedState()],
 
   mutations: {
     changeStatus(state, newStatus) {
