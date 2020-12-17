@@ -2,7 +2,7 @@
   <div>
     <v-simple-table>
       <template v-slot:default>
-        <thead>
+        <thead v-bind:style="{backgroundColor: statusColor}">
           <tr>
             <th class="text-left">Name</th>
             <th class="text-left">Date modified</th>
@@ -29,7 +29,7 @@
                   Download
                 </v-btn>
                 <!-- <v-btn depressed color="secondary" class="docAction">Edit</v-btn> -->
-                <template>
+                <template v-if="submissionPeriodActive">
                   <v-btn
                     depressed
                     class="docAction"
@@ -114,6 +114,13 @@ export default {
         ? "Submitted"
         : this.submissionStatus;
     },
+    statusColor() {
+      switch (this.submissionStatus) {
+        case 'Accepted' : return this.$vuetify.theme.themes.light.success
+        case 'Not submitted': return this.documents.length !== 0 ? this.$vuetify.theme.themes.light.warning : this.$vuetify.theme.themes.light.info
+        default : return this.$vuetify.theme.themes.light.info
+      }
+    }
   },
   methods: {
     downloadSubmissionFile(filename, id) {
@@ -152,9 +159,6 @@ export default {
 .v-data-table {
   margin: 1em;
   border: 1px #102027 solid;
-}
-thead {
-  background-color: #f3e5ff;
 }
 .docAction {
   margin-right: 2em;
