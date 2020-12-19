@@ -1,5 +1,5 @@
 <template>
-  <div class="task">
+  <div class="task" :style="[maxWidth, optimizeLargeDisplay.font]">
 
     <div v-if="status === 'loading'" class="text-xs-center">
       <v-progress-circular indeterminate color="secondary" size="70" width="7"/>
@@ -10,8 +10,8 @@
     </div>
 
     <div v-if="status === 'normal'">
-      <h1 class="titles">{{ courseName }}</h1>
-      <h2 v-if="taskName !== courseName" class="titles">{{ taskName }}</h2>
+      <h1 class="titles" :style="optimizeLargeDisplay.heading">{{ courseName }}</h1>
+      <h2 v-if="taskName !== courseName" class="titles" :style="optimizeLargeDisplay.heading">{{ taskName }}</h2>
 
       <div v-if="elements.length > 0 && elements[0].contentElementType === HTML" id="html">
         <div v-html="backendResponse.elements[0].html" id="task"/>
@@ -55,14 +55,14 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
-      <div id="tabs">
+      <div id="tabs" v-if="tabs.length !== 0">
         <submission v-if="tabs.includes('Submissions')" id="submission"/>
         <grading v-if="tabs.includes('Grading')" id="grading"/>
       </div>
 
       <div v-if="typeof subTasks !== undefined">
         <div v-for="subTask in subTasks" :key="subTask.id">
-          <v-btn rounded class="mb-2" @click="switchTask(subTask)">{{ subTask.name }}</v-btn>
+          <v-btn rounded class="mb-2" @click="switchTask(subTask)" :style="optimizeLargeDisplay.subTask">{{ fixLetters(subTask.name) }}</v-btn>
         </div>
       </div>
     </div>
@@ -109,10 +109,10 @@
         return this.$store.getters.selectedCourse.tabId;
       },
       courseName() {
-        return this.$store.getters.selectedCourse.name.replace(/&Auml;/g, 'Ä').replace(/&auml;/g, 'ä').replace(/&Ouml;/g, 'Ö').replace(/&ouml;/g, 'ö');
+        return this.fixLetters(this.$store.getters.selectedCourse.name);
       },
       taskName() {
-        return this.$store.getters.currentTask.name.replace(/&Auml;/g, 'Ä').replace(/&auml;/g, 'ä').replace(/&Ouml;/g, 'Ö').replace(/&ouml;/g, 'ö');
+        return this.fixLetters(this.$store.getters.currentTask.name);
       },
       user() {
         return this.$store.getters.user;
@@ -122,6 +122,23 @@
       },
       elements() {
         return this.backendResponse.elements;
+      },
+      maxWidth() {
+        switch (this.$vuetify.breakpoint.name) {
+          case 'xs': return { maxWidth: '100vw' }
+          case 'sm': return { maxWidth: '95vw' }
+          case 'md': return { maxWidth: '85vw' }
+          case 'lg': return { maxWidth: '80vw' }
+          case 'xl': return { maxWidth: '1920px' }
+          default: return { maxWidth: '100vw' }
+        }
+      },
+      optimizeLargeDisplay() {
+        if (this.$vuetify.breakpoint.width >= 2560) {
+          return { font: {fontSize: '2em'}, heading: {margin: '2rem'}, subTask: {fontSize: '0.875em', height: '2.25em', padding: '0 1em', marginBottom: '0.5em'} }
+        } else {
+          return { font: {fontSize: '1em'} }
+        }
       }
     },
     created() {
@@ -189,14 +206,20 @@
       },
       switchTask(task) {
         this.$store.commit("setTask", task);
-      }
+      },
+      fixLetters(s) {
+        return s.replace(/&Auml;/g, 'Ä').replace(/&auml;/g, 'ä').replace(/&Ouml;/g, 'Ö').replace(/&ouml;/g, 'ö');
+      },
     }
   }
 </script>
 
 <style>
+  .task {
+    margin: 0 auto;
+  }
   .titles {
-    margin: 1.5rem;
+    margin: 1rem;
   }
   #tabs {
     display: flex;
@@ -205,17 +228,12 @@
   }
   #tabs > * {
     margin-bottom: 1.5em;
+    padding: 0 1em;
   }
   #task {
     margin: 3em 1em;
   }
   .inline-element {
     margin-bottom: 1.5em;
-  }
-
-  @media screen and (min-width: 1366px){
-    #submission { max-width: 80vw;}
-    #grading { max-width: 80vw;}
-    .inline-elements { max-width: 80vw;}
   }
 </style>
