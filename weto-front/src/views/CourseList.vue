@@ -108,7 +108,7 @@
       checkLogin() {
         api.pollLogin().catch(error => {
           this.errors.push(error);
-          window.location.replace("http://localhost:4545/");
+          this.$router.replace('/');
         })
       },
       fetchData() {
@@ -124,7 +124,7 @@
       },
       selectCourse(course) {
         this.$store.commit("selectCourse", course);
-        this.$store.commit("setTask", course.courseTaskId);
+        this.$store.commit("setTask", course);
         this.$store.commit("createSubTaskTree", course);
         router.push('/task')
       },

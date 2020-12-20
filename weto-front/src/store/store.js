@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import api from '../backend-api'
+import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex);
 
@@ -26,6 +27,8 @@ export const store = new Vuex.Store({
       loginNameData: {value: ""}
     }
   },
+
+  plugins: [createPersistedState()],
 
   mutations: {
     changeStatus(state, newStatus) {
@@ -58,8 +61,8 @@ export const store = new Vuex.Store({
     logUser(state, user) {
       state.user = user;
     },
-    setTask(state, taskId) {
-      state.currentTask = taskId;
+    setTask(state, task) {
+      state.currentTask = task;
     },
     createSubTaskTree(state, course) {
       state.subTaskTree = getChildSubTasks(course.databaseId, course.courseTaskId);

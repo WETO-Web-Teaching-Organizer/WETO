@@ -62,7 +62,6 @@
 
 <script>
   import api from '../backend-api'
-  import router from '../router'
   import UserSubmission from '../components/UserSubmission'
   import FileSubmit from '../components/FileSubmit.vue'
 
@@ -88,16 +87,13 @@
     },
     computed: {
       taskId() {
-        return this.$store.getters.currentTask;
+        return this.$store.getters.currentTask.id;
       },
       dbId() {
         return this.$store.getters.selectedCourse.databaseId;
       },
       tabId() {
         return 4;
-      },
-      taskName() {
-        return this.$store.getters.selectedCourse.name;
       },
       user() {
         return this.$store.getters.user;
@@ -107,52 +103,14 @@
       }
     },
     created() {
-      this.checkLogin();
-      this.checkCourseSelection();
-      this.fetchData();
       this.viewSubmissions();
       this.getSubmissions();
-    },
-    watch: {
-      taskId() {
-        this.fetchData();
-      }
     },
     components: {
       UserSubmission,
       FileSubmit
     },
     methods: {
-      checkLogin() {
-        api.pollLogin().catch(error => {
-          this.errors.push(error);
-          window.location.replace("http://localhost:4545/");
-        })
-      },
-      fetchData() {
-        this.$store.commit("changeStatus", "loading");
-        api.getCourseTask(this.dbId, this.taskId, this.tabId).then(response => {
-          this.backendResponse = response.data;
-          this.$store.commit("setSubTasks", response.data.subtasks);
-          this.$store.commit("changeStatus", "normal");
-        })
-          .catch(error => {
-            this.errors.push(error);
-            this.$store.commit("changeStatus", "error");
-          })
-      },
-      checkCourseSelection() {
-        if (this.taskId === null || this.dbId === null) {
-          this.clearSelectedCourse();
-          router.push('/');
-        }
-      },
-      clearSelectedCourse() {
-        this.$store.commit("unselectCourse");
-      },
-      switchTask(id) {
-        this.$store.commit("setTask", id);
-      },
       async getSubmissions() {
         let promise = api.getSubmissions(this.dbId, this.taskId, this.tabId).then(response => {
           this.filePatterns = response.data.patternDescriptions;
